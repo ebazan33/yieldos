@@ -335,6 +335,11 @@ function Landing({ onEnter, onPickPlan }) {
           .diff-grid{grid-template-columns:1fr;}
           .feature-grid{grid-template-columns:1fr;}
           .landing-nav-links span.inv-count{display:none;}
+          /* Hide nav anchor links so the "Get started free" CTA always fits
+             on phone portrait. Users can still scroll to Why YieldOS / Pricing. */
+          .landing-nav-links a.nav-anchor{display:none;}
+          /* Shrink the CTA padding/text so it never clips on narrow phones */
+          .landing-nav-links button{padding:8px 14px!important;font-size:11px!important;}
         }
       `}</style>
       <nav className="landing-nav" style={{borderBottom:`1px solid ${C.border}`,backdropFilter:"blur(16px)",position:"sticky",top:0,zIndex:50,background:"rgba(8,11,16,0.92)"}}>
@@ -343,8 +348,8 @@ function Landing({ onEnter, onPickPlan }) {
           <span style={{fontFamily:"'Fraunces',serif",fontSize:19,fontWeight:700,letterSpacing:"-0.01em"}}>YieldOS</span>
         </div>
         <div className="landing-nav-links">
-          <a href="#differentiators" style={{fontSize:12,color:C.textSub,textDecoration:"none",fontWeight:500}}>Why YieldOS</a>
-          <a href="#pricing" style={{fontSize:12,color:C.textSub,textDecoration:"none",fontWeight:500}}>Pricing</a>
+          <a className="nav-anchor" href="#differentiators" style={{fontSize:12,color:C.textSub,textDecoration:"none",fontWeight:500}}>Why YieldOS</a>
+          <a className="nav-anchor" href="#pricing" style={{fontSize:12,color:C.textSub,textDecoration:"none",fontWeight:500}}>Pricing</a>
           <span className="inv-count" style={{fontSize:11,color:C.textMuted,marginLeft:4}}>{count.toLocaleString()} investors</span>
           <button style={ghost} onClick={onEnter}>Sign in</button>
           <button style={{...cta,padding:"9px 20px",fontSize:12}} onClick={onEnter}>Get started free →</button>

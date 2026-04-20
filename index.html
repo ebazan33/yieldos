@@ -71,9 +71,11 @@
 
       /* ── Phone (≤600px) ─────────────────────────────────────────── */
       @media (max-width: 600px) {
-        /* Top navbar tabs scroll horizontally instead of wrapping ugly */
-        nav { overflow-x: auto !important; -webkit-overflow-scrolling: touch; flex-wrap: nowrap !important; }
-        nav > button, nav > * { flex-shrink: 0 !important; }
+        /* Legacy rule for the in-app top tab bar — keep it scrollable.
+           The landing-nav on the marketing page has its own responsive
+           behavior handled in AppMain.jsx (hides anchor links, shrinks CTA). */
+        nav:not(.landing-nav) { overflow-x: auto !important; -webkit-overflow-scrolling: touch; flex-wrap: nowrap !important; }
+        nav:not(.landing-nav) > button, nav:not(.landing-nav) > * { flex-shrink: 0 !important; }
         /* Headline sizes back off */
         h1 { font-size: 34px !important; line-height: 1.12 !important; }
         h2 { font-size: 22px !important; }
