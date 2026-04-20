@@ -636,6 +636,13 @@ export default function AppMain() {
     return isNaN(v) ? 2 : v;
   });
   const [showUp, setShowUp]         = useState(false);
+  // Why the upgrade modal is being shown — lets us tailor the headline/subtitle
+  // to the user's actual moment (hitting the 5-holding cap, clicking a locked
+  // pro tab, clicking Unlock AI Insights, etc.). null = generic copy.
+  const [upReason, setUpReason]     = useState(null);
+  // Helper: open the upgrade modal with a specific reason. Prefer this over
+  // setShowUp(true) so the modal can show contextual copy.
+  const openUpgrade = (reason) => { setUpReason(reason || null); setShowUp(true); };
   const [showAuth, setShowAuth]     = useState(false);
   const [showAdd, setShowAdd]       = useState(false);
   const [showImport, setShowImport] = useState(false);
@@ -684,7 +691,7 @@ export default function AppMain() {
     if (plan === "Seed" && holdings.length >= SEED_HOLDING_CAP) {
       setShowAdd(false);
       setShowImport(false);
-      setShowUp(true);
+      openUpgrade("cap");
       return { error: { message: `Seed plan is limited to ${SEED_HOLDING_CAP} holdings. Upgrade to Grow for unlimited.` } };
     }
     return addHolding(h);
@@ -1420,8 +1427,8 @@ export default function AppMain() {
                   <button style={gh} onClick={exportCsv}>↓ Download CSV</button>
                 </>
               )}
-              <button style={gh} onClick={()=>seedAtCap?setShowUp(true):setShowImport(true)}>↑ Import CSV</button>
-              <button style={bl} onClick={()=>seedAtCap?setShowUp(true):setShowAdd(true)}>
+              <button style={gh} onClick={()=>seedAtCap?openUpgrade("cap"):setShowImport(true)}>↑ Import CSV</button>
+              <button style={bl} onClick={()=>seedAtCap?openUpgrade("cap"):setShowAdd(true)}>
                 {seedAtCap ? `🔒 Upgrade for more` : "+ Add Holding"}
               </button>
             </div>
@@ -1440,7 +1447,7 @@ export default function AppMain() {
                   </div>
                 </div>
               </div>
-              <button style={{background:C.gold,color:"#0b0b0b",border:"none",borderRadius:8,padding:"8px 16px",fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:"inherit",whiteSpace:"nowrap"}} onClick={()=>setShowUp(true)}>
+              <button style={{background:C.gold,color:"#0b0b0b",border:"none",borderRadius:8,padding:"8px 16px",fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:"inherit",whiteSpace:"nowrap"}} onClick={()=>openUpgrade("cap")}>
                 Upgrade to Grow →
               </button>
             </div>
@@ -2134,11 +2141,19 @@ export default function AppMain() {
       {showAuth&&<AuthModal onClose={()=>setShowAuth(false)} onAuth={(u)=>{setUser(u);setPage("app");setShowAuth(false);}}/>}
 
       {showUp&&(
-        <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.88)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:100,backdropFilter:"blur(8px)"}} onClick={()=>setShowUp(false)}>
+        <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.88)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:100,backdropFilter:"blur(8px)"}} onClick={()=>{setShowUp(false);setUpReason(null);}}>
           <div style={{background:C.card,border:`1px solid ${C.blue}30`,borderRadius:16,padding:34,maxWidth:560,width:"90%"}} onClick={e=>e.stopPropagation()}>
+            {/* Context-aware headline — tailored to why the modal opened, so the
+                user sees their actual pain (e.g. cap) acknowledged up top. */}
             <div style={{textAlign:"center",marginBottom:26}}>
-              <div style={{fontFamily:"'Fraunces',serif",fontSize:24,fontWeight:800,marginBottom:6,letterSpacing:"-0.01em"}}>Unlock Premium Features</div>
-              <div style={{fontSize:13,color:C.textSub}}>Get AI Insights, Dividend Calendar, Screener, Alerts & more</div>
+              <div style={{fontFamily:"'Fraunces',serif",fontSize:24,fontWeight:800,marginBottom:6,letterSpacing:"-0.01em"}}>
+                {upReason === "cap" ? `You've hit the ${SEED_HOLDING_CAP}-holding limit` : "Unlock Premium Features"}
+              </div>
+              <div style={{fontSize:13,color:C.textSub}}>
+                {upReason === "cap"
+                  ? "Upgrade to Grow for unlimited holdings, plus AI insights, paycheck calendar, and more."
+                  : "Get AI Insights, Dividend Calendar, Screener, Alerts & more"}
+              </div>
             </div>
             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:22}}>
               {PLANS.filter(p=>p.price>0).map(p=>(
@@ -2153,7 +2168,7 @@ export default function AppMain() {
                 </div>
               ))}
             </div>
-            <button onClick={()=>setShowUp(false)} style={{background:"none",border:"none",color:C.textMuted,cursor:"pointer",width:"100%",fontSize:12,fontFamily:"inherit",fontWeight:500}}>Maybe later</button>
+            <button onClick={()=>{setShowUp(false);setUpReason(null);}} style={{background:"none",border:"none",color:C.textMuted,cursor:"pointer",width:"100%",fontSize:12,fontFamily:"inherit",fontWeight:500}}>Maybe later</button>
           </div>
         </div>
       )}
