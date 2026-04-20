@@ -23,6 +23,21 @@ const SCREENER_TICKERS = ["SCHD","O","VYM","JEPI","ABBV","KO","JNJ","PEP","MAIN"
 const SCREENER_CACHE_KEY = "yieldos_screener_cache_v2";
 const SCREENER_CACHE_TTL = 1000 * 60 * 60 * 6; // 6 hours
 
+// ─── Demo-mode sample portfolio ──────────────────────────────────────────────
+// Shown when a visitor clicks "See a demo" on the landing page. Chosen to look
+// realistic for a dividend-first user: a diversified core (SCHD) + high-yield
+// income (JEPI, monthly) + a classic monthly REIT (O) + blue chip (JNJ) + a
+// second core (VYM). Mix of quarterly + monthly frequencies so the Paycheck
+// Calendar looks populated. Numbers are plausible but illustrative — the price
+// gets refreshed live in real mode, but demo mode freezes them.
+const DEMO_PORTFOLIO = [
+  { id:"demo-1", ticker:"SCHD", name:"Schwab U.S. Dividend Equity ETF", shares:150, price:27.50, yld:3.72, sector:"ETF — Dividend",   freq:"Quarterly", safe:"A",  next_div:"Jun 25" },
+  { id:"demo-2", ticker:"JEPI", name:"JPMorgan Equity Premium Income",  shares:80,  price:56.20, yld:7.48, sector:"ETF — Income",     freq:"Monthly",   safe:"B",  next_div:"May 5"  },
+  { id:"demo-3", ticker:"O",    name:"Realty Income Corp",              shares:45,  price:55.10, yld:5.81, sector:"REIT — Retail",    freq:"Monthly",   safe:"A",  next_div:"May 15" },
+  { id:"demo-4", ticker:"JNJ",  name:"Johnson & Johnson",               shares:22,  price:156.40,yld:3.18, sector:"Healthcare",       freq:"Quarterly", safe:"A+", next_div:"Jun 10" },
+  { id:"demo-5", ticker:"VYM",  name:"Vanguard High Dividend Yield ETF",shares:35,  price:120.75,yld:2.95, sector:"ETF — Dividend",   freq:"Quarterly", safe:"A",  next_div:"Jun 28" },
+];
+
 // Build alerts dynamically from the user's real portfolio + goal progress.
 function generateAlerts(port, totMo, goal) {
   const out = [];
@@ -244,7 +259,7 @@ function Typing({ text }) {
   return <span>{d}{!done&&<span style={{color:C.blue,animation:"blink 0.9s infinite"}}>|</span>}</span>;
 }
 
-function Landing({ onEnter, onPickPlan }) {
+function Landing({ onEnter, onPickPlan, onDemo }) {
   const [count,setCount]=useState(0);
   const [annual,setAnnual]=useState(true); // pricing toggle: true = annual (save), false = monthly
   useEffect(()=>{ const id=setInterval(()=>setCount(c=>c<2847?c+19:2847),14); return()=>clearInterval(id); },[]);
@@ -371,7 +386,10 @@ function Landing({ onEnter, onPickPlan }) {
             </p>
             <div style={{display:"flex",gap:12,flexWrap:"wrap",marginBottom:18}}>
               <button style={cta} onClick={onEnter}>Start tracking for free →</button>
-              <button style={ghost} onClick={onEnter}>See how it works</button>
+              {/* "See a demo" drops the visitor straight into a populated app
+                  with a sample portfolio (SCHD/JEPI/O/JNJ/VYM) — no signup.
+                  Huge intent-signal boost and lets them feel the product. */}
+              <button style={ghost} onClick={onDemo}>See a demo →</button>
             </div>
             <div style={{display:"flex",gap:22,fontSize:11,color:C.textMuted,fontWeight:500,flexWrap:"wrap"}}>
               <span>✓ Free forever plan</span>
@@ -598,7 +616,15 @@ function Landing({ onEnter, onPickPlan }) {
 }
 
 export default function AppMain() {
-  const [page, setPage]             = useState("home");
+  // If the URL carries ?demo=true, jump straight to the in-app view so shared
+  // demo links land on the dashboard instead of the landing page. Real signed-in
+  // users will still end up on "app" via the session hydration below.
+  const initialPage = (() => {
+    if (typeof window === "undefined") return "home";
+    try { return new URLSearchParams(window.location.search).get("demo") === "true" ? "app" : "home"; }
+    catch { return "home"; }
+  })();
+  const [page, setPage]             = useState(initialPage);
   const [user, setUser]             = useState(null);
   const [plan, setPlan]             = useState(() => localStorage.getItem("yieldos_plan") || "Seed");
   const [alertReads, setAlertReads] = useState(() => {
@@ -625,6 +651,17 @@ export default function AppMain() {
   const [showAdd, setShowAdd]       = useState(false);
   const [showImport, setShowImport] = useState(false);
   const [showFeedback, setShowFeedback] = useState(false);
+  // ── Demo mode ──────────────────────────────────────────────────────────────
+  // When true, the app runs with a hardcoded sample portfolio (DEMO_PORTFOLIO)
+  // instead of the user's real Supabase holdings. Used by the "See a demo"
+  // button on the landing page so visitors can poke around without signing up.
+  // Also picked up from ?demo=true on initial load so we can share demo links
+  // on Reddit / Twitter without requiring a click-through from the hero.
+  const [demoMode, setDemoMode] = useState(() => {
+    if (typeof window === "undefined") return false;
+    try { return new URLSearchParams(window.location.search).get("demo") === "true"; }
+    catch { return false; }
+  });
   const [authChecked, setAuthChecked] = useState(false);
   const [prefillTicker, setPrefillTicker] = useState(null);
   const [screenerData, setScreenerData] = useState(null); // null until loaded
@@ -657,16 +694,41 @@ export default function AppMain() {
   useEffect(() => { localStorage.setItem("yieldos_fire_growth", String(fireGrowth)); }, [fireGrowth]);
 
   const { active, visible, navigate, wrapStyle, busy } = useTabTransition("dashboard");
-  const { holdings, loading: holdLoading, refreshing, lastRefresh, addHolding, removeHolding, refreshAllPrices, getSnapshots } = useHoldings(user?.id);
+  // Always call the hook (React rules-of-hooks) — but in demo mode we ignore
+  // its result and swap in a hardcoded portfolio that never writes to Supabase.
+  const realHoldings = useHoldings(demoMode ? null : user?.id);
+  const demoHoldingsAPI = {
+    holdings: DEMO_PORTFOLIO,
+    loading: false,
+    refreshing: false,
+    lastRefresh: new Date(),
+    // Stub out mutations so demo visitors can click Add/Refresh without
+    // hitting Supabase. We surface a soft-block via a banner instead of an
+    // error so the vibe stays "try me out, no friction".
+    addHolding:       async () => ({ error: { message: "Sign up to save holdings." } }),
+    removeHolding:    async () => ({ error: { message: "Sign up to edit holdings." } }),
+    refreshAllPrices: async () => {},
+    getSnapshots:     () => [],
+  };
+  const { holdings, loading: holdLoading, refreshing, lastRefresh, addHolding, removeHolding, refreshAllPrices, getSnapshots } = demoMode ? demoHoldingsAPI : realHoldings;
 
-  const isPro     = plan === "Grow" || plan === "Harvest";
-  const isHarvest = plan === "Harvest";
-  const seedAtCap = plan === "Seed" && holdings.length >= SEED_HOLDING_CAP;
+  const isPro     = demoMode ? true : (plan === "Grow" || plan === "Harvest"); // demo shows all pro features so visitors see the product
+  const isHarvest = demoMode ? true : (plan === "Harvest");
+  const seedAtCap = !demoMode && plan === "Seed" && holdings.length >= SEED_HOLDING_CAP;
 
   // Wrap addHolding so Seed users physically can't go past the cap.
   // Import and single-add both flow through this. If they hit the wall, we
   // close the modals and open the upgrade modal.
   async function addHoldingGated(h) {
+    // Demo visitors: short-circuit into the signup flow instead of trying to
+    // save to Supabase. This is the biggest conversion moment in the demo —
+    // they've typed a ticker, they're engaged; ask for the email now.
+    if (demoMode) {
+      setShowAdd(false);
+      setShowImport(false);
+      setShowAuth(true);
+      return { error: { message: "Sign up to save your portfolio." } };
+    }
     if (plan === "Seed" && holdings.length >= SEED_HOLDING_CAP) {
       setShowAdd(false);
       setShowImport(false);
@@ -975,6 +1037,7 @@ export default function AppMain() {
     <>
       <Landing
         onEnter={()=>{ setPendingPlan(null); setShowAuth(true); }}
+        onDemo={()=>{ setDemoMode(true); setPage("app"); }}
         onPickPlan={(plan,cycle)=>{
           setPlanCycle(cycle);
           if (plan === "Seed") { setPendingPlan(null); setShowAuth(true); }
@@ -1008,12 +1071,42 @@ export default function AppMain() {
       { ticker:"JEPI", name:"JPMorgan Equity Premium",      blurb:"High-yield income ETF (~7%) using covered calls. Pays monthly.", tag:"High Yield" },
       { ticker:"JNJ",  name:"Johnson & Johnson",            blurb:"62+ year dividend streak. A+ safety. Defensive blue chip.", tag:"Blue Chip" },
     ];
+    // 3-step onboarding checklist — gives new users a clear visible progress
+    // map so they know what to do next. Step 1 is already done by virtue of
+    // the user being signed in; step 2 is the active "add a ticker" call; step
+    // 3 nudges them toward setting a goal once they have holdings (they'll
+    // only see this screen pre-holdings, so step 3 is a preview of what's next).
+    const steps = [
+      { n:1, label:"Create your account",     done:true,  active:false },
+      { n:2, label:"Add your first holding",  done:false, active:true  },
+      { n:3, label:"Set your monthly goal",   done:false, active:false },
+    ];
     return (
       <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:14,padding:"36px 28px"}}>
-        <div style={{textAlign:"center",marginBottom:28}}>
+        <div style={{textAlign:"center",marginBottom:22}}>
           <div style={{fontSize:40,marginBottom:12}}>📈</div>
-          <div style={{fontFamily:"'Fraunces',serif",fontSize:22,fontWeight:700,marginBottom:6,letterSpacing:"-0.01em"}}>Welcome to YieldOS</div>
+          <div style={{fontFamily:"'Fraunces',serif",fontSize:22,fontWeight:700,marginBottom:6,letterSpacing:"-0.01em"}}>Welcome to YieldOS{user?.email?`, ${user.email.split("@")[0]}`:""} 👋</div>
           <div style={{fontSize:13,color:C.textSub,maxWidth:440,margin:"0 auto",lineHeight:1.6}}>Build a portfolio that pays you every month. Start with a battle-tested dividend stock or ETF below — or search for any ticker you already own.</div>
+        </div>
+
+        {/* ── 3-step progress row ────────────────────────────────────────── */}
+        <div style={{display:"flex",alignItems:"center",justifyContent:"center",gap:6,marginBottom:28,flexWrap:"wrap"}}>
+          {steps.map((s,i)=>(
+            <div key={s.n} style={{display:"flex",alignItems:"center",gap:6}}>
+              <div style={{
+                width:22,height:22,borderRadius:11,
+                background: s.done ? C.emerald : s.active ? C.blue : C.surface,
+                border:`1px solid ${s.done ? C.emerald : s.active ? C.blue : C.border}`,
+                color: s.done || s.active ? "#fff" : C.textMuted,
+                display:"flex",alignItems:"center",justifyContent:"center",
+                fontSize:11,fontWeight:700,fontFamily:"inherit",
+                animation: s.active ? "pulse 1.8s ease-in-out infinite" : "none",
+                transition:"all 0.2s",
+              }}>{s.done ? "✓" : s.n}</div>
+              <span style={{fontSize:11,color:s.done?C.emerald:s.active?C.text:C.textMuted,fontWeight:s.active?600:500}}>{s.label}</span>
+              {i < steps.length - 1 && <div style={{width:24,height:1,background:C.border,marginLeft:4}}/>}
+            </div>
+          ))}
         </div>
 
         <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:12,marginBottom:20}}>
@@ -2065,17 +2158,41 @@ export default function AppMain() {
           ))}
         </nav>
         <div style={{display:"flex",alignItems:"center",gap:10}}>
-          <Chip color={plan==="Harvest"?C.gold:plan==="Grow"?C.blue:C.textMuted}>{plan}</Chip>
-          {user&&(
+          {demoMode
+            ? <Chip color={C.gold}>DEMO</Chip>
+            : <Chip color={plan==="Harvest"?C.gold:plan==="Grow"?C.blue:C.textMuted}>{plan}</Chip>}
+          {user&&!demoMode&&(
             <div style={{display:"flex",alignItems:"center",gap:8}}>
               <span style={{fontSize:11,color:C.textMuted}}>{user.email?.split("@")[0]}</span>
               <button onClick={handleSignOut} style={{background:"transparent",color:C.textSub,border:`1px solid ${C.border}`,borderRadius:9,cursor:"pointer",fontFamily:"inherit",fontSize:10,fontWeight:500,padding:"5px 10px"}}>Sign out</button>
             </div>
           )}
+          {demoMode&&(
+            <button onClick={()=>{ setDemoMode(false); setPage("home"); }} style={{background:"transparent",color:C.textSub,border:`1px solid ${C.border}`,borderRadius:9,cursor:"pointer",fontFamily:"inherit",fontSize:10,fontWeight:500,padding:"5px 10px"}}>Exit demo</button>
+          )}
         </div>
       </div>
 
-      <div style={{height:2,background:C.border,position:"sticky",top:54,zIndex:39}}>
+      {/* Demo-mode banner — persistent strip shown across every in-app page
+          while a visitor is browsing the sample portfolio. Keeps the "sign
+          up" CTA in front of them without blocking the app. */}
+      {demoMode && (
+        <div style={{
+          position:"sticky", top:54, zIndex:41,
+          background:`linear-gradient(90deg, ${C.gold}18, ${C.blue}14)`,
+          borderBottom:`1px solid ${C.gold}44`,
+          padding:"10px 22px",
+          display:"flex", alignItems:"center", justifyContent:"center", gap:14, flexWrap:"wrap",
+          fontSize:12, color:C.text, fontWeight:500,
+        }}>
+          <span>👀 <strong style={{color:C.gold,fontWeight:700}}>You're viewing a demo portfolio.</strong> Numbers are illustrative — nothing is saved.</span>
+          <button onClick={()=>{ setShowAuth(true); }} style={{background:C.blue,color:"#fff",border:"none",borderRadius:8,padding:"7px 16px",fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>
+            Sign up free →
+          </button>
+        </div>
+      )}
+
+      <div style={{height:2,background:C.border,position:"sticky",top:demoMode?96:54,zIndex:39}}>
         <div style={{height:"100%",background:`linear-gradient(90deg,${C.blue},${C.emerald})`,width:busy?"100%":"0%",opacity:busy?1:0,transition:busy?"width 0.34s ease, opacity 0.1s":"opacity 0.3s ease 0.1s"}}/>
       </div>
 
@@ -2122,7 +2239,7 @@ export default function AppMain() {
 
       {showAdd&&<AddHoldingModal onClose={()=>{setShowAdd(false);setPrefillTicker(null);}} onAdd={addHoldingGated} prefillTicker={prefillTicker}/>}
       {showImport&&<ImportHoldingsModal onClose={()=>setShowImport(false)} onAdd={addHoldingGated}/>}
-      {showAuth&&<AuthModal onClose={()=>setShowAuth(false)} onAuth={(u)=>{setUser(u);setPage("app");setShowAuth(false);}}/>}
+      {showAuth&&<AuthModal onClose={()=>setShowAuth(false)} onAuth={(u)=>{setUser(u);setPage("app");setShowAuth(false);setDemoMode(false);}}/>}
       {showFeedback&&<FeedbackModal onClose={()=>setShowFeedback(false)} user={user} page={page} plan={plan}/>}
 
       {showUp&&(
