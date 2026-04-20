@@ -4,6 +4,7 @@ import { useHoldings } from "./hooks/useHoldings";
 import AddHoldingModal from "./components/AddHoldingModal";
 import ImportHoldingsModal from "./components/ImportHoldingsModal";
 import AuthModal from "./components/AuthModal";
+import FeedbackModal from "./components/FeedbackModal";
 import { getStockDetails } from "./lib/polygon";
 import { startCheckout, readCheckoutReturn, stripeConfigured, openCustomerPortal, customerPortalConfigured } from "./lib/stripe";
 
@@ -646,6 +647,7 @@ export default function AppMain() {
   const [showAuth, setShowAuth]     = useState(false);
   const [showAdd, setShowAdd]       = useState(false);
   const [showImport, setShowImport] = useState(false);
+  const [showFeedback, setShowFeedback] = useState(false);
   const [authChecked, setAuthChecked] = useState(false);
   const [prefillTicker, setPrefillTicker] = useState(null);
   const [screenerData, setScreenerData] = useState(null); // null until loaded
@@ -2131,6 +2133,11 @@ export default function AppMain() {
             <span style={{color:C.textMuted}}>·</span>
             <a href="#terms" style={{color:C.textSub,textDecoration:"none",fontSize:11}}>Terms</a>
             <span style={{color:C.textMuted}}>·</span>
+            {/* In-app feedback — writes to the `feedback` table in Supabase.
+                Styled as a link to match the rest of the footer so it doesn't
+                feel like a pushy button. Available signed-out too. */}
+            <a href="#feedback" onClick={(e)=>{e.preventDefault();setShowFeedback(true);}} style={{color:C.textSub,textDecoration:"none",fontSize:11,cursor:"pointer"}}>Feedback</a>
+            <span style={{color:C.textMuted}}>·</span>
             <a href="mailto:hello@yieldos.app" style={{color:C.textSub,textDecoration:"none",fontSize:11}}>Contact</a>
           </div>
         </div>
@@ -2139,6 +2146,7 @@ export default function AppMain() {
       {showAdd&&<AddHoldingModal onClose={()=>{setShowAdd(false);setPrefillTicker(null);}} onAdd={addHoldingGated} prefillTicker={prefillTicker}/>}
       {showImport&&<ImportHoldingsModal onClose={()=>setShowImport(false)} onAdd={addHoldingGated}/>}
       {showAuth&&<AuthModal onClose={()=>setShowAuth(false)} onAuth={(u)=>{setUser(u);setPage("app");setShowAuth(false);}}/>}
+      {showFeedback&&<FeedbackModal onClose={()=>setShowFeedback(false)} user={user} page={page} plan={plan}/>}
 
       {showUp&&(
         <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.88)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:100,backdropFilter:"blur(8px)"}} onClick={()=>{setShowUp(false);setUpReason(null);}}>
