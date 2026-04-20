@@ -307,16 +307,39 @@ function Landing({ onEnter, onPickPlan }) {
         .pricecol{background:${C.card};border:1px solid ${C.border};border-radius:16px;padding:28px 26px;display:flex;flex-direction:column;gap:14px;transition:all 0.25s;}
         .pricecol.pop{border-color:${C.blue}80;box-shadow:0 0 0 1px ${C.blue}35 inset, 0 22px 60px -28px ${C.blue}80;transform:translateY(-6px);}
         ::-webkit-scrollbar{width:3px;} ::-webkit-scrollbar-thumb{background:${C.border};border-radius:2px;}
+
+        /* Landing-page responsive grids. Default = desktop. Mobile media
+           queries below collapse the 2/3-col grids to single column so the
+           hero mockup doesn't crush on phone portrait, and they re-space
+           sensibly on tablets. */
+        .hero-grid{display:grid;grid-template-columns:1.05fr 1fr;gap:56px;align-items:center;}
+        .diff-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:18px;}
+        .feature-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+        .price-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;}
+        .landing-nav{display:flex;align-items:center;justify-content:space-between;padding:0 48px;height:60px;}
+        .landing-nav-links{display:flex;gap:18px;align-items:center;}
+        @media (max-width: 960px) {
+          .hero-grid{grid-template-columns:1fr;gap:40px;}
+          .feature-grid{grid-template-columns:repeat(2,1fr);}
+          .price-grid{grid-template-columns:1fr;}
+          .landing-nav{padding:0 20px;flex-wrap:wrap;height:auto;min-height:60px;gap:8px;}
+          .landing-nav-links{gap:12px;flex-wrap:wrap;}
+        }
+        @media (max-width: 640px) {
+          .diff-grid{grid-template-columns:1fr;}
+          .feature-grid{grid-template-columns:1fr;}
+          .landing-nav-links span.inv-count{display:none;}
+        }
       `}</style>
-      <nav style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"0 48px",height:60,borderBottom:`1px solid ${C.border}`,backdropFilter:"blur(16px)",position:"sticky",top:0,zIndex:50,background:"rgba(8,11,16,0.92)"}}>
+      <nav className="landing-nav" style={{borderBottom:`1px solid ${C.border}`,backdropFilter:"blur(16px)",position:"sticky",top:0,zIndex:50,background:"rgba(8,11,16,0.92)"}}>
         <div style={{display:"flex",alignItems:"center",gap:10}}>
           <svg width="28" height="28" viewBox="0 0 28 28"><rect width="28" height="28" rx="7" fill={C.blue}/><path d="M8 20 L14 8 L20 20" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" fill="none"/><circle cx="14" cy="17" r="2" fill="#fff"/></svg>
           <span style={{fontFamily:"'Fraunces',serif",fontSize:19,fontWeight:700,letterSpacing:"-0.01em"}}>YieldOS</span>
         </div>
-        <div style={{display:"flex",gap:18,alignItems:"center"}}>
+        <div className="landing-nav-links">
           <a href="#differentiators" style={{fontSize:12,color:C.textSub,textDecoration:"none",fontWeight:500}}>Why YieldOS</a>
           <a href="#pricing" style={{fontSize:12,color:C.textSub,textDecoration:"none",fontWeight:500}}>Pricing</a>
-          <span style={{fontSize:11,color:C.textMuted,marginLeft:4}}>{count.toLocaleString()} investors</span>
+          <span className="inv-count" style={{fontSize:11,color:C.textMuted,marginLeft:4}}>{count.toLocaleString()} investors</span>
           <button style={ghost} onClick={onEnter}>Sign in</button>
           <button style={{...cta,padding:"9px 20px",fontSize:12}} onClick={onEnter}>Get started free →</button>
         </div>
@@ -324,7 +347,7 @@ function Landing({ onEnter, onPickPlan }) {
 
       {/* HERO — income-first tagline + product mock side-by-side */}
       <div style={{maxWidth:1200,margin:"0 auto",padding:"72px 24px 40px",animation:"up 0.6s ease"}}>
-        <div style={{display:"grid",gridTemplateColumns:"1.05fr 1fr",gap:56,alignItems:"center"}}>
+        <div className="hero-grid">
           <div>
             <div style={{display:"inline-flex",alignItems:"center",gap:8,background:C.emerald+"14",border:`1px solid ${C.emerald}30`,borderRadius:20,padding:"6px 18px",fontSize:11,color:C.emerald,marginBottom:24,fontWeight:600,letterSpacing:"0.06em"}}>✦ FREE BETA — NO CREDIT CARD NEEDED</div>
             <h1 style={{fontFamily:"'Fraunces',serif",fontSize:"clamp(40px,5vw,62px)",fontWeight:800,lineHeight:1.05,marginBottom:22,letterSpacing:"-0.02em"}}>
@@ -416,7 +439,7 @@ function Landing({ onEnter, onPickPlan }) {
           <h2 style={{fontFamily:"'Fraunces',serif",fontSize:"clamp(30px,3.5vw,40px)",fontWeight:700,marginBottom:12,letterSpacing:"-0.015em"}}>4 things no other dividend tracker does.</h2>
           <p style={{color:C.textSub,fontSize:14,maxWidth:540,margin:"0 auto"}}>Simply Safe Dividends shows you yields. Snowball charts payouts. We show you when you can actually stop working.</p>
         </div>
-        <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:18}}>
+        <div className="diff-grid">
           {[
             { e:"💸", t:"Income-first dashboard",
               d:"Your Monthly Passive Income is the giant number — not some tiny stat buried under total value. You know at a glance exactly what your portfolio pays you every month." },
@@ -442,7 +465,7 @@ function Landing({ onEnter, onPickPlan }) {
           <h2 style={{fontFamily:"'Fraunces',serif",fontSize:30,fontWeight:700,marginBottom:10,letterSpacing:"-0.015em"}}>Everything you need to compound income.</h2>
           <p style={{color:C.textSub,fontSize:13}}>Built for serious dividend investors — not day traders, not crypto.</p>
         </div>
-        <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:14}}>
+        <div className="feature-grid">
           {[
             {e:"📊",t:"Income Dashboard",     d:"Monthly income front and center. Portfolio value, yield, FIRE projection — all at a glance.",free:true},
             {e:"📥",t:"CSV Import",           d:"Drag your broker export. We de-dupe, skip cash positions, auto-fetch live price + yield.",free:true},
@@ -483,7 +506,7 @@ function Landing({ onEnter, onPickPlan }) {
           </div>
 
           {/* 3-column pricing */}
-          <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:16,marginBottom:40}}>
+          <div className="price-grid" style={{marginBottom:40}}>
             {/* Seed */}
             <div className="pricecol">
               <div>
@@ -546,7 +569,7 @@ function Landing({ onEnter, onPickPlan }) {
       {/* Testimonials */}
       <div style={{maxWidth:940,margin:"0 auto 80px",padding:"0 24px"}}>
         <h2 style={{fontFamily:"'Fraunces',serif",fontSize:30,fontWeight:700,textAlign:"center",marginBottom:44,letterSpacing:"-0.015em"}}>What early users say</h2>
-        <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:14}}>
+        <div className="feature-grid">
           {[
             {n:"Sarah K.",  h:"@dividendsarah", t:"The FIRE projection was the moment. Seeing the exact month my dividends replace my salary changed how I invest."},
             {n:"Marcus T.", h:"@marcusdiv",     t:"The paycheck calendar is such a smart reframe. Caught $400 in dividends last quarter I would have missed."},
