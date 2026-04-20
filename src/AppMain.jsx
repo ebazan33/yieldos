@@ -627,6 +627,10 @@ export default function AppMain() {
   const [planCycle, setPlanCycle]   = useState(() => localStorage.getItem("yieldos_plan_cycle") || "annual"); // "monthly" | "annual"
   const [checkoutBanner, setCheckoutBanner] = useState(null); // { status, plan, cycle }
   const [pendingPlan, setPendingPlan]       = useState(null); // { plan, cycle } — queued during signup from Landing
+  // If we just came back from a Stripe success redirect, remember that for
+  // the lifetime of this page load so the Supabase session hydration doesn't
+  // race-clobber the upgrade with the old "Seed" in user_metadata.
+  const justUpgradedRef = useRef(false);
   useEffect(() => { localStorage.setItem("yieldos_plan_cycle", planCycle); }, [planCycle]);
   const chatEnd = useRef(null);
   useEffect(() => { localStorage.setItem("yieldos_fire_contribution", String(fireContribution)); }, [fireContribution]);
@@ -684,6 +688,10 @@ export default function AppMain() {
     // their Grow/Harvest tier follows them across devices, not just the
     // browser that happened to complete Stripe checkout.
     const hydrateFromUser = (u) => {
+      // Skip hydration if we just returned from a Stripe checkout success —
+      // the URL told us the latest plan; the stale user_metadata would undo
+      // it. The sync-to-Supabase effect below will push the fresh plan up.
+      if (justUpgradedRef.current) return;
       const meta = u?.user_metadata || {};
       if (meta.plan === "Seed" || meta.plan === "Grow" || meta.plan === "Harvest") {
         setPlan(meta.plan);
@@ -723,6 +731,9 @@ export default function AppMain() {
     const ret = readCheckoutReturn();
     if (!ret) return;
     if (ret.status === "success" && (ret.plan === "Grow" || ret.plan === "Harvest")) {
+      // Set the guard BEFORE setPlan so the hydration pass (which runs via
+      // getSession's promise) sees it as true and bails out.
+      justUpgradedRef.current = true;
       setPlan(ret.plan);
       if (ret.cycle === "monthly" || ret.cycle === "annual") setPlanCycle(ret.cycle);
     }
