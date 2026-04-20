@@ -380,55 +380,32 @@ function Landing({ onEnter, onPickPlan }) {
             </div>
           </div>
 
-          {/* Product mock — dashboard preview */}
+          {/* Product demo — real screen-recording of the app in action.
+              Replaces the previous hand-coded dashboard mock. The video:
+                - Autoplays muted on load (so mobile browsers allow playback)
+                - Loops forever so visitors always catch it mid-demo
+                - playsInline so iOS Safari doesn't yank it into full-screen
+                - preload="auto" so it starts as soon as the hero is visible
+              The fake browser chrome (red/yellow/green dots) is kept so the
+              framing feels familiar even without the hand-coded UI inside. */}
           <div style={{position:"relative",animation:"floaty 6s ease-in-out infinite"}}>
-            <div style={{background:"linear-gradient(180deg,"+C.card+","+C.surface+")",border:`1px solid ${C.border}`,borderRadius:18,padding:18,boxShadow:`0 30px 80px -30px ${C.blue}50, 0 0 0 1px ${C.border}`}}>
-              {/* fake browser chrome */}
-              <div style={{display:"flex",gap:6,marginBottom:14}}>
+            <div style={{background:"linear-gradient(180deg,"+C.card+","+C.surface+")",border:`1px solid ${C.border}`,borderRadius:18,padding:12,boxShadow:`0 30px 80px -30px ${C.blue}50, 0 0 0 1px ${C.border}`}}>
+              <div style={{display:"flex",gap:6,marginBottom:10,paddingLeft:4}}>
                 <div style={{width:10,height:10,borderRadius:10,background:"#f87171"}}/>
                 <div style={{width:10,height:10,borderRadius:10,background:"#fbbf24"}}/>
                 <div style={{width:10,height:10,borderRadius:10,background:"#34d399"}}/>
               </div>
-              {/* daily briefing chip */}
-              <div style={{background:C.blueGlow,border:`1px solid ${C.blue}30`,borderRadius:10,padding:"10px 12px",marginBottom:12,display:"flex",alignItems:"center",gap:10}}>
-                <span style={{fontSize:14}}>🗞️</span>
-                <span style={{fontSize:10,color:C.blue,fontWeight:600,letterSpacing:"0.05em"}}>TODAY'S BRIEFING</span>
-                <span style={{fontSize:11,color:C.textSub,flex:1,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>SCHD goes ex-div Thursday. You'll collect $47.20.</span>
-              </div>
-              {/* monthly income hero */}
-              <div style={{background:`linear-gradient(135deg,${C.emerald}18,${C.emerald}06)`,border:`1px solid ${C.emerald}40`,borderRadius:12,padding:"18px 18px 16px",marginBottom:12}}>
-                <div style={{fontSize:9,color:C.emerald,fontWeight:700,letterSpacing:"0.1em",marginBottom:6}}>MONTHLY PASSIVE INCOME</div>
-                <div style={{fontFamily:"'Fraunces',serif",fontSize:42,fontWeight:800,letterSpacing:"-0.03em",lineHeight:1,color:C.text}}>$1,847</div>
-                <div style={{fontSize:10,color:C.textSub,marginTop:6}}>+ $127 vs. last month · 23% of $8k goal</div>
-              </div>
-              {/* 3 mini stats */}
-              <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:8,marginBottom:12}}>
-                {[{l:"PORTFOLIO",v:"$284k",c:C.blue},{l:"YIELD",v:"4.2%",c:C.blue},{l:"HOLDINGS",v:"14",c:C.textSub}].map((s,i)=>(
-                  <div key={i} style={{background:C.bg,border:`1px solid ${C.border}`,borderRadius:8,padding:"10px 10px"}}>
-                    <div style={{fontSize:8,color:C.textMuted,fontWeight:600,letterSpacing:"0.08em"}}>{s.l}</div>
-                    <div style={{fontSize:16,fontWeight:700,color:s.c,fontFamily:"'Fraunces',serif"}}>{s.v}</div>
-                  </div>
-                ))}
-              </div>
-              {/* FIRE curve */}
-              <div style={{background:C.bg,border:`1px solid ${C.gold}30`,borderRadius:10,padding:"12px 14px"}}>
-                <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:6}}>
-                  <span style={{fontSize:10,color:C.gold,fontWeight:700,letterSpacing:"0.08em"}}>🔥 PATH TO FIRE</span>
-                  <span style={{fontSize:10,color:C.textSub}}>~9 years 4 months</span>
-                </div>
-                <svg viewBox="0 0 360 130" width="100%" height="80" style={{display:"block"}}>
-                  <defs>
-                    <linearGradient id="fireMockGrad" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor={C.gold} stopOpacity="0.35"/>
-                      <stop offset="100%" stopColor={C.gold} stopOpacity="0"/>
-                    </linearGradient>
-                  </defs>
-                  <polygon points={`0,130 ${fireMockPts} 360,130`} fill="url(#fireMockGrad)"/>
-                  <polyline points={fireMockPts} fill="none" stroke={C.gold} strokeWidth="2" strokeLinejoin="round"/>
-                  <line x1="0" y1="38" x2="360" y2="38" stroke={C.emerald} strokeDasharray="3 3" strokeWidth="1" opacity="0.6"/>
-                  <text x="354" y="34" fill={C.emerald} fontSize="9" textAnchor="end" fontWeight="600">Goal · $8k/mo</text>
-                </svg>
-              </div>
+              <video
+                src="/demo.mp4"
+                autoPlay
+                muted
+                loop
+                playsInline
+                preload="auto"
+                poster="/og-image.png"
+                aria-label="Yieldos app demo: dashboard, paycheck calendar, holdings, and path to FIRE"
+                style={{display:"block",width:"100%",borderRadius:10,background:C.bg}}
+              />
             </div>
           </div>
         </div>
