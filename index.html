@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#080b10" />
+
+    <title>YieldOS — Track your paychecks. Plan your freedom.</title>
+    <meta name="description" content="The only dividend tracker that shows every payout as a paycheck and projects your exact year to financial independence. Free forever plan. Import from Fidelity, Schwab, Vanguard, E*TRADE." />
+    <meta name="keywords" content="dividend tracker, passive income, FIRE calculator, dividend portfolio, paycheck calendar, dividend investing, financial independence, income investing" />
+    <meta name="author" content="YieldOS" />
+    <link rel="canonical" href="https://yieldos.app/" />
+
+    <!-- Open Graph (Facebook, LinkedIn, Slack, Discord) -->
+    <meta property="og:type"        content="website" />
+    <meta property="og:site_name"   content="YieldOS" />
+    <meta property="og:url"         content="https://yieldos.app/" />
+    <meta property="og:title"       content="YieldOS — Track your paychecks. Plan your freedom." />
+    <meta property="og:description" content="The only dividend tracker that shows every payout as a paycheck and projects your exact year to financial independence." />
+    <meta property="og:image"       content="https://yieldos.app/og-image.png" />
+    <meta property="og:image:width"  content="1200" />
+    <meta property="og:image:height" content="630" />
+
+    <!-- Twitter / X -->
+    <meta name="twitter:card"        content="summary_large_image" />
+    <meta name="twitter:title"       content="YieldOS — Track your paychecks. Plan your freedom." />
+    <meta name="twitter:description" content="Income-first dividend tracker. Paycheck calendar, Path to FIRE projection, Daily AI Briefing." />
+    <meta name="twitter:image"       content="https://yieldos.app/og-image.png" />
+
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="apple-touch-icon" href="/favicon.svg" />
+
+    <!-- JSON-LD schema so Google understands what this is -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "YieldOS",
+        "applicationCategory": "FinanceApplication",
+        "operatingSystem": "Web",
+        "description": "Income-first dividend tracker with Path to FIRE projection, paycheck calendar, and daily AI briefing.",
+        "offers": [
+          { "@type": "Offer", "name": "Seed",    "price": "0",  "priceCurrency": "USD" },
+          { "@type": "Offer", "name": "Grow",    "price": "9",  "priceCurrency": "USD" },
+          { "@type": "Offer", "name": "Harvest", "price": "19", "priceCurrency": "USD" }
+        ]
+      }
+    </script>
+    <style>
+      html, body { background: #080b10; color: #f1f5f9; margin: 0; padding: 0; overflow-x: hidden; -webkit-font-smoothing: antialiased; }
+      #root { background: #080b10; min-height: 100vh; }
+      * { -webkit-tap-highlight-color: transparent; }
+
+      /* ── Tablet (≤900px) ─────────────────────────────────────────── */
+      @media (max-width: 900px) {
+        /* Any grid that says "repeat(4,…)" → 2 cols */
+        [style*="repeat(4"] { grid-template-columns: repeat(2, 1fr) !important; }
+        /* Any grid that says "repeat(3,…)" → 1 col (single file on small screens) */
+        [style*="repeat(3"] { grid-template-columns: 1fr !important; }
+        /* Common 2-col layouts */
+        [style*="1fr 320px"],
+        [style*="1fr 1fr"] { grid-template-columns: 1fr !important; }
+        /* Nav padding */
+        nav { padding-left: 16px !important; padding-right: 16px !important; }
+        /* Main content container */
+        [style*="1160"] { padding-left: 14px !important; padding-right: 14px !important; }
+        /* Wrap all tables so they scroll horizontally instead of overflowing the page */
+        table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; white-space: nowrap; }
+        table thead, table tbody, table tr { display: table; width: 100%; table-layout: auto; }
+      }
+
+      /* ── Phone (≤600px) ─────────────────────────────────────────── */
+      @media (max-width: 600px) {
+        /* Top navbar tabs scroll horizontally instead of wrapping ugly */
+        nav { overflow-x: auto !important; -webkit-overflow-scrolling: touch; flex-wrap: nowrap !important; }
+        nav > button, nav > * { flex-shrink: 0 !important; }
+        /* Headline sizes back off */
+        h1 { font-size: 34px !important; line-height: 1.12 !important; }
+        h2 { font-size: 22px !important; }
+        /* Modal / card inner padding can shrink */
+        [style*="padding:32"] { padding: 20px !important; }
+        [style*="padding: 32"] { padding: 20px !important; }
+        [style*="padding:22"] { padding: 16px !important; }
+        table { font-size: 11px; }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
