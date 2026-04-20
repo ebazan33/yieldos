@@ -291,10 +291,16 @@ function Landing({ onEnter, onPickPlan }) {
   const harvestDisplay = annual ? `$${(harvestAnnual/12).toFixed(0)}` : `$${harvestMonthly}`;
 
   return (
-    <div style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:"'Plus Jakarta Sans',sans-serif",overflowX:"hidden"}}>
+    <div style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:"'Plus Jakarta Sans',sans-serif"}}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,700;0,9..144,800;1,9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
         *{box-sizing:border-box;margin:0;padding:0;}
+        /* Mobile safety: scroll horizontally if something overflows, rather
+           than clipping silently. Images/SVGs/tables scale defensively so
+           nothing bursts its container. */
+        html,body{max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;}
+        img,svg,video,canvas{max-width:100%;height:auto;}
+        table{max-width:100%;display:block;overflow-x:auto;}
         @keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
         @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.2}}
         @keyframes ticker{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
@@ -2041,6 +2047,12 @@ export default function AppMain() {
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,700;0,9..144,800;1,9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
         *{box-sizing:border-box;margin:0;padding:0;}
+        /* Mobile safety: scroll horizontally if something overflows, rather
+           than clipping silently. Images/SVGs/tables scale defensively so
+           nothing bursts its container. */
+        html,body{max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch;}
+        img,svg,video,canvas{max-width:100%;height:auto;}
+        table{max-width:100%;display:block;overflow-x:auto;}
         @keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
         @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.2}}
         ::-webkit-scrollbar{width:3px;height:3px;}
