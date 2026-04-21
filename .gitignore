@@ -9,3 +9,7 @@ LAUNCH_WEEK_1.md
 LAUNCH_WEEK_1.md
 *.mov
 *.mov
+
+# User email exports (contains PII — never commit)
+seed-users.csv
+*-users.csv

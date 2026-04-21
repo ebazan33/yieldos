@@ -6,14 +6,47 @@ const POLYGON_KEY = import.meta.env.VITE_POLYGON_KEY;
 const log = (...args) => { if (import.meta.env.DEV) console.log("[stock]", ...args); };
 
 // ── Ticker search ───────────────────────────────────────────────────────────
+// We run TWO queries in parallel and merge:
+//   1. Exact-ticker lookup — catches the case where Polygon's fuzzy search
+//      deprioritizes the actual ticker in favor of funds/bonds whose *name*
+//      contains the query string. Matthew reported typing "BMO" and not
+//      seeing Bank of Montreal — this was the fix.
+//   2. Fuzzy search (market=stocks) — searches both ticker and company name
+//      across stock markets only (drops crypto/fx/options noise).
+//
+// Exact match always appears first in the dropdown so users never miss the
+// ticker they typed. Dedupes by ticker.
 export async function searchTicker(query) {
   if (!POLYGON_KEY) { console.warn("[stock] Missing VITE_POLYGON_KEY in .env"); return []; }
+  const q = String(query || "").trim();
+  if (!q) return [];
+
+  // Heuristic: 1–6 letter/dot/dash = looks like a ticker symbol (AAPL, BRK.B,
+  // REI-UN). For these we also hit the exact-ticker endpoint in parallel.
+  const looksLikeTicker = /^[A-Za-z.\-]{1,6}$/.test(q);
+  const exactUrl = looksLikeTicker
+    ? `https://api.polygon.io/v3/reference/tickers?ticker=${encodeURIComponent(q.toUpperCase())}&active=true&apiKey=${POLYGON_KEY}`
+    : null;
+  const fuzzyUrl = `https://api.polygon.io/v3/reference/tickers?search=${encodeURIComponent(q)}&market=stocks&active=true&limit=10&apiKey=${POLYGON_KEY}`;
+
   try {
-    const url = `https://api.polygon.io/v3/reference/tickers?search=${encodeURIComponent(query)}&active=true&limit=8&apiKey=${POLYGON_KEY}`;
-    const res = await fetch(url);
-    if (!res.ok) { console.warn("[stock] Polygon search failed:", res.status); return []; }
-    const data = await res.json();
-    return data.results || [];
+    const [exactRes, fuzzyRes] = await Promise.all([
+      exactUrl ? fetch(exactUrl) : Promise.resolve(null),
+      fetch(fuzzyUrl),
+    ]);
+
+    const exact = (exactRes && exactRes.ok) ? ((await exactRes.json()).results || []) : [];
+    const fuzzy = fuzzyRes.ok              ? ((await fuzzyRes.json()).results || []) : [];
+
+    // Exact first, then fuzzy, deduped by ticker.
+    const seen = new Set();
+    const merged = [];
+    for (const t of [...exact, ...fuzzy]) {
+      if (!t?.ticker || seen.has(t.ticker)) continue;
+      seen.add(t.ticker);
+      merged.push(t);
+    }
+    return merged;
   } catch (e) {
     console.warn("[stock] Polygon search error:", e.message);
     return [];
