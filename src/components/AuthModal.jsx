@@ -1,12 +1,11 @@
 import { useState } from 'react'
 import { supabase } from '../lib/supabase'
 
-// Feature flag — flip to true once Google OAuth is configured in the
-// Supabase dashboard (Authentication → Providers → Google) AND the
-// redirect URI is added to the Google Cloud Console OAuth client.
-// Until then, hiding the button prevents the 404 that unconfigured
-// OAuth providers produce.
-const GOOGLE_OAUTH_ENABLED = false
+// Feature flag — Google OAuth is now configured in Supabase (Authentication →
+// Providers → Google) and the redirect URI is registered in Google Cloud
+// Console. If the provider ever gets disabled, flip this back to false to
+// hide the button and avoid 404s from unconfigured OAuth calls.
+const GOOGLE_OAUTH_ENABLED = true
 
 const C = {
   bg:"#080b10", surface:"#0f1420", card:"#131925",
