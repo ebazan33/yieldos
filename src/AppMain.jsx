@@ -834,6 +834,15 @@ export default function AppMain() {
   const isHarvest = demoMode ? true : (plan === "Harvest");
   const seedAtCap = !demoMode && plan === "Seed" && holdings.length >= SEED_HOLDING_CAP;
 
+  // Live count ref — kept in sync with holdings.length via effect below, and
+  // optimistically incremented/decremented on each gated add/remove. This is
+  // what `addHoldingGated` reads instead of the state variable, because a CSV
+  // import awaits 13 inserts in a single event handler and React batches
+  // re-renders — meaning holdings.length stays stale across every iteration
+  // and all 13 rows slip past the cap. The ref fixes that race.
+  const holdingsCountRef = useRef(holdings.length);
+  useEffect(() => { holdingsCountRef.current = holdings.length; }, [holdings.length]);
+
   // Wrap addHolding so Seed users physically can't go past the cap.
   // Import and single-add both flow through this. If they hit the wall, we
   // close the modals and open the upgrade modal.
@@ -847,13 +856,20 @@ export default function AppMain() {
       setShowAuth(true);
       return { error: { message: "Sign up to save your portfolio." } };
     }
-    if (plan === "Seed" && holdings.length >= SEED_HOLDING_CAP) {
+    // Guard reads from the ref, not state — state is stale during a burst.
+    if (plan === "Seed" && holdingsCountRef.current >= SEED_HOLDING_CAP) {
       setShowAdd(false);
       setShowImport(false);
       openUpgrade("cap");
       return { error: { message: `Seed plan is limited to ${SEED_HOLDING_CAP} holdings. Upgrade to Grow for unlimited.` } };
     }
-    return addHolding(h);
+    const result = await addHolding(h);
+    // Only bump the ref on success. A failed insert (network, validation)
+    // shouldn't consume a slot. The effect above will eventually reconcile
+    // the ref to the real count anyway, but the optimistic bump is what
+    // keeps subsequent iterations of an import loop honest.
+    if (!result?.error) holdingsCountRef.current += 1;
+    return result;
   }
 
   const port = holdings.map(h => ({
