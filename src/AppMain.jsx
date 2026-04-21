@@ -8,6 +8,7 @@ import FeedbackModal from "./components/FeedbackModal";
 import Toaster from "./components/Toast";
 import CountUp from "./components/CountUp";
 import ConfirmModal from "./components/ConfirmModal";
+import AccountModal from "./components/AccountModal";
 import { getStockDetails } from "./lib/polygon";
 import { startCheckout, readCheckoutReturn, stripeConfigured, openCustomerPortal, customerPortalConfigured } from "./lib/stripe";
 
@@ -741,6 +742,12 @@ export default function AppMain() {
   // existing Seed users via a one-shot SQL. Drives `trialActive` →
   // `effectivePlan` so Seed users get Grow features during the trial.
   const [trialEndsAt, setTrialEndsAt] = useState(() => localStorage.getItem("yieldos_trial_ends_at") || null);
+  // Display name — user-controlled label shown in dashboard greetings + nav.
+  // Falls back to the email-prefix when empty. Stored in user_metadata so it
+  // follows the user across devices; localStorage cache avoids a one-frame
+  // flash of "email prefix" on reload.
+  const [displayName, setDisplayName] = useState(() => localStorage.getItem("yieldos_display_name") || "");
+  const [showAccount, setShowAccount] = useState(false);
   const [alertReads, setAlertReads] = useState(() => {
     try { return JSON.parse(localStorage.getItem("yieldos_alert_reads")||"{}"); } catch { return {}; }
   });
@@ -846,6 +853,11 @@ export default function AppMain() {
     : 0;
   const effectivePlan = (plan === "Seed" && trialActive) ? "Grow" : plan;
 
+  // Name shown in greetings + nav. User-set display_name takes priority;
+  // falls back to the email prefix (old behavior). Trimmed defensively so a
+  // whitespace-only value doesn't leak through as a valid name.
+  const displayLabel = (displayName || "").trim() || (user?.email?.split("@")[0] || "");
+
   const isPro     = demoMode ? true : (effectivePlan === "Grow" || effectivePlan === "Harvest"); // demo shows all pro features so visitors see the product
   const isHarvest = demoMode ? true : (plan === "Harvest"); // Harvest is never granted by trial
   const seedAtCap = !demoMode && effectivePlan === "Seed" && holdings.length >= SEED_HOLDING_CAP;
@@ -942,6 +954,15 @@ export default function AppMain() {
       if (typeof meta.trial_ends_at === "string") {
         setTrialEndsAt(meta.trial_ends_at);
         try { localStorage.setItem("yieldos_trial_ends_at", meta.trial_ends_at); } catch {}
+      }
+      // Display name — hydrate from metadata, cache locally for instant reload.
+      if (typeof meta.display_name === "string") {
+        setDisplayName(meta.display_name);
+        try { localStorage.setItem("yieldos_display_name", meta.display_name); } catch {}
+      } else if (meta.display_name === null) {
+        // User explicitly cleared their name; drop the cache so fallback kicks in.
+        setDisplayName("");
+        try { localStorage.removeItem("yieldos_display_name"); } catch {}
       }
     };
 
@@ -1287,7 +1308,7 @@ export default function AppMain() {
       <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:14,padding:"36px 28px"}}>
         <div style={{textAlign:"center",marginBottom:22}}>
           <div style={{fontSize:40,marginBottom:12}}>📈</div>
-          <div style={{fontFamily:"'Fraunces',serif",fontSize:22,fontWeight:700,marginBottom:6,letterSpacing:"-0.01em"}}>Welcome to YieldOS{user?.email?`, ${user.email.split("@")[0]}`:""} 👋</div>
+          <div style={{fontFamily:"'Fraunces',serif",fontSize:22,fontWeight:700,marginBottom:6,letterSpacing:"-0.01em"}}>Welcome to YieldOS{displayLabel?`, ${displayLabel}`:""} 👋</div>
           <div style={{fontSize:13,color:C.textSub,maxWidth:440,margin:"0 auto",lineHeight:1.6}}>Build a portfolio that pays you every month. Start with a battle-tested dividend stock or ETF below — or search for any ticker you already own.</div>
         </div>
 
@@ -1350,7 +1371,7 @@ export default function AppMain() {
       case "dashboard": return (
         <div>
           <div style={{marginBottom:16}}>
-            <h1 style={{fontFamily:"'Fraunces',serif",fontSize:24,fontWeight:700,marginBottom:3,letterSpacing:"-0.01em"}}>Good morning{user?.email?`, ${user.email.split("@")[0]}`:""} 👋</h1>
+            <h1 style={{fontFamily:"'Fraunces',serif",fontSize:24,fontWeight:700,marginBottom:3,letterSpacing:"-0.01em"}}>Good morning{displayLabel?`, ${displayLabel}`:""} 👋</h1>
             <p style={{fontSize:13,color:C.textSub}}>Here's your passive income snapshot for today.</p>
           </div>
 
@@ -2529,16 +2550,19 @@ export default function AppMain() {
                   same user sees the same color every session (feels personal).
                   Tiny but it signals "this product knows me." */}
               {(() => {
-                const initial = (user.email?.[0] || "?").toUpperCase();
+                // Avatar initial from displayLabel (so "Sam" avatars as "S",
+                // not the email's first letter). Color stays deterministic
+                // off the email so it never changes when name changes.
+                const initial = (displayLabel?.[0] || user.email?.[0] || "?").toUpperCase();
                 const palette = [C.blue, C.emerald, C.gold, "#a78bfa", "#f472b6", "#38bdf8"];
                 let h = 0;
                 for (let i = 0; i < (user.email || "").length; i++) h = (h*31 + user.email.charCodeAt(i)) | 0;
                 const bg = palette[Math.abs(h) % palette.length];
                 return (
-                  <div title={user.email} style={{width:26,height:26,borderRadius:"50%",background:bg,color:"#fff",display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:700,letterSpacing:"0.02em",flexShrink:0}}>{initial}</div>
+                  <div onClick={()=>setShowAccount(true)} title={`${displayLabel} · click to edit`} style={{width:26,height:26,borderRadius:"50%",background:bg,color:"#fff",display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:700,letterSpacing:"0.02em",flexShrink:0,cursor:"pointer"}}>{initial}</div>
                 );
               })()}
-              <span className="app-userblock-email" style={{fontSize:11,color:C.textMuted}}>{user.email?.split("@")[0]}</span>
+              <span className="app-userblock-email" onClick={()=>setShowAccount(true)} style={{fontSize:11,color:C.textMuted,cursor:"pointer"}} title="Click to edit your display name">{displayLabel}</span>
               <button className="app-userblock-signout" onClick={handleSignOut} style={{background:"transparent",color:C.textSub,border:`1px solid ${C.border}`,borderRadius:9,cursor:"pointer",fontFamily:"inherit",fontSize:10,fontWeight:500,padding:"5px 10px"}}>Sign out</button>
             </div>
           )}
@@ -2617,6 +2641,26 @@ export default function AppMain() {
       {showAuth&&<AuthModal onClose={()=>setShowAuth(false)} onAuth={(u)=>{setUser(u);setPage("app");setShowAuth(false);setDemoMode(false);}}/>}
       {showFeedback&&<FeedbackModal onClose={()=>setShowFeedback(false)} user={user} page={page} plan={plan}/>}
       {confirmState && <ConfirmModal {...confirmState}/>}
+      {showAccount && user && (
+        <AccountModal
+          user={user}
+          currentDisplayName={displayName}
+          onClose={()=>setShowAccount(false)}
+          onSave={(newName, updatedUser) => {
+            // Update local state immediately so the greeting re-renders before
+            // the next Supabase roundtrip. Empty/null means "use fallback".
+            setDisplayName(newName || "");
+            try {
+              if (newName) localStorage.setItem("yieldos_display_name", newName);
+              else         localStorage.removeItem("yieldos_display_name");
+            } catch {}
+            // Keep the user object in sync with what Supabase returned so the
+            // metadata-diff guard in the sync effect doesn't fire a redundant
+            // update.
+            if (updatedUser) setUser(updatedUser);
+          }}
+        />
+      )}
       {showShortcuts && (
         <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.82)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:150,backdropFilter:"blur(8px)"}} onClick={()=>setShowShortcuts(false)}>
           <div onClick={e=>e.stopPropagation()} style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:14,padding:28,maxWidth:420,width:"90%"}}>
