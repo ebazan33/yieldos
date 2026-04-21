@@ -46,7 +46,7 @@ export default function Toaster() {
             borderRadius: 9,
             padding: "11px 16px 11px 14px",
             fontSize: 13,
-            color: "#f1f5f9",
+            color: "var(--text)",
             fontFamily: "inherit",
             minWidth: 240,
             maxWidth: 380,

@@ -26,8 +26,8 @@ export default function ConfirmModal({
   onCancel,
 }) {
   const C = {
-    card:"#131925", surface:"#0f1420", border:"#1c2536",
-    text:"#f1f5f9", textSub:"#94a3b8", textMuted:"#4a5568",
+    card:"var(--card)", surface:"var(--surface)", border:"var(--border)",
+    text:"var(--text)", textSub:"var(--text-sub)", textMuted:"var(--text-muted)",
     blue:"#4f8ef7", red:"#f87171",
   }
   const accent = danger ? C.red : C.blue

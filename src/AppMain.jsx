@@ -13,12 +13,12 @@ import { getStockDetails } from "./lib/polygon";
 import { startCheckout, readCheckoutReturn, stripeConfigured, openCustomerPortal, customerPortalConfigured } from "./lib/stripe";
 
 const C = {
-  bg:"#080b10", surface:"#0f1420", card:"#131925",
-  border:"#1c2536", blue:"#4f8ef7", blueDim:"#3b76e0",
-  blueGlow:"rgba(79,142,247,0.12)", blueGlow2:"rgba(79,142,247,0.06)",
+  bg:"var(--bg)", surface:"var(--surface)", card:"var(--card)",
+  border:"var(--border)", blue:"#4f8ef7", blueDim:"#3b76e0",
+  blueGlow:"var(--blue-glow)", blueGlow2:"rgba(79,142,247,0.06)",
   emerald:"#34d399", gold:"#f59e0b", goldGlow:"rgba(245,158,11,0.1)",
   red:"#f87171", amber:"#fbbf24",
-  text:"#f1f5f9", textSub:"#94a3b8", textMuted:"#4a5568",
+  text:"var(--text)", textSub:"var(--text-sub)", textMuted:"var(--text-muted)",
 };
 
 // Curated list of popular dividend stocks — Screener fetches live data for these.
@@ -153,7 +153,7 @@ function generateAlerts(port, totMo, goal) {
 const SEED_HOLDING_CAP = 5;
 
 const PLANS = [
-  { name:"Seed", price:0, color:"#4a5568",
+  { name:"Seed", price:0, color:"var(--text-muted)",
     features:[`Up to ${SEED_HOLDING_CAP} holdings`,"Income-first dashboard","Brokerage CSV import","FIRE preview","Community access"],
     locked:["AI Insights","Paycheck Calendar","Screener","Alerts","Goal Tracker","Tax Estimates","Daily Briefing"] },
   { name:"Grow", price:9, color:"#4f8ef7", popular:true,
@@ -178,7 +178,7 @@ const SAFETY_META = {
   "C+": { color:"#fbbf24", blurb:"Watch it. Short history or elevated yield." },
   "C":  { color:"#fbbf24", blurb:"Risky. Limited track record or high yield." },
   "D":  { color:"#f87171", blurb:"Danger zone. Very high yield or thin history." },
-  "N/A":{ color:"#4a5568", blurb:"No dividend history found — can't grade." },
+  "N/A":{ color:"var(--text-muted)", blurb:"No dividend history found — can't grade." },
 };
 const safetyColor = g => (SAFETY_META[g] || SAFETY_META["N/A"]).color;
 const $ = (n,d=0) => new Intl.NumberFormat("en-US",{style:"currency",currency:"USD",minimumFractionDigits:d,maximumFractionDigits:d}).format(n);
@@ -336,7 +336,7 @@ function Landing({ onEnter, onPickPlan, onDemo, onFeedback }) {
         /* Skeleton loader — shimmer animation on gray placeholder blocks while
            data fetches. Perceived load time drops ~40% vs a blank screen. */
         .skeleton {
-          background: linear-gradient(90deg, #131925 0%, #1c2536 50%, #131925 100%);
+          background: linear-gradient(90deg, var(--card) 0%, var(--border) 50%, var(--card) 100%);
           background-size: 200% 100%;
           animation: skeletonShimmer 1.4s ease-in-out infinite;
           border-radius: 6px;
@@ -748,6 +748,16 @@ export default function AppMain() {
   // flash of "email prefix" on reload.
   const [displayName, setDisplayName] = useState(() => localStorage.getItem("yieldos_display_name") || "");
   const [showAccount, setShowAccount] = useState(false);
+  // Theme — "dark" (default) or "light". Applied by writing a data-theme
+  // attribute onto <html>, which flips the CSS variables in index.html. We
+  // cache in localStorage for instant paint on reload and mirror to Supabase
+  // user_metadata so the pref follows across devices.
+  const [theme, setTheme] = useState(() => {
+    try {
+      const t = localStorage.getItem("yieldos_theme");
+      return t === "light" ? "light" : "dark";
+    } catch { return "dark"; }
+  });
   const [alertReads, setAlertReads] = useState(() => {
     try { return JSON.parse(localStorage.getItem("yieldos_alert_reads")||"{}"); } catch { return {}; }
   });
@@ -822,6 +832,16 @@ export default function AppMain() {
   const chatEnd = useRef(null);
   useEffect(() => { localStorage.setItem("yieldos_fire_contribution", String(fireContribution)); }, [fireContribution]);
   useEffect(() => { localStorage.setItem("yieldos_fire_growth", String(fireGrowth)); }, [fireGrowth]);
+  // Apply the chosen theme to <html data-theme=...> so the CSS variables in
+  // index.html flip. Runs on mount + whenever the toggle flips. Persist to
+  // localStorage for instant paint on next reload (no FOUC).
+  useEffect(() => {
+    try {
+      if (theme === "light") document.documentElement.setAttribute("data-theme", "light");
+      else                    document.documentElement.removeAttribute("data-theme");
+      localStorage.setItem("yieldos_theme", theme);
+    } catch {}
+  }, [theme]);
 
   const { active, visible, navigate, wrapStyle, busy } = useTabTransition("dashboard");
   // Always call the hook (React rules-of-hooks) — but in demo mode we ignore
@@ -963,6 +983,11 @@ export default function AppMain() {
         // User explicitly cleared their name; drop the cache so fallback kicks in.
         setDisplayName("");
         try { localStorage.removeItem("yieldos_display_name"); } catch {}
+      }
+      // Theme — hydrate from metadata so the user's preference follows them
+      // across devices. Only override if we've stored an explicit value.
+      if (meta.theme === "light" || meta.theme === "dark") {
+        setTheme(meta.theme);
       }
     };
 
@@ -2424,7 +2449,7 @@ export default function AppMain() {
         /* Skeleton loader — shimmer animation on gray placeholder blocks while
            data fetches. Perceived load time drops ~40% vs a blank screen. */
         .skeleton {
-          background: linear-gradient(90deg, #131925 0%, #1c2536 50%, #131925 100%);
+          background: linear-gradient(90deg, var(--card) 0%, var(--border) 50%, var(--card) 100%);
           background-size: 200% 100%;
           animation: skeletonShimmer 1.4s ease-in-out infinite;
           border-radius: 6px;
@@ -2645,6 +2670,14 @@ export default function AppMain() {
         <AccountModal
           user={user}
           currentDisplayName={displayName}
+          theme={theme}
+          onThemeChange={(next) => {
+            // Flip locally right away so the UI responds instantly; the modal
+            // doesn't have to close first. Also persist to Supabase so the pref
+            // follows them across devices.
+            setTheme(next);
+            supabase.auth.updateUser({ data: { theme: next } }).catch(()=>{});
+          }}
           onClose={()=>setShowAccount(false)}
           onSave={(newName, updatedUser) => {
             // Update local state immediately so the greeting re-renders before

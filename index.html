@@ -47,8 +47,35 @@
       }
     </script>
     <style>
-      html, body { background: #080b10; color: #f1f5f9; margin: 0; padding: 0; overflow-x: hidden; -webkit-font-smoothing: antialiased; }
-      #root { background: #080b10; min-height: 100vh; }
+      /* ── Theme tokens ──────────────────────────────────────────────
+         Dark is the default. Light mode is opt-in via data-theme="light"
+         on the <html> element, toggled by the Settings modal. Accent
+         colors (blue/emerald/gold/red) don't change between themes —
+         only the surface + text layers flip. Keeping the accent palette
+         fixed means charts, chips, and focus rings stay recognizable
+         across themes without a full redesign. */
+      :root {
+        --bg:         #080b10;
+        --surface:    #0f1420;
+        --card:       #131925;
+        --border:     #1c2536;
+        --text:       #f1f5f9;
+        --text-sub:   #94a3b8;
+        --text-muted: #4a5568;
+        --blue-glow:  rgba(79,142,247,0.12);
+      }
+      html[data-theme="light"] {
+        --bg:         #f5f7fa;
+        --surface:    #ffffff;
+        --card:       #ffffff;
+        --border:     #e2e8f0;
+        --text:       #0f172a;
+        --text-sub:   #475569;
+        --text-muted: #94a3b8;
+        --blue-glow:  rgba(79,142,247,0.10);
+      }
+      html, body { background: var(--bg); color: var(--text); margin: 0; padding: 0; overflow-x: hidden; -webkit-font-smoothing: antialiased; transition: background 0.2s ease; }
+      #root { background: var(--bg); min-height: 100vh; }
       * { -webkit-tap-highlight-color: transparent; }
 
       /* ── Tablet (≤900px) ─────────────────────────────────────────── */

@@ -8,9 +8,9 @@
 // to render this component.
 
 const C = {
-  bg:"#080b10", surface:"#0f1420", card:"#131925",
-  border:"#1c2536", blue:"#4f8ef7", emerald:"#34d399",
-  text:"#f1f5f9", textSub:"#94a3b8", textMuted:"#4a5568",
+  bg:"var(--bg)", surface:"var(--surface)", card:"var(--card)",
+  border:"var(--border)", blue:"#4f8ef7", emerald:"#34d399",
+  text:"var(--text)", textSub:"var(--text-sub)", textMuted:"var(--text-muted)",
 };
 
 function Section({ n, title, children }) {

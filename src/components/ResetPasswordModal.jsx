@@ -6,9 +6,9 @@ import { supabase } from '../lib/supabase'
 // session, and fires `PASSWORD_RECOVERY` on onAuthStateChange — which App.jsx
 // listens for and flips the modal open.
 const C = {
-  surface: "#0f1420", card: "#131925",
-  border: "#1c2536", blue: "#4f8ef7", emerald: "#34d399",
-  red: "#f87171", text: "#f1f5f9", textSub: "#94a3b8",
+  surface: "var(--surface)", card: "var(--card)",
+  border: "var(--border)", blue: "#4f8ef7", emerald: "#34d399",
+  red: "#f87171", text: "var(--text)", textSub: "var(--text-sub)",
 }
 
 const inp = {

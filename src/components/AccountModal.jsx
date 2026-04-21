@@ -8,13 +8,13 @@ import { supabase } from '../lib/supabase'
 // them across tabs.
 
 const C = {
-  bg:"#080b10", surface:"#0f1420", card:"#131925",
-  border:"#1c2536", blue:"#4f8ef7", emerald:"#34d399",
-  red:"#f87171", text:"#f1f5f9", textSub:"#94a3b8", textMuted:"#4a5568",
-  blueGlow:"rgba(79,142,247,0.12)",
+  bg:"var(--bg)", surface:"var(--surface)", card:"var(--card)",
+  border:"var(--border)", blue:"#4f8ef7", emerald:"#34d399",
+  red:"#f87171", text:"var(--text)", textSub:"var(--text-sub)", textMuted:"var(--text-muted)",
+  blueGlow:"var(--blue-glow)",
 }
 
-export default function AccountModal({ user, currentDisplayName, onClose, onSave }) {
+export default function AccountModal({ user, currentDisplayName, theme = 'dark', onThemeChange, onClose, onSave }) {
   const [displayName, setDisplayName] = useState(currentDisplayName || '')
   const [saving, setSaving] = useState(false)
   const [error, setError]   = useState('')
@@ -82,6 +82,48 @@ export default function AccountModal({ user, currentDisplayName, onClose, onSave
           />
           <div style={{fontSize:10,color:C.textMuted,marginTop:6}}>
             Can't change this here. Contact hello@yieldos.app if you need to update it.
+          </div>
+        </div>
+
+        {/* Appearance — dark (default) vs light. Flips a data-theme attribute
+            on <html> via the onThemeChange handler in AppMain; CSS variables
+            in index.html do the rest. Preference is mirrored to Supabase so
+            it follows the user across devices. */}
+        <div style={{marginBottom:20}}>
+          <div style={{fontSize:11,color:C.textMuted,fontWeight:600,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:8}}>Appearance</div>
+          <div style={{display:"flex",gap:8}}>
+            {[
+              { id:'dark',  label:'Dark',  icon:'●', hint:'Default' },
+              { id:'light', label:'Light', icon:'○', hint:'Easier in daylight' },
+            ].map(opt => {
+              const selected = theme === opt.id
+              return (
+                <button
+                  key={opt.id}
+                  onClick={() => onThemeChange?.(opt.id)}
+                  style={{
+                    flex:1,
+                    background: selected ? C.blueGlow : "transparent",
+                    border: `1px solid ${selected ? C.blue : C.border}`,
+                    borderRadius: 10,
+                    padding: "12px 10px",
+                    cursor: "pointer",
+                    color: C.text,
+                    fontFamily: "inherit",
+                    textAlign: "left",
+                    transition: "border 0.18s, background 0.18s",
+                  }}>
+                  <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:3}}>
+                    <span style={{fontSize:14,color:selected?C.blue:C.textSub}}>{opt.icon}</span>
+                    <span style={{fontSize:13,fontWeight:600}}>{opt.label}</span>
+                  </div>
+                  <div style={{fontSize:10,color:C.textMuted,lineHeight:1.4}}>{opt.hint}</div>
+                </button>
+              )
+            })}
+          </div>
+          <div style={{fontSize:10,color:C.textMuted,marginTop:6,lineHeight:1.5}}>
+            Theme applies across the whole app and syncs to your other devices.
           </div>
         </div>
 
