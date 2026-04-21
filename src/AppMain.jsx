@@ -483,16 +483,12 @@ function Landing({ onEnter, onPickPlan, onDemo, onFeedback }) {
       <div style={{overflow:"hidden",borderTop:`1px solid ${C.border}`,borderBottom:`1px solid ${C.border}`,padding:"14px 0",background:C.surface,margin:"40px 0 72px"}}>
         <div style={{display:"flex",alignItems:"center",gap:40,maxWidth:1100,margin:"0 auto",padding:"0 24px",flexWrap:"wrap",justifyContent:"center"}}>
           <span style={{fontSize:10,color:C.textMuted,fontWeight:600,letterSpacing:"0.12em"}}>IMPORT YOUR PORTFOLIO FROM</span>
-          {/* Fidelity + Schwab are the two brokers our audience talks about
-              most (Schwab for SCHD, Fidelity for retail reach), so they get
-              the emerald accent to pull the eye. Same green the app uses for
-              A-grade safety chips — keeps the palette tight. */}
-          {["Fidelity","Charles Schwab","Vanguard","E*TRADE","TD Ameritrade","Robinhood"].map((n,i)=>{
-            const highlight = n === "Fidelity" || n === "Charles Schwab";
-            return (
-              <span key={i} style={{fontSize:13,color:highlight?C.emerald:C.textSub,fontWeight:highlight?700:600,letterSpacing:"-0.01em"}}>{n}</span>
-            );
-          })}
+          {/* All broker names rendered in emerald — same green the app uses
+              for A-grade safety chips. Pulls the eye down to the "import
+              from your broker" affordance without introducing a new color. */}
+          {["Fidelity","Charles Schwab","Vanguard","E*TRADE","TD Ameritrade","Robinhood"].map((n,i)=>(
+            <span key={i} style={{fontSize:13,color:C.emerald,fontWeight:700,letterSpacing:"-0.01em"}}>{n}</span>
+          ))}
         </div>
       </div>
 
