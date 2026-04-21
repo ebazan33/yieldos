@@ -2334,14 +2334,39 @@ export default function AppMain() {
         @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.2}}
         ::-webkit-scrollbar{width:3px;height:3px;}
         ::-webkit-scrollbar-thumb{background:${C.border};border-radius:2px;}
+
+        /* In-app top nav — the tab strip has 9 tabs, way too many to fit on
+           a 375px phone. Desktop layout is a centered row; mobile layout
+           becomes a horizontally-scrollable strip with snap for each tab.
+           The user-info cluster hides its email username on small screens
+           so the avatar + sign-out still fit. */
+        .app-topbar{display:flex;align-items:center;justify-content:space-between;padding:0 22px;gap:12px;}
+        .app-tabs{display:flex;gap:2px;overflow-x:auto;overflow-y:hidden;scrollbar-width:none;-ms-overflow-style:none;flex:1;justify-content:center;}
+        .app-tabs::-webkit-scrollbar{display:none;}
+        .app-tabs button{white-space:nowrap;flex-shrink:0;scroll-snap-align:start;}
+        @media (max-width: 820px) {
+          /* Drop the centered layout — nav needs every horizontal pixel it
+             can get. Logo shrinks, email username hides, nav scrolls. */
+          .app-topbar{padding:0 12px;gap:8px;}
+          .app-topbar-logo-text{display:none;}
+          .app-tabs{justify-content:flex-start;scroll-snap-type:x proximity;}
+          .app-tabs button{padding:6px 10px!important;font-size:10px!important;letter-spacing:0.02em!important;}
+          .app-userblock-email{display:none;}
+          .app-userblock-signout{padding:5px 8px!important;}
+        }
+        @media (max-width: 480px) {
+          /* Phone-sized: every pixel counts. Chip can be tiny, sign-out becomes icon-ish. */
+          .app-topbar{padding:0 8px;}
+          .app-tabs button{padding:5px 8px!important;font-size:9.5px!important;}
+        }
       `}</style>
 
-      <div style={{height:54,borderBottom:`1px solid ${C.border}`,display:"flex",alignItems:"center",justifyContent:"space-between",padding:"0 22px",position:"sticky",top:0,zIndex:40,background:"rgba(8,11,16,0.96)",backdropFilter:"blur(16px)"}}>
-        <div style={{display:"flex",alignItems:"center",gap:10,cursor:"pointer"}} onClick={()=>setPage("home")}>
+      <div className="app-topbar" style={{height:54,borderBottom:`1px solid ${C.border}`,position:"sticky",top:0,zIndex:40,background:"rgba(8,11,16,0.96)",backdropFilter:"blur(16px)"}}>
+        <div style={{display:"flex",alignItems:"center",gap:10,cursor:"pointer",flexShrink:0}} onClick={()=>setPage("home")}>
           <svg width="26" height="26" viewBox="0 0 28 28"><rect width="28" height="28" rx="7" fill={C.blue}/><path d="M8 20 L14 8 L20 20" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" fill="none"/><circle cx="14" cy="17" r="2" fill="#fff"/></svg>
-          <span style={{fontFamily:"'Fraunces',serif",fontWeight:700,fontSize:16,letterSpacing:"-0.01em"}}>YieldOS</span>
+          <span className="app-topbar-logo-text" style={{fontFamily:"'Fraunces',serif",fontWeight:700,fontSize:16,letterSpacing:"-0.01em"}}>YieldOS</span>
         </div>
-        <nav style={{display:"flex",gap:2}}>
+        <nav className="app-tabs">
           {TABS.map(t=>(
             <button key={t} onClick={()=>navigate(t)}
               style={{background:active===t?C.blueGlow:"none",border:active===t?`1px solid ${C.blue}25`:"1px solid transparent",cursor:"pointer",fontFamily:"inherit",fontSize:11,fontWeight:600,letterSpacing:"0.04em",textTransform:"uppercase",padding:"6px 13px",borderRadius:7,color:active===t?C.blue:C.textMuted,position:"relative",transition:"color 0.15s, background 0.15s"}}>
@@ -2350,7 +2375,7 @@ export default function AppMain() {
             </button>
           ))}
         </nav>
-        <div style={{display:"flex",alignItems:"center",gap:10}}>
+        <div style={{display:"flex",alignItems:"center",gap:10,flexShrink:0}}>
           {demoMode
             ? <Chip color={C.gold}>DEMO</Chip>
             : <Chip color={plan==="Harvest"?C.gold:plan==="Grow"?C.blue:C.textMuted}>{plan}</Chip>}
@@ -2369,8 +2394,8 @@ export default function AppMain() {
                   <div title={user.email} style={{width:26,height:26,borderRadius:"50%",background:bg,color:"#fff",display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,fontWeight:700,letterSpacing:"0.02em",flexShrink:0}}>{initial}</div>
                 );
               })()}
-              <span style={{fontSize:11,color:C.textMuted}}>{user.email?.split("@")[0]}</span>
-              <button onClick={handleSignOut} style={{background:"transparent",color:C.textSub,border:`1px solid ${C.border}`,borderRadius:9,cursor:"pointer",fontFamily:"inherit",fontSize:10,fontWeight:500,padding:"5px 10px"}}>Sign out</button>
+              <span className="app-userblock-email" style={{fontSize:11,color:C.textMuted}}>{user.email?.split("@")[0]}</span>
+              <button className="app-userblock-signout" onClick={handleSignOut} style={{background:"transparent",color:C.textSub,border:`1px solid ${C.border}`,borderRadius:9,cursor:"pointer",fontFamily:"inherit",fontSize:10,fontWeight:500,padding:"5px 10px"}}>Sign out</button>
             </div>
           )}
           {demoMode&&(
