@@ -483,11 +483,12 @@ function Landing({ onEnter, onPickPlan, onDemo, onFeedback }) {
       <div style={{overflow:"hidden",borderTop:`1px solid ${C.border}`,borderBottom:`1px solid ${C.border}`,padding:"14px 0",background:C.surface,margin:"40px 0 72px"}}>
         <div style={{display:"flex",alignItems:"center",gap:40,maxWidth:1100,margin:"0 auto",padding:"0 24px",flexWrap:"wrap",justifyContent:"center"}}>
           <span style={{fontSize:10,color:C.textMuted,fontWeight:600,letterSpacing:"0.12em"}}>IMPORT YOUR PORTFOLIO FROM</span>
-          {/* All broker names rendered in emerald — same green the app uses
-              for A-grade safety chips. Pulls the eye down to the "import
-              from your broker" affordance without introducing a new color. */}
+          {/* Deeper emerald (#10b981) rather than the bright A+/safety green —
+              a row of six names in the brighter shade felt neon. This reads
+              more "serious finance" while still clearly saying "we support
+              your broker." Weight stays at 600 to match the rest of the page. */}
           {["Fidelity","Charles Schwab","Vanguard","E*TRADE","TD Ameritrade","Robinhood"].map((n,i)=>(
-            <span key={i} style={{fontSize:13,color:C.emerald,fontWeight:700,letterSpacing:"-0.01em"}}>{n}</span>
+            <span key={i} style={{fontSize:13,color:"#10b981",fontWeight:600,letterSpacing:"-0.01em"}}>{n}</span>
           ))}
         </div>
       </div>
