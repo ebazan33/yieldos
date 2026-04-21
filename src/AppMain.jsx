@@ -326,8 +326,13 @@ function Landing({ onEnter, onPickPlan, onDemo, onFeedback }) {
         .fcard:hover{border-color:${C.blue}40;transform:translateY(-3px);}
         .diffcard{background:linear-gradient(180deg,${C.card},${C.surface});border:1px solid ${C.border};border-radius:16px;padding:26px;transition:all 0.25s;position:relative;overflow:hidden;}
         .diffcard:hover{border-color:${C.emerald}40;transform:translateY(-4px);box-shadow:0 18px 40px -24px ${C.emerald}40;}
-        .pricecol{background:${C.card};border:1px solid ${C.border};border-radius:16px;padding:28px 26px;display:flex;flex-direction:column;gap:14px;transition:all 0.25s;}
+        .pricecol{background:${C.card};border:1px solid ${C.border};border-radius:16px;padding:28px 26px;display:flex;flex-direction:column;gap:14px;transition:all 0.25s;position:relative;}
         .pricecol.pop{border-color:${C.blue}80;box-shadow:0 0 0 1px ${C.blue}35 inset, 0 22px 60px -28px ${C.blue}80;transform:translateY(-6px);}
+        .pricecol ul.features{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:9px;}
+        .pricecol ul.features li{display:flex;align-items:flex-start;gap:10px;font-size:12.5px;color:${C.textSub};line-height:1.45;}
+        .pricecol ul.features li .check{color:${C.emerald};font-weight:800;flex-shrink:0;margin-top:1px;}
+        .pricecol ul.features li .more{color:${C.textMuted};font-style:italic;}
+        .pricecol .tier-divider{height:1px;background:${C.border};margin:4px 0 2px;}
         ::-webkit-scrollbar{width:3px;} ::-webkit-scrollbar-thumb{background:${C.border};border-radius:2px;}
 
         /* Landing-page responsive grids. Default = desktop. Mobile media
@@ -356,6 +361,16 @@ function Landing({ onEnter, onPickPlan, onDemo, onFeedback }) {
           .landing-nav-links a.nav-anchor{display:none;}
           /* Shrink the CTA padding/text so it never clips on narrow phones */
           .landing-nav-links button{padding:8px 14px!important;font-size:11px!important;}
+          /* Hide the 4-col comparison matrix on phones — it becomes unreadable
+             when 4 columns try to fit in <640px. The self-contained per-tier
+             feature lists inside each .pricecol card carry the info instead. */
+          .pricing-matrix{display:none!important;}
+        }
+        /* On desktop/tablet we keep the matrix visible and hide the in-card
+           feature lists (matrix is the cleaner side-by-side comparison there). */
+        @media (min-width: 641px) {
+          .pricecol ul.features{display:none;}
+          .pricecol .tier-divider{display:none;}
         }
       `}</style>
       <nav className="landing-nav" style={{borderBottom:`1px solid ${C.border}`,backdropFilter:"blur(16px)",position:"sticky",top:0,zIndex:50,background:"rgba(8,11,16,0.92)"}}>
@@ -521,7 +536,15 @@ function Landing({ onEnter, onPickPlan, onDemo, onFeedback }) {
                 <div style={{fontFamily:"'Fraunces',serif",fontSize:44,fontWeight:800,letterSpacing:"-0.02em",lineHeight:1}}>$0<span style={{fontSize:14,color:C.textSub,fontWeight:500,marginLeft:6}}>/forever</span></div>
                 <p style={{fontSize:12,color:C.textSub,marginTop:10,lineHeight:1.6}}>Kick the tires. Track up to 5 holdings with the full income-first dashboard.</p>
               </div>
-              <button onClick={()=>onPickPlan?.("Seed", annual?"annual":"monthly")||onEnter()} style={{background:"transparent",color:C.text,border:`1px solid ${C.border}`,borderRadius:10,padding:"12px",fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>Start for free</button>
+              <div className="tier-divider"/>
+              <ul className="features">
+                <li><span className="check">✓</span>Up to <b style={{color:C.text}}>5 holdings</b></li>
+                <li><span className="check">✓</span>Income-first dashboard</li>
+                <li><span className="check">✓</span>Brokerage CSV import</li>
+                <li><span className="check">✓</span>Path to FIRE <span style={{color:C.textMuted}}>(preview)</span></li>
+                <li><span className="more">Upgrade for AI, alerts, and unlimited holdings</span></li>
+              </ul>
+              <button onClick={()=>onPickPlan?.("Seed", annual?"annual":"monthly")||onEnter()} style={{background:"transparent",color:C.text,border:`1px solid ${C.border}`,borderRadius:10,padding:"12px",fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit",marginTop:"auto"}}>Start for free</button>
             </div>
 
             {/* Grow — popular */}
@@ -531,9 +554,22 @@ function Landing({ onEnter, onPickPlan, onDemo, onFeedback }) {
                 <div style={{fontSize:11,color:C.blue,fontWeight:700,letterSpacing:"0.1em",marginBottom:8}}>GROW</div>
                 <div style={{fontFamily:"'Fraunces',serif",fontSize:44,fontWeight:800,letterSpacing:"-0.02em",lineHeight:1}}>{growDisplay}<span style={{fontSize:14,color:C.textSub,fontWeight:500,marginLeft:6}}>/mo</span></div>
                 <div style={{fontSize:11,color:C.textMuted,marginTop:4}}>{annual?`Billed $${growAnnual}/year`:"Billed monthly"}</div>
-                <p style={{fontSize:12,color:C.textSub,marginTop:10,lineHeight:1.6}}>Everything you need: unlimited holdings, FIRE projection, Daily Briefing, AI insights, paycheck calendar.</p>
+                <p style={{fontSize:12,color:C.textSub,marginTop:10,lineHeight:1.6}}>Everything you need to run a real income portfolio.</p>
               </div>
-              <button onClick={()=>onPickPlan?.("Grow", annual?"annual":"monthly")||onEnter()} style={{...cta,padding:"12px",fontSize:13,width:"100%"}}>Start 14-day free trial →</button>
+              <div className="tier-divider"/>
+              <ul className="features">
+                <li><span className="check">✓</span><b style={{color:C.text}}>Everything in Seed</b>, plus:</li>
+                <li><span className="check">✓</span><b style={{color:C.text}}>Unlimited holdings</b></li>
+                <li><span className="check">✓</span>Paycheck Calendar</li>
+                <li><span className="check">✓</span>Full Path to FIRE projection</li>
+                <li><span className="check">✓</span>Daily AI Briefing</li>
+                <li><span className="check">✓</span>AI Portfolio Insights</li>
+                <li><span className="check">✓</span>Smart Alerts (cuts, goals)</li>
+                <li><span className="check">✓</span>Stock Screener</li>
+                <li><span className="check">✓</span>Income Goal Tracker</li>
+                <li><span className="check">✓</span>Tax Estimator</li>
+              </ul>
+              <button onClick={()=>onPickPlan?.("Grow", annual?"annual":"monthly")||onEnter()} style={{...cta,padding:"12px",fontSize:13,width:"100%",marginTop:"auto"}}>Start 14-day free trial →</button>
             </div>
 
             {/* Harvest */}
@@ -542,14 +578,23 @@ function Landing({ onEnter, onPickPlan, onDemo, onFeedback }) {
                 <div style={{fontSize:11,color:C.gold,fontWeight:700,letterSpacing:"0.1em",marginBottom:8}}>HARVEST</div>
                 <div style={{fontFamily:"'Fraunces',serif",fontSize:44,fontWeight:800,letterSpacing:"-0.02em",lineHeight:1}}>{harvestDisplay}<span style={{fontSize:14,color:C.textSub,fontWeight:500,marginLeft:6}}>/mo</span></div>
                 <div style={{fontSize:11,color:C.textMuted,marginTop:4}}>{annual?`Billed $${harvestAnnual}/year`:"Billed monthly"}</div>
-                <p style={{fontSize:12,color:C.textSub,marginTop:10,lineHeight:1.6}}>For investors running real portfolios: advanced screener, rebalance ideas, exports, email alerts, priority support.</p>
+                <p style={{fontSize:12,color:C.textSub,marginTop:10,lineHeight:1.6}}>For investors running real portfolios who want the full toolkit.</p>
               </div>
-              <button onClick={()=>onPickPlan?.("Harvest", annual?"annual":"monthly")||onEnter()} style={{background:C.gold,color:"#0b0b0b",border:"none",borderRadius:10,padding:"12px",fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>Go Harvest →</button>
+              <div className="tier-divider"/>
+              <ul className="features">
+                <li><span className="check">✓</span><b style={{color:C.text}}>Everything in Grow</b>, plus:</li>
+                <li><span className="check">✓</span>Advanced screener filters</li>
+                <li><span className="check">✓</span>Rebalance Ideas</li>
+                <li><span className="check">✓</span>CSV + PDF export</li>
+                <li><span className="check">✓</span>Email alerts</li>
+                <li><span className="check">✓</span>Priority support</li>
+              </ul>
+              <button onClick={()=>onPickPlan?.("Harvest", annual?"annual":"monthly")||onEnter()} style={{background:C.gold,color:"#0b0b0b",border:"none",borderRadius:10,padding:"12px",fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:"inherit",marginTop:"auto"}}>Go Harvest →</button>
             </div>
           </div>
 
-          {/* Feature comparison matrix */}
-          <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:14,overflow:"hidden"}}>
+          {/* Feature comparison matrix — hidden on mobile via .pricing-matrix */}
+          <div className="pricing-matrix" style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:14,overflow:"hidden"}}>
             <div style={{display:"grid",gridTemplateColumns:"2fr 1fr 1fr 1fr",padding:"16px 22px",borderBottom:`1px solid ${C.border}`,background:C.surface}}>
               <div style={{fontSize:11,color:C.textMuted,fontWeight:700,letterSpacing:"0.1em"}}>WHAT'S INCLUDED</div>
               <div style={{fontSize:11,color:C.textSub,fontWeight:700,letterSpacing:"0.1em",textAlign:"center"}}>SEED</div>
