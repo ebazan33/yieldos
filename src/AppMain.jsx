@@ -259,7 +259,7 @@ function Typing({ text }) {
   return <span>{d}{!done&&<span style={{color:C.blue,animation:"blink 0.9s infinite"}}>|</span>}</span>;
 }
 
-function Landing({ onEnter, onPickPlan, onDemo }) {
+function Landing({ onEnter, onPickPlan, onDemo, onFeedback }) {
   const [count,setCount]=useState(0);
   const [annual,setAnnual]=useState(true); // pricing toggle: true = annual (save), false = monthly
   useEffect(()=>{ const id=setInterval(()=>setCount(c=>c<2847?c+19:2847),14); return()=>clearInterval(id); },[]);
@@ -599,12 +599,42 @@ function Landing({ onEnter, onPickPlan, onDemo }) {
         <p style={{marginTop:16,fontSize:11,color:C.textMuted}}>Join {count.toLocaleString()}+ investors who stopped guessing when they'd be free.</p>
       </div>
 
+      {/* ── Help / Support strip ─────────────────────────────────────────────
+          Three clear ways to reach out, surfaced *above* the legal footer so
+          visitors with a question don't have to scroll past tiny boilerplate
+          to find it. Email goes to hello@yieldos.app (Resend handles outbound,
+          ImprovMX handles inbound forwarding to Elian's personal inbox). ── */}
+      <div style={{borderTop:`1px solid ${C.border}`,padding:"36px 48px 28px",background:C.surface}}>
+        <div style={{maxWidth:1100,margin:"0 auto",display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(220px,1fr))",gap:18}}>
+          <div>
+            <div style={{fontSize:11,color:C.textMuted,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:10}}>Need help?</div>
+            <a href="mailto:hello@yieldos.app?subject=YieldOS%20question" style={{display:"block",fontSize:13,color:C.text,textDecoration:"none",marginBottom:8,fontWeight:500}}>📧 Email us — hello@yieldos.app</a>
+            <a href="#feedback" onClick={(e)=>{e.preventDefault(); onFeedback && onFeedback();}} style={{display:"block",fontSize:13,color:C.text,textDecoration:"none",marginBottom:8,fontWeight:500,cursor:"pointer"}}>💬 Send feedback (in-app)</a>
+            <div style={{fontSize:11,color:C.textMuted,marginTop:6}}>I read every message myself, usually within 24 hours.</div>
+          </div>
+          <div>
+            <div style={{fontSize:11,color:C.textMuted,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:10}}>Quick answers</div>
+            <a href="#pricing" style={{display:"block",fontSize:12,color:C.textSub,textDecoration:"none",marginBottom:6}}>How much does it cost?</a>
+            <a href="#" onClick={(e)=>{e.preventDefault(); onDemo && onDemo();}} style={{display:"block",fontSize:12,color:C.textSub,textDecoration:"none",marginBottom:6,cursor:"pointer"}}>Can I try it before signing up?</a>
+            <a href="mailto:hello@yieldos.app?subject=Brokerage%20import%20question" style={{display:"block",fontSize:12,color:C.textSub,textDecoration:"none",marginBottom:6}}>Does it work with my broker?</a>
+            <a href="mailto:hello@yieldos.app?subject=Data%20safety%20question" style={{display:"block",fontSize:12,color:C.textSub,textDecoration:"none",marginBottom:6}}>How do you handle my data?</a>
+          </div>
+          <div>
+            <div style={{fontSize:11,color:C.textMuted,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:10}}>Product</div>
+            <a href="#differentiators" style={{display:"block",fontSize:12,color:C.textSub,textDecoration:"none",marginBottom:6}}>Why YieldOS</a>
+            <a href="#pricing" style={{display:"block",fontSize:12,color:C.textSub,textDecoration:"none",marginBottom:6}}>Pricing</a>
+            <a href="#" onClick={(e)=>{e.preventDefault(); onDemo && onDemo();}} style={{display:"block",fontSize:12,color:C.textSub,textDecoration:"none",marginBottom:6,cursor:"pointer"}}>Live demo →</a>
+          </div>
+        </div>
+      </div>
+
       {/* Footer + disclaimer */}
       <div style={{borderTop:`1px solid ${C.border}`,padding:"22px 48px 14px",display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:10}}>
         <span style={{fontFamily:"'Fraunces',serif",fontWeight:700,fontSize:14}}>YieldOS</span>
         <div style={{display:"flex",alignItems:"center",gap:16,flexWrap:"wrap"}}>
           <a href="#privacy" style={{fontSize:11,color:C.textSub,textDecoration:"none"}}>Privacy</a>
           <a href="#terms"   style={{fontSize:11,color:C.textSub,textDecoration:"none"}}>Terms</a>
+          <a href="mailto:hello@yieldos.app" style={{fontSize:11,color:C.textSub,textDecoration:"none"}}>Contact</a>
           <span style={{fontSize:11,color:C.textMuted}}>© 2026 YieldOS · Built for passive income investors</span>
         </div>
       </div>
@@ -1038,12 +1068,14 @@ export default function AppMain() {
       <Landing
         onEnter={()=>{ setPendingPlan(null); setShowAuth(true); }}
         onDemo={()=>{ setDemoMode(true); setPage("app"); }}
+        onFeedback={()=>setShowFeedback(true)}
         onPickPlan={(plan,cycle)=>{
           setPlanCycle(cycle);
           if (plan === "Seed") { setPendingPlan(null); setShowAuth(true); }
           else { setPendingPlan({ plan, cycle }); setShowAuth(true); }
         }}
       />
+      {showFeedback && <FeedbackModal onClose={()=>setShowFeedback(false)} user={user} page="landing" plan={plan} />}
       {showAuth && <AuthModal
         onClose={()=>setShowAuth(false)}
         onAuth={(u)=>{
