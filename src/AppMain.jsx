@@ -1739,10 +1739,21 @@ export default function AppMain() {
                   <div style={{fontSize:18}}>{seedAtCap?"🔒":"🌱"}</div>
                   <div>
                     <div style={{fontSize:13,fontWeight:600,color:C.text,marginBottom:2}}>
-                      {seedAtCap ? `You've hit the Seed limit (${SEED_HOLDING_CAP} holdings).` : `Seed plan · ${holdings.length} of ${SEED_HOLDING_CAP} holdings`}
+                      {/* Grandfathered users (trial ended with >5 holdings) see a different headline
+                          so it doesn't read like they only have 5. Below-cap and exactly-at-cap
+                          users see the usual "X of 5" progress / "hit the limit" wording. */}
+                      {seedAtCap
+                        ? (holdings.length > SEED_HOLDING_CAP
+                            ? `Trial ended — you have ${holdings.length} holdings, Seed allows ${SEED_HOLDING_CAP}.`
+                            : `You've hit the Seed limit (${SEED_HOLDING_CAP} holdings).`)
+                        : `Seed plan · ${holdings.length} of ${SEED_HOLDING_CAP} holdings`}
                     </div>
                     <div style={{fontSize:11,color:C.textSub}}>
-                      {seedAtCap ? "Upgrade to Grow for unlimited holdings, AI insights, paycheck calendar, and more." : `${SEED_HOLDING_CAP - holdings.length} slot${SEED_HOLDING_CAP-holdings.length===1?"":"s"} left. Upgrade any time for unlimited.`}
+                      {seedAtCap
+                        ? (holdings.length > SEED_HOLDING_CAP
+                            ? "Your existing holdings stay visible, but you can't add new ones. Upgrade to Grow for unlimited, plus AI insights and paycheck calendar."
+                            : "Upgrade to Grow for unlimited holdings, AI insights, paycheck calendar, and more.")
+                        : `${SEED_HOLDING_CAP - holdings.length} slot${SEED_HOLDING_CAP-holdings.length===1?"":"s"} left. Upgrade any time for unlimited.`}
                     </div>
                   </div>
                 </div>
