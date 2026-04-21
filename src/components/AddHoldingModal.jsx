@@ -19,7 +19,15 @@ export default function AddHoldingModal({ onClose, onAdd, prefillTicker }) {
   const [searching, setSearching] = useState(false)
   const [loading, setLoading]     = useState(false)
   const [error, setError]         = useState('')
+  // "Rapid-fire" mode: after a successful add, we clear the form and
+  // refocus the search so the user can keep going. We track what's been
+  // added this session both to acknowledge the add ("✓ SCHD added") and
+  // to show the running count in the footer.
+  const [justAdded, setJustAdded] = useState('')   // last-added ticker, for 2s toast
+  const [addedList, setAddedList] = useState([])   // tickers added this session
   const debounce = useRef(null)
+  const searchRef = useRef(null)
+  const toastTimer = useRef(null)
 
   useEffect(() => {
     if (query.length < 1) { setResults([]); return }
@@ -59,8 +67,9 @@ export default function AddHoldingModal({ onClose, onAdd, prefillTicker }) {
   async function handleAdd() {
     if (!selected || !shares || !yld) { setError('Please fill in all fields'); return }
     setError('')
+    const addedTicker = selected.ticker
     const holding = {
-      ticker:   selected.ticker,
+      ticker:   addedTicker,
       name:     selected.name,
       price:    selected.price,
       shares:   parseFloat(shares),
@@ -71,8 +80,31 @@ export default function AddHoldingModal({ onClose, onAdd, prefillTicker }) {
       next_div: selected.nextDiv || 'TBD',
     }
     const { error } = await onAdd(holding)
-    if (error) { setError('Failed to save. Try again.'); return }
-    onClose()
+    if (error) {
+      // If useHoldings returned a specific error (e.g. Seed 5-holding cap),
+      // surface it directly so the user understands what went wrong.
+      setError(typeof error === 'string' ? error : (error.message || 'Failed to save. Try again.'))
+      return
+    }
+
+    // Rapid-fire mode: clear the form, keep frequency, drop a toast, refocus
+    // the search input so the user can slam in another ticker.
+    setAddedList(prev => [...prev, addedTicker])
+    setJustAdded(addedTicker)
+    setQuery('')
+    setResults([])
+    setSelected(null)
+    setShares('')
+    setYld('')
+    // Frequency intentionally persists — if someone's loading up a monthly-div
+    // portfolio (JEPI, O, MAIN), they don't want to re-pick "Monthly" every time.
+
+    // Clear any previous toast timer so multiple rapid adds don't overlap
+    clearTimeout(toastTimer.current)
+    toastTimer.current = setTimeout(() => setJustAdded(''), 2200)
+
+    // Refocus search so the next keystroke starts a new ticker lookup
+    setTimeout(() => { searchRef.current?.focus() }, 50)
   }
 
   const inp = { background:C.surface, border:`1px solid ${C.border}`, borderRadius:9, color:C.text, fontFamily:"inherit", fontSize:13, padding:"10px 14px", outline:"none", width:"100%", transition:"border 0.18s" }
@@ -80,12 +112,38 @@ export default function AddHoldingModal({ onClose, onAdd, prefillTicker }) {
   return (
     <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.88)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:100,backdropFilter:"blur(8px)"}} onClick={onClose}>
       <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:16,padding:32,maxWidth:480,width:"90%",maxHeight:"90vh",overflowY:"auto"}} onClick={e=>e.stopPropagation()}>
-        <div style={{fontFamily:"'Fraunces',serif",fontSize:20,fontWeight:700,marginBottom:4,letterSpacing:"-0.01em"}}>Add Holding</div>
-        <div style={{fontSize:12,color:C.textSub,marginBottom:24}}>Search for a stock, ETF, or REIT</div>
+        <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:4,gap:12}}>
+          <div>
+            <div style={{fontFamily:"'Fraunces',serif",fontSize:20,fontWeight:700,letterSpacing:"-0.01em"}}>Add Holding</div>
+            <div style={{fontSize:12,color:C.textSub,marginTop:2}}>
+              {addedList.length === 0
+                ? "Search for a stock, ETF, or REIT"
+                : `${addedList.length} added this session — keep going, or hit Done when finished`}
+            </div>
+          </div>
+          {/* Running list of tickers added — visible reinforcement that rapid-fire works */}
+          {addedList.length > 0 && (
+            <div style={{display:"flex",flexWrap:"wrap",gap:4,maxWidth:180,justifyContent:"flex-end"}}>
+              {addedList.slice(-6).map((t,i)=>(
+                <span key={i} style={{background:`${C.emerald}18`,color:C.emerald,border:`1px solid ${C.emerald}30`,borderRadius:5,padding:"2px 7px",fontSize:10,fontWeight:700,letterSpacing:"0.04em"}}>{t}</span>
+              ))}
+            </div>
+          )}
+        </div>
+        <div style={{marginBottom:20}}/>
+
+        {/* Just-added toast — fades after ~2s */}
+        {justAdded && (
+          <div style={{background:`${C.emerald}14`,border:`1px solid ${C.emerald}40`,borderRadius:9,padding:"10px 14px",marginBottom:14,display:"flex",alignItems:"center",gap:8,animation:"fadein 0.18s ease"}}>
+            <span style={{color:C.emerald,fontWeight:800,fontSize:14}}>✓</span>
+            <span style={{fontSize:12,color:C.text}}><b style={{color:C.emerald}}>{justAdded}</b> added to your portfolio</span>
+          </div>
+        )}
 
         {/* Search */}
         <div style={{position:"relative",marginBottom:16}}>
           <input
+            ref={searchRef}
             style={inp}
             placeholder="Search ticker or company (e.g. SCHD, Apple...)"
             value={query}
@@ -177,14 +235,15 @@ export default function AddHoldingModal({ onClose, onAdd, prefillTicker }) {
         {error && <div style={{fontSize:12,color:C.red,marginBottom:12}}>{error}</div>}
 
         <div style={{display:"flex",gap:8}}>
-          <button onClick={onClose} style={{flex:1,background:"transparent",color:C.textSub,border:`1px solid ${C.border}`,borderRadius:9,cursor:"pointer",fontFamily:"inherit",fontSize:12,fontWeight:500,padding:"10px"}}>
-            Cancel
+          <button onClick={onClose} style={{flex:1,background:"transparent",color:addedList.length>0?C.text:C.textSub,border:`1px solid ${addedList.length>0?C.emerald+"60":C.border}`,borderRadius:9,cursor:"pointer",fontFamily:"inherit",fontSize:12,fontWeight:addedList.length>0?600:500,padding:"10px",transition:"all 0.15s"}}>
+            {addedList.length > 0 ? `Done (${addedList.length})` : 'Cancel'}
           </button>
           <button onClick={handleAdd} disabled={!selected||!shares||!yld}
-            style={{flex:2,background:C.blue,color:"#fff",border:"none",borderRadius:9,cursor:"pointer",fontFamily:"inherit",fontWeight:600,fontSize:13,padding:"10px",opacity:(!selected||!shares||!yld)?0.4:1,transition:"opacity 0.2s"}}>
-            Add to Portfolio
+            style={{flex:2,background:C.blue,color:"#fff",border:"none",borderRadius:9,cursor:(!selected||!shares||!yld)?"default":"pointer",fontFamily:"inherit",fontWeight:600,fontSize:13,padding:"10px",opacity:(!selected||!shares||!yld)?0.4:1,transition:"opacity 0.2s"}}>
+            {addedList.length === 0 ? 'Add to Portfolio' : 'Add another'}
           </button>
         </div>
+        <style>{`@keyframes fadein { from { opacity:0; transform:translateY(-4px);} to { opacity:1; transform:translateY(0);} }`}</style>
       </div>
     </div>
   )
