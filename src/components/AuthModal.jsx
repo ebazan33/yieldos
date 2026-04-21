@@ -50,7 +50,17 @@ export default function AuthModal({ onClose, onAuth }) {
     if (!email || !password) { setError('Please fill in all fields'); return }
     setLoading(true); setError(''); setSuccess('')
     if (mode === 'signup') {
-      const { error } = await supabase.auth.signUp({ email, password })
+      // Every new signup gets a 14-day full-access trial. The trial_ends_at
+      // timestamp lives on user_metadata; AppMain reads it on session hydration
+      // and computes effectivePlan = "Grow" while the trial is active, reverting
+      // to Seed after. We stamp plan: "Seed" too so the plan chip + localStorage
+      // default match from the first render onward.
+      const trialEndsAt = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString()
+      const { error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: { data: { plan: 'Seed', trial_ends_at: trialEndsAt } },
+      })
       if (error) { setError(error.message); setLoading(false); return }
       setSuccess('Check your email to confirm your account, then sign in!')
       setMode('signin')

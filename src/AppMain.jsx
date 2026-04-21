@@ -736,6 +736,11 @@ export default function AppMain() {
   const [page, setPage]             = useState(initialPage);
   const [user, setUser]             = useState(null);
   const [plan, setPlan]             = useState(() => localStorage.getItem("yieldos_plan") || "Seed");
+  // Trial expiry — ISO string or null. Set at signup (via AuthModal's signUp
+  // metadata), hydrated from user_metadata on session load, backfilled for
+  // existing Seed users via a one-shot SQL. Drives `trialActive` →
+  // `effectivePlan` so Seed users get Grow features during the trial.
+  const [trialEndsAt, setTrialEndsAt] = useState(() => localStorage.getItem("yieldos_trial_ends_at") || null);
   const [alertReads, setAlertReads] = useState(() => {
     try { return JSON.parse(localStorage.getItem("yieldos_alert_reads")||"{}"); } catch { return {}; }
   });
@@ -830,9 +835,20 @@ export default function AppMain() {
   };
   const { holdings, loading: holdLoading, refreshing, lastRefresh, addHolding, removeHolding, refreshAllPrices, getSnapshots } = demoMode ? demoHoldingsAPI : realHoldings;
 
-  const isPro     = demoMode ? true : (plan === "Grow" || plan === "Harvest"); // demo shows all pro features so visitors see the product
-  const isHarvest = demoMode ? true : (plan === "Harvest");
-  const seedAtCap = !demoMode && plan === "Seed" && holdings.length >= SEED_HOLDING_CAP;
+  // Trial gating. A Seed user with an unexpired trial_ends_at gets Grow-level
+  // access everywhere except UI that specifically says "you're on Seed" — the
+  // account chip still reads Seed so they don't get confused about what
+  // they'll revert to. Everything else (feature locks, cap, AI) reads
+  // effectivePlan.
+  const trialActive = !demoMode && !!trialEndsAt && new Date(trialEndsAt).getTime() > Date.now();
+  const trialDaysLeft = trialActive
+    ? Math.max(0, Math.ceil((new Date(trialEndsAt).getTime() - Date.now()) / (24 * 60 * 60 * 1000)))
+    : 0;
+  const effectivePlan = (plan === "Seed" && trialActive) ? "Grow" : plan;
+
+  const isPro     = demoMode ? true : (effectivePlan === "Grow" || effectivePlan === "Harvest"); // demo shows all pro features so visitors see the product
+  const isHarvest = demoMode ? true : (plan === "Harvest"); // Harvest is never granted by trial
+  const seedAtCap = !demoMode && effectivePlan === "Seed" && holdings.length >= SEED_HOLDING_CAP;
 
   // Live count ref — kept in sync with holdings.length via effect below, and
   // optimistically incremented/decremented on each gated add/remove. This is
@@ -857,7 +873,10 @@ export default function AppMain() {
       return { error: { message: "Sign up to save your portfolio." } };
     }
     // Guard reads from the ref, not state — state is stale during a burst.
-    if (plan === "Seed" && holdingsCountRef.current >= SEED_HOLDING_CAP) {
+    // We check effectivePlan so users inside their 14-day trial are treated
+    // as Grow and can add unlimited holdings. When the trial expires the
+    // effectivePlan collapses back to "Seed" and the cap kicks in again.
+    if (effectivePlan === "Seed" && holdingsCountRef.current >= SEED_HOLDING_CAP) {
       setShowAdd(false);
       setShowImport(false);
       openUpgrade("cap");
@@ -915,6 +934,15 @@ export default function AppMain() {
       if (meta.plan_cycle === "monthly" || meta.plan_cycle === "annual") {
         setPlanCycle(meta.plan_cycle);
       }
+      // Trial expiry — ISO string set at signup or via a one-time SQL backfill.
+      // We keep a localStorage copy so the very first render after a reload
+      // already knows trialActive before Supabase has responded with the
+      // session; otherwise UI would flash "cap reached" for a frame on slow
+      // connections.
+      if (typeof meta.trial_ends_at === "string") {
+        setTrialEndsAt(meta.trial_ends_at);
+        try { localStorage.setItem("yieldos_trial_ends_at", meta.trial_ends_at); } catch {}
+      }
     };
 
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -958,17 +986,18 @@ export default function AppMain() {
     return () => window.removeEventListener('keydown', handleKey);
   }, [page, showShortcuts, confirmState]);
 
-  // Write plan/cycle back to Supabase whenever they change, so the change
-  // persists across devices. Guarded to avoid a no-op update loop.
+  // Write plan/cycle/trial back to Supabase whenever any of them change, so
+  // the change persists across devices. Guarded to avoid a no-op update loop.
   useEffect(() => {
     if (!user) return;
     const meta = user.user_metadata || {};
-    if (meta.plan === plan && meta.plan_cycle === planCycle) return;
-    supabase.auth.updateUser({ data: { plan, plan_cycle: planCycle } })
+    const metaTrial = meta.trial_ends_at || null;
+    if (meta.plan === plan && meta.plan_cycle === planCycle && metaTrial === trialEndsAt) return;
+    supabase.auth.updateUser({ data: { plan, plan_cycle: planCycle, trial_ends_at: trialEndsAt } })
       .then(({ data, error }) => {
         if (!error && data?.user) setUser(data.user); // keep local user in sync
       });
-  }, [plan, planCycle, user]);
+  }, [plan, planCycle, trialEndsAt, user]);
 
   // Handle the redirect back from Stripe Checkout. If the URL says
   // ?checkout=success&plan=Grow, we upgrade the plan and pop a banner
@@ -982,6 +1011,12 @@ export default function AppMain() {
       justUpgradedRef.current = true;
       setPlan(ret.plan);
       if (ret.cycle === "monthly" || ret.cycle === "annual") setPlanCycle(ret.cycle);
+      // Consume the trial — they're now on a paid plan, no need for it. If
+      // they later cancel and revert to Seed, they'll go straight to the cap
+      // instead of getting a second 14-day freebie. The sync effect writes
+      // this null back to Supabase on the next render.
+      setTrialEndsAt(null);
+      try { localStorage.removeItem("yieldos_trial_ends_at"); } catch {}
     }
     setCheckoutBanner(ret);
     const t = setTimeout(() => setCheckoutBanner(null), 8000);
@@ -1674,24 +1709,48 @@ export default function AppMain() {
               </button>
             </div>
           </div>
-          {/* Seed cap banner — only visible on Seed, only once they have holdings */}
-          {plan==="Seed" && holdings.length>0 && (
-            <div style={{background:seedAtCap?`${C.gold}14`:C.card,border:`1px solid ${seedAtCap?`${C.gold}40`:C.border}`,borderRadius:12,padding:"12px 16px",marginBottom:14,display:"flex",alignItems:"center",justifyContent:"space-between",gap:14,flexWrap:"wrap"}}>
-              <div style={{display:"flex",alignItems:"center",gap:12}}>
-                <div style={{fontSize:18}}>{seedAtCap?"🔒":"🌱"}</div>
-                <div>
-                  <div style={{fontSize:13,fontWeight:600,color:C.text,marginBottom:2}}>
-                    {seedAtCap ? `You've hit the Seed limit (${SEED_HOLDING_CAP} holdings).` : `Seed plan · ${holdings.length} of ${SEED_HOLDING_CAP} holdings`}
-                  </div>
-                  <div style={{fontSize:11,color:C.textSub}}>
-                    {seedAtCap ? "Upgrade to Grow for unlimited holdings, AI insights, paycheck calendar, and more." : `${SEED_HOLDING_CAP - holdings.length} slot${SEED_HOLDING_CAP-holdings.length===1?"":"s"} left. Upgrade any time for unlimited.`}
+          {/* Seed banner — three states:
+              1. Trial active  → gold "X days of full access" banner with upgrade CTA
+              2. At cap (post-trial) → gold "you've hit the limit" banner
+              3. Below cap (post-trial) → neutral "N of 5 holdings" progress banner
+              We render when plan==="Seed" regardless of holdings count so new
+              users see the trial countdown even before they add anything. */}
+          {plan==="Seed" && (trialActive || holdings.length>0) && (
+            trialActive ? (
+              <div style={{background:`linear-gradient(135deg,${C.emerald}18,${C.blue}12)`,border:`1px solid ${C.emerald}40`,borderRadius:12,padding:"12px 16px",marginBottom:14,display:"flex",alignItems:"center",justifyContent:"space-between",gap:14,flexWrap:"wrap"}}>
+                <div style={{display:"flex",alignItems:"center",gap:12}}>
+                  <div style={{fontSize:18}}>✨</div>
+                  <div>
+                    <div style={{fontSize:13,fontWeight:600,color:C.text,marginBottom:2}}>
+                      Trial: {trialDaysLeft} day{trialDaysLeft===1?"":"s"} of full access remaining
+                    </div>
+                    <div style={{fontSize:11,color:C.textSub}}>
+                      Unlimited holdings, AI insights, paycheck calendar, and more — yours while the trial is active. Upgrade to keep everything past day 14.
+                    </div>
                   </div>
                 </div>
+                <button style={{background:C.emerald,color:"#0b0b0b",border:"none",borderRadius:8,padding:"8px 16px",fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:"inherit",whiteSpace:"nowrap"}} onClick={()=>navigate("plans")}>
+                  See plans →
+                </button>
               </div>
-              <button style={{background:C.gold,color:"#0b0b0b",border:"none",borderRadius:8,padding:"8px 16px",fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:"inherit",whiteSpace:"nowrap"}} onClick={()=>openUpgrade("cap")}>
-                Upgrade to Grow →
-              </button>
-            </div>
+            ) : (
+              <div style={{background:seedAtCap?`${C.gold}14`:C.card,border:`1px solid ${seedAtCap?`${C.gold}40`:C.border}`,borderRadius:12,padding:"12px 16px",marginBottom:14,display:"flex",alignItems:"center",justifyContent:"space-between",gap:14,flexWrap:"wrap"}}>
+                <div style={{display:"flex",alignItems:"center",gap:12}}>
+                  <div style={{fontSize:18}}>{seedAtCap?"🔒":"🌱"}</div>
+                  <div>
+                    <div style={{fontSize:13,fontWeight:600,color:C.text,marginBottom:2}}>
+                      {seedAtCap ? `You've hit the Seed limit (${SEED_HOLDING_CAP} holdings).` : `Seed plan · ${holdings.length} of ${SEED_HOLDING_CAP} holdings`}
+                    </div>
+                    <div style={{fontSize:11,color:C.textSub}}>
+                      {seedAtCap ? "Upgrade to Grow for unlimited holdings, AI insights, paycheck calendar, and more." : `${SEED_HOLDING_CAP - holdings.length} slot${SEED_HOLDING_CAP-holdings.length===1?"":"s"} left. Upgrade any time for unlimited.`}
+                    </div>
+                  </div>
+                </div>
+                <button style={{background:C.gold,color:"#0b0b0b",border:"none",borderRadius:8,padding:"8px 16px",fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:"inherit",whiteSpace:"nowrap"}} onClick={()=>openUpgrade("cap")}>
+                  Upgrade to Grow →
+                </button>
+              </div>
+            )
           )}
           {holdLoading ? <div style={{textAlign:"center",padding:40,color:C.textMuted,fontSize:13}}>Loading your portfolio...</div>
           : port.length===0 ? <Empty/>
