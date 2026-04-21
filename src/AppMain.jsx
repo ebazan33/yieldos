@@ -311,6 +311,16 @@ function Landing({ onEnter, onPickPlan, onDemo, onFeedback }) {
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,700;0,9..144,800;1,9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
         *{box-sizing:border-box;margin:0;padding:0;}
+        /* Universal button feedback. Inline React styles can't express :hover
+           or :active, so every button in the app was clickable but visually
+           inert on press — felt like the page wasn't responding. These rules
+           give every button subtle hover-brighten + press-shrink feedback
+           without touching per-button styling. Disabled buttons skip it. */
+        button { transition: transform 0.1s ease, filter 0.12s ease, box-shadow 0.15s ease; }
+        button:not(:disabled):hover { filter: brightness(1.09); }
+        button:not(:disabled):active { transform: scale(0.97); filter: brightness(0.9); }
+        a { transition: color 0.12s ease, opacity 0.12s ease; }
+        a:hover { opacity: 0.78; }
         /* Mobile safety: scroll horizontally if something overflows, rather
            than clipping silently. Images/SVGs/tables scale defensively so
            nothing bursts its container. */
@@ -2208,6 +2218,16 @@ export default function AppMain() {
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,700;0,9..144,800;1,9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
         *{box-sizing:border-box;margin:0;padding:0;}
+        /* Universal button feedback. Inline React styles can't express :hover
+           or :active, so every button in the app was clickable but visually
+           inert on press — felt like the page wasn't responding. These rules
+           give every button subtle hover-brighten + press-shrink feedback
+           without touching per-button styling. Disabled buttons skip it. */
+        button { transition: transform 0.1s ease, filter 0.12s ease, box-shadow 0.15s ease; }
+        button:not(:disabled):hover { filter: brightness(1.09); }
+        button:not(:disabled):active { transform: scale(0.97); filter: brightness(0.9); }
+        a { transition: color 0.12s ease, opacity 0.12s ease; }
+        a:hover { opacity: 0.78; }
         /* Mobile safety: scroll horizontally if something overflows, rather
            than clipping silently. Images/SVGs/tables scale defensively so
            nothing bursts its container. */
