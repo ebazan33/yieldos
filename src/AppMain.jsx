@@ -766,6 +766,9 @@ export default function AppMain() {
   const [confirmState, setConfirmState] = useState(null);
   // Keyboard shortcut help overlay — opens on `?`, closes on Esc or click.
   const [showShortcuts, setShowShortcuts] = useState(false);
+  // Mobile-only: bottom tab bar has 4 pinned tabs + a More button that
+  // opens this sheet listing the rest. Desktop ignores this state entirely.
+  const [showMoreSheet, setShowMoreSheet] = useState(false);
   // ── Demo mode ──────────────────────────────────────────────────────────────
   // When true, the app runs with a hardcoded sample portfolio (DEMO_PORTFOLIO)
   // instead of the user's real Supabase holdings. Used by the "See a demo"
@@ -2335,30 +2338,85 @@ export default function AppMain() {
         ::-webkit-scrollbar{width:3px;height:3px;}
         ::-webkit-scrollbar-thumb{background:${C.border};border-radius:2px;}
 
-        /* In-app top nav — the tab strip has 9 tabs, way too many to fit on
-           a 375px phone. Desktop layout is a centered row; mobile layout
-           becomes a horizontally-scrollable strip with snap for each tab.
-           The user-info cluster hides its email username on small screens
-           so the avatar + sign-out still fit. */
+        /* In-app top nav — desktop shows a centered tab strip between the
+           logo and user cluster. On mobile the top tabs hide and a native-
+           feeling bottom tab bar (below) takes over for navigation. */
         .app-topbar{display:flex;align-items:center;justify-content:space-between;padding:0 22px;gap:12px;}
-        .app-tabs{display:flex;gap:2px;overflow-x:auto;overflow-y:hidden;scrollbar-width:none;-ms-overflow-style:none;flex:1;justify-content:center;}
-        .app-tabs::-webkit-scrollbar{display:none;}
-        .app-tabs button{white-space:nowrap;flex-shrink:0;scroll-snap-align:start;}
+        .app-tabs{display:flex;gap:2px;flex:1;justify-content:center;}
+        .app-tabs button{white-space:nowrap;flex-shrink:0;}
+        /* Mobile bottom tab bar — hidden on desktop. */
+        .mobile-bottom-bar{display:none;}
         @media (max-width: 820px) {
-          /* Drop the centered layout — nav needs every horizontal pixel it
-             can get. Logo shrinks, email username hides, nav scrolls. */
-          .app-topbar{padding:0 12px;gap:8px;}
-          .app-topbar-logo-text{display:none;}
-          .app-tabs{justify-content:flex-start;scroll-snap-type:x proximity;}
-          .app-tabs button{padding:6px 10px!important;font-size:10px!important;letter-spacing:0.02em!important;}
+          .app-topbar{padding:0 14px;gap:8px;}
+          .app-tabs{display:none;}  /* hide top tab row; bottom bar replaces it */
           .app-userblock-email{display:none;}
           .app-userblock-signout{padding:5px 8px!important;}
+          /* Give the main content breathing room so the fixed bottom bar
+             (height ~62 + safe-area inset) doesn't cover the last row. */
+          .app-content-wrap{padding-bottom:calc(78px + env(safe-area-inset-bottom))!important;}
+          .mobile-bottom-bar{
+            display:flex;
+            position:fixed;
+            bottom:0; left:0; right:0;
+            height:62px;
+            padding-bottom:env(safe-area-inset-bottom);
+            background:rgba(8,11,16,0.94);
+            backdrop-filter:blur(16px);
+            border-top:1px solid ${C.border};
+            z-index:45;
+            align-items:stretch;
+            justify-content:space-around;
+          }
+          .mobile-bottom-bar button{
+            flex:1;
+            background:none;border:none;cursor:pointer;font-family:inherit;
+            display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;
+            padding:6px 2px 4px;color:${C.textMuted};
+            font-size:10px;font-weight:600;letter-spacing:0.02em;
+            transition:color 0.15s;
+            position:relative;
+          }
+          .mobile-bottom-bar button.active{color:${C.blue};}
+          .mobile-bottom-bar button.active svg{stroke:${C.blue};}
+          .mobile-bottom-bar button .badge{
+            position:absolute;top:7px;right:calc(50% - 16px);
+            width:7px;height:7px;border-radius:50%;background:${C.red};
+          }
+          /* More sheet — slides up from the bottom. */
+          .mobile-more-backdrop{
+            position:fixed;inset:0;background:rgba(0,0,0,0.72);backdrop-filter:blur(6px);
+            z-index:90;display:flex;align-items:flex-end;justify-content:center;
+            animation:sheetFadeIn 0.18s ease;
+          }
+          .mobile-more-sheet{
+            background:${C.card};border-top:1px solid ${C.border};
+            border-radius:16px 16px 0 0;
+            width:100%;padding:12px 16px calc(20px + env(safe-area-inset-bottom));
+            animation:sheetSlideUp 0.25s cubic-bezier(0.2,0.9,0.3,1.1);
+          }
+          .mobile-more-sheet .handle{
+            width:40px;height:4px;border-radius:2px;background:${C.border};
+            margin:0 auto 14px;
+          }
+          .mobile-more-sheet .sheet-title{
+            font-family:'Fraunces',serif;font-size:16px;font-weight:700;
+            margin-bottom:12px;padding:0 4px;
+          }
+          .mobile-more-sheet .sheet-link{
+            width:100%;background:none;border:none;cursor:pointer;font-family:inherit;
+            display:flex;align-items:center;justify-content:space-between;
+            padding:14px 8px;border-radius:10px;color:${C.text};
+            font-size:14px;font-weight:500;text-transform:capitalize;
+            transition:background 0.15s;
+          }
+          .mobile-more-sheet .sheet-link:active{background:${C.surface};}
+          .mobile-more-sheet .sheet-link.active{color:${C.blue};background:${C.blueGlow};}
+          .mobile-more-sheet .sheet-link .dot{
+            width:7px;height:7px;border-radius:50%;background:${C.red};margin-right:auto;margin-left:8px;
+          }
         }
-        @media (max-width: 480px) {
-          /* Phone-sized: every pixel counts. Chip can be tiny, sign-out becomes icon-ish. */
-          .app-topbar{padding:0 8px;}
-          .app-tabs button{padding:5px 8px!important;font-size:9.5px!important;}
-        }
+        @keyframes sheetFadeIn { from { opacity:0 } to { opacity:1 } }
+        @keyframes sheetSlideUp { from { transform:translateY(100%) } to { transform:translateY(0) } }
       `}</style>
 
       <div className="app-topbar" style={{height:54,borderBottom:`1px solid ${C.border}`,position:"sticky",top:0,zIndex:40,background:"rgba(8,11,16,0.96)",backdropFilter:"blur(16px)"}}>
@@ -2427,7 +2485,7 @@ export default function AppMain() {
         <div style={{height:"100%",background:`linear-gradient(90deg,${C.blue},${C.emerald})`,width:busy?"100%":"0%",opacity:busy?1:0,transition:busy?"width 0.34s ease, opacity 0.1s":"opacity 0.3s ease 0.1s"}}/>
       </div>
 
-      <div style={{maxWidth:1160,margin:"0 auto",padding:"24px 22px 24px"}}>
+      <div className="app-content-wrap" style={{maxWidth:1160,margin:"0 auto",padding:"24px 22px 24px"}}>
         <div style={wrapStyle}>{Tab()}</div>
       </div>
 
@@ -2494,6 +2552,68 @@ export default function AppMain() {
         </div>
       )}
       <Toaster/>
+
+      {/* ──────────────────────────────────────────────────────────────────
+          Mobile bottom tab bar — only visible ≤ 820px via CSS. 4 primary
+          tabs + a "More" that opens a bottom sheet for the rest. Icons are
+          inline SVGs (1.5-stroke) so they tint with color when active.
+          ────────────────────────────────────────────────────────────── */}
+      {!demoMode && user && (() => {
+        const PRIMARY = ["dashboard","holdings","calendar","advisor"];
+        const SECONDARY = TABS.filter(t => !PRIMARY.includes(t));
+        const shortLabel = { dashboard:"Home", holdings:"Holdings", calendar:"Paychecks", advisor:"Insights" };
+        const icons = {
+          dashboard: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12 L12 4 L21 12"/><path d="M5 10 V20 H19 V10"/></svg>,
+          holdings:  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="6" width="18" height="14" rx="2"/><path d="M3 10 H21"/><path d="M8 3 V6"/><path d="M16 3 V6"/></svg>,
+          calendar:  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10 H21"/><path d="M8 3 V7"/><path d="M16 3 V7"/><circle cx="8" cy="15" r="1" fill="currentColor"/><circle cx="16" cy="15" r="1" fill="currentColor"/></svg>,
+          advisor:   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M12 3 V5"/><path d="M12 19 V21"/><path d="M5 12 H3"/><path d="M21 12 H19"/><path d="M5.6 5.6 L6.8 6.8"/><path d="M17.2 17.2 L18.4 18.4"/><path d="M5.6 18.4 L6.8 17.2"/><path d="M17.2 6.8 L18.4 5.6"/><circle cx="12" cy="12" r="4"/></svg>,
+          more:      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>,
+        };
+        // Dot on More button if any secondary tab has attention (alerts unread).
+        const secondaryUnread = unread > 0;
+        return (
+          <>
+            <nav className="mobile-bottom-bar">
+              {PRIMARY.map(t => (
+                <button key={t} className={active===t ? "active" : ""} onClick={()=>navigate(t)}>
+                  {icons[t]}
+                  <span>{shortLabel[t]}</span>
+                </button>
+              ))}
+              <button className={SECONDARY.includes(active) ? "active" : ""} onClick={()=>setShowMoreSheet(true)}>
+                {icons.more}
+                <span>More</span>
+                {secondaryUnread && <span className="badge"/>}
+              </button>
+            </nav>
+            {showMoreSheet && (
+              <div className="mobile-more-backdrop" onClick={()=>setShowMoreSheet(false)}>
+                <div className="mobile-more-sheet" onClick={e=>e.stopPropagation()}>
+                  <div className="handle"/>
+                  <div className="sheet-title">Menu</div>
+                  {SECONDARY.map(t => (
+                    <button key={t} className={`sheet-link ${active===t?"active":""}`}
+                      onClick={()=>{ navigate(t); setShowMoreSheet(false); }}>
+                      <span>{TAB_LABELS[t] || t}</span>
+                      {t==="alerts" && unread>0 && <span className="dot"/>}
+                    </button>
+                  ))}
+                  <div style={{borderTop:`1px solid ${C.border}`,marginTop:8,paddingTop:12,display:"flex",gap:8}}>
+                    <button className="sheet-link" style={{color:C.textSub}}
+                      onClick={()=>{ setShowFeedback(true); setShowMoreSheet(false); }}>
+                      <span>Send feedback</span>
+                    </button>
+                    <button className="sheet-link" style={{color:C.textSub}}
+                      onClick={()=>{ handleSignOut(); setShowMoreSheet(false); }}>
+                      <span>Sign out</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </>
+        );
+      })()}
 
       {showUp&&(
         <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.88)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:100,backdropFilter:"blur(8px)"}} onClick={()=>{setShowUp(false);setUpReason(null);}}>
