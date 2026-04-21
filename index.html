@@ -65,14 +65,34 @@
         --blue-glow:  rgba(79,142,247,0.12);
       }
       html[data-theme="light"] {
-        --bg:         #f5f7fa;
-        --surface:    #ffffff;
+        /* Light palette mirrors the dark hierarchy — three layers stacking
+           from recessed to elevated (bg → surface → card) — so cards have
+           real lift against the page instead of looking like white-on-white.
+           Border is pulled darker than the eyedropper instinct suggests so
+           card edges stay crisp on a gray page. text-muted is darker than
+           the dark-mode equivalent because #94a3b8 on pure white is too
+           ghostly to read. */
+        --bg:         #e8ecf2;
+        --surface:    #f4f6fa;
         --card:       #ffffff;
-        --border:     #e2e8f0;
+        --border:     #cfd7e2;
         --text:       #0f172a;
         --text-sub:   #475569;
-        --text-muted: #94a3b8;
+        --text-muted: #64748b;
         --blue-glow:  rgba(79,142,247,0.10);
+      }
+      /* Light-mode card lift — a whisper of shadow on any major rounded
+         container so cards look like they're floating above the gray page.
+         Scoped to radii 12+ to skip chips/pills/small buttons which should
+         stay flat. We match both "border-radius:16" and "border-radius: 16"
+         because inline styles vary across the codebase. */
+      html[data-theme="light"] [style*="border-radius:12"],
+      html[data-theme="light"] [style*="border-radius:14"],
+      html[data-theme="light"] [style*="border-radius:16"],
+      html[data-theme="light"] [style*="border-radius: 12"],
+      html[data-theme="light"] [style*="border-radius: 14"],
+      html[data-theme="light"] [style*="border-radius: 16"] {
+        box-shadow: 0 1px 2px rgba(15,23,42,0.04), 0 4px 12px -4px rgba(15,23,42,0.08);
       }
       html, body { background: var(--bg); color: var(--text); margin: 0; padding: 0; overflow-x: hidden; -webkit-font-smoothing: antialiased; transition: background 0.2s ease; }
       #root { background: var(--bg); min-height: 100vh; }
