@@ -196,6 +196,70 @@ const rnd = (a,b) => Math.random()*(b-a)+a;
 // Short month labels for the 12-bucket paycheck distribution + tooltips.
 const MONTH_SHORT = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 
+// Curated suggestion pool for the lean-month detector. Each entry lists the
+// calendar months (0-indexed) the ticker pays in — monthly payers hit every
+// month; quarterly payers sit in one of three cadence buckets (Mar/Jun/Sep/Dec,
+// Jan/Apr/Jul/Oct, or Feb/May/Aug/Nov). We stick to well-known, safety-grade
+// B+ or better names so "YieldOS suggested this" feels like a real pick, not
+// a random screener result.
+const PAYCHECK_SUGGESTIONS = [
+  // Monthly payers — every month
+  { ticker: "O",    name: "Realty Income",           months: [0,1,2,3,4,5,6,7,8,9,10,11], note: "monthly · The Monthly Dividend Company" },
+  { ticker: "JEPI", name: "JPMorgan Equity Premium", months: [0,1,2,3,4,5,6,7,8,9,10,11], note: "monthly · options-based, ~7% yield" },
+  { ticker: "MAIN", name: "Main Street Capital",     months: [0,1,2,3,4,5,6,7,8,9,10,11], note: "monthly · high-quality BDC" },
+  { ticker: "STAG", name: "STAG Industrial",         months: [0,1,2,3,4,5,6,7,8,9,10,11], note: "monthly · industrial REIT" },
+  // Quarterly cadence A — Mar/Jun/Sep/Dec
+  { ticker: "SCHD", name: "Schwab US Dividend",      months: [2,5,8,11], note: "quarterly · Mar/Jun/Sep/Dec" },
+  { ticker: "JNJ",  name: "Johnson & Johnson",       months: [2,5,8,11], note: "quarterly · Mar/Jun/Sep/Dec" },
+  { ticker: "VYM",  name: "Vanguard High Dividend",  months: [2,5,8,11], note: "quarterly · Mar/Jun/Sep/Dec" },
+  // Quarterly cadence B — Jan/Apr/Jul/Oct
+  { ticker: "KO",   name: "Coca-Cola",               months: [0,3,6,9],  note: "quarterly · Jan/Apr/Jul/Oct" },
+  { ticker: "PEP",  name: "PepsiCo",                 months: [0,3,6,9],  note: "quarterly · Jan/Apr/Jul/Oct" },
+  { ticker: "MO",   name: "Altria",                  months: [0,3,6,9],  note: "quarterly · Jan/Apr/Jul/Oct" },
+  // Quarterly cadence C — Feb/May/Aug/Nov
+  { ticker: "ABBV", name: "AbbVie",                  months: [1,4,7,10], note: "quarterly · Feb/May/Aug/Nov" },
+  { ticker: "VZ",   name: "Verizon",                 months: [1,4,7,10], note: "quarterly · Feb/May/Aug/Nov" },
+  { ticker: "PFE",  name: "Pfizer",                  months: [1,4,7,10], note: "quarterly · Feb/May/Aug/Nov" },
+];
+
+// Smart lean-month filler. Given the set of lean months and the tickers the
+// user already owns, greedily picks up to `max` tickers that together cover
+// the most lean months (with no duplicates from their existing portfolio).
+//
+// Greedy is optimal enough for this case — we've got 13 candidates across 3
+// quarterly cadences + 4 monthly payers, so marginal-coverage selection
+// always finds a good set in ≤3 picks. Tie-break favors tickers whose payment
+// calendar is MORE focused on the lean months (higher fit ratio), so a
+// Feb/May/Aug/Nov quarterly wins over a "pays every month" catch-all when
+// the user is only lean in Feb.
+function suggestLeanMonthFillers(leanMonthsIdx, ownedTickers, max = 3) {
+  if (!leanMonthsIdx.length) return [];
+  let pool = PAYCHECK_SUGGESTIONS
+    .filter(c => !ownedTickers.has(c.ticker.toUpperCase()))
+    .filter(c => c.months.some(m => leanMonthsIdx.includes(m)));
+
+  const picked = [];
+  const stillLean = new Set(leanMonthsIdx);
+  while (picked.length < max && stillLean.size > 0 && pool.length > 0) {
+    pool.sort((a, b) => {
+      const aNew = a.months.filter(m => stillLean.has(m)).length;
+      const bNew = b.months.filter(m => stillLean.has(m)).length;
+      if (aNew !== bNew) return bNew - aNew;
+      // Tie-break: higher fit ratio (newly-covered / total months) wins.
+      const aFit = aNew / a.months.length;
+      const bFit = bNew / b.months.length;
+      return bFit - aFit;
+    });
+    const next = pool[0];
+    const covers = next.months.filter(m => stillLean.has(m));
+    if (!covers.length) break;
+    picked.push({ ...next, coversThese: covers });
+    covers.forEach(m => stillLean.delete(m));
+    pool = pool.slice(1);
+  }
+  return picked;
+}
+
 // Compute expected income per calendar month (Jan=0..Dec=11) from the
 // holdings list. Monthly payers drop into every bucket; Quarterly payers
 // into their next-div month + 3,6,9 months; Annual payers into just
@@ -1968,10 +2032,14 @@ export default function AppMain() {
                     {refreshing ? "Refreshing…" : "↻ Refresh prices"}
                   </button>
                   <button style={gh} onClick={exportCsv}>↓ Download CSV</button>
-                  {/* Public share — Grow-only. Seed click opens upgrade modal
-                      so it still feels like a feature they can reach, not a
-                      dead button. Demo mode treats it as unlocked. */}
-                  <button style={gh} onClick={()=>isPro?setShowShare(true):openUpgrade("share")}>
+                  {/* Public share — Grow-only + requires a logged-in user
+                      (demo mode can't persist share rows). Seed → upgrade modal;
+                      demo → signup modal so the click is never a no-op. */}
+                  <button style={gh} onClick={()=>{
+                    if (demoMode || !user?.id) { setShowAuth(true); return; }
+                    if (!isPro) { openUpgrade("share"); return; }
+                    setShowShare(true);
+                  }}>
                     {isPro ? "🔗 Share" : "🔒 Share"}
                   </button>
                 </>
@@ -2266,6 +2334,13 @@ export default function AppMain() {
               .filter(x => x.v < monthlyBucketAvg * 0.5)
               .map(x => x.i)
           : [];
+        // Smart suggestions — dedup against holdings AND watchlist so we
+        // don't tell users to add something they've already got their eye on.
+        const ownedSet = new Set([
+          ...port.map(h => String(h.ticker || "").toUpperCase()),
+          ...watchlist.map(w => String(w.ticker || "").toUpperCase()),
+        ]);
+        const leanSuggestions = suggestLeanMonthFillers(leanMonthsIdx, ownedSet, 3);
         return (
         <div style={{position:"relative"}}>
           {!isPro&&<Lock onUp={()=>setShowUp(true)}/>}
@@ -2348,7 +2423,7 @@ export default function AppMain() {
           {leanMonthsIdx.length > 0 && (
             <div style={{background:`${C.gold}14`,border:`1px solid ${C.gold}40`,borderRadius:12,padding:"14px 18px",marginBottom:16,display:"flex",gap:14,alignItems:"flex-start"}}>
               <div style={{fontSize:22,flexShrink:0}}>📉</div>
-              <div style={{flex:1}}>
+              <div style={{flex:1,minWidth:0}}>
                 <div style={{fontSize:13,fontWeight:600,color:C.text,marginBottom:4}}>
                   Your calendar dips in {leanMonthsIdx.map(i => MONTH_SHORT[i]).join(", ")}
                 </div>
@@ -2356,12 +2431,38 @@ export default function AppMain() {
                   {leanMonthsIdx.length === 1
                     ? `That month pays under half your ${$(monthlyBucketAvg)} average.`
                     : `Those months each pay under half your ${$(monthlyBucketAvg)} average.`}
-                  {" "}Adding a monthly-payer ETF (SCHD covers the quarterly months, JEPI/O/MAIN fill every month) smooths the curve.
+                  {" "}{leanSuggestions.length > 0
+                    ? `Tickers below pay specifically on your light months — click to add.`
+                    : "Adding a monthly-payer ETF smooths the curve."}
                 </div>
+                {/* Smart picks — each button names the ticker + calls out
+                    exactly which lean months it fills. Ordered by marginal
+                    coverage so the first suggestion is the highest-impact add. */}
+                {leanSuggestions.length > 0 && (
+                  <div style={{display:"flex",flexDirection:"column",gap:6,marginBottom:10}}>
+                    {leanSuggestions.map(s => (
+                      <button
+                        key={s.ticker}
+                        onClick={()=>{setPrefillTicker(s.ticker);setShowAdd(true);}}
+                        style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:9,padding:"8px 12px",cursor:"pointer",fontFamily:"inherit",textAlign:"left",display:"flex",alignItems:"center",justifyContent:"space-between",gap:10,transition:"all 0.15s"}}
+                        onMouseEnter={e=>{e.currentTarget.style.borderColor=C.blue;e.currentTarget.style.background=C.blueGlow;}}
+                        onMouseLeave={e=>{e.currentTarget.style.borderColor=C.border;e.currentTarget.style.background=C.surface;}}>
+                        <div style={{display:"flex",alignItems:"center",gap:10,minWidth:0,flex:1}}>
+                          <span style={{fontWeight:700,color:C.text,fontSize:13,letterSpacing:"0.02em"}}>{s.ticker}</span>
+                          <span style={{fontSize:11,color:C.textSub,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{s.name}</span>
+                        </div>
+                        <div style={{display:"flex",alignItems:"center",gap:8,flexShrink:0}}>
+                          <span style={{fontSize:10,color:C.emerald,fontWeight:600,background:`${C.emerald}14`,border:`1px solid ${C.emerald}30`,borderRadius:5,padding:"2px 6px",whiteSpace:"nowrap"}}>
+                            fills {s.coversThese.map(i=>MONTH_SHORT[i]).join(", ")}
+                          </span>
+                          <span style={{color:C.blue,fontSize:13,fontWeight:700}}>+</span>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                )}
                 <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
                   <button style={{...bl,padding:"7px 13px",fontSize:12}} onClick={()=>navigate("screener")}>Open Screener →</button>
-                  <button style={{...gh,padding:"7px 13px",fontSize:12}} onClick={()=>{setPrefillTicker("JEPI");setShowAdd(true);}}>+ Add JEPI</button>
-                  <button style={{...gh,padding:"7px 13px",fontSize:12}} onClick={()=>{setPrefillTicker("O");setShowAdd(true);}}>+ Add O</button>
                 </div>
               </div>
             </div>
