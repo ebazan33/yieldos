@@ -77,9 +77,10 @@ async function fetchPolygonPrice(ticker) {
 }
 
 // ── Dividend history → yield + frequency + next payment date ────────────────
-// Polygon's frequency codes: 1=annual, 2=semi-annual, 4=quarterly, 12=monthly, 0=one-time
-const FREQ_LABEL = { 1: "Annual", 2: "Semi-Annual", 4: "Quarterly", 12: "Monthly", 0: "One-time" };
-const FREQ_DAYS  = { 1: 365,      2: 182,           4: 91,          12: 30,        0: 365 };
+// Polygon's frequency codes: 1=annual, 2=semi-annual, 4=quarterly, 12=monthly,
+// 52=weekly (YieldMax/Roundhill covered-call ETFs), 0=one-time.
+const FREQ_LABEL = { 1: "Annual", 2: "Semi-Annual", 4: "Quarterly", 12: "Monthly", 52: "Weekly", 0: "One-time" };
+const FREQ_DAYS  = { 1: 365,      2: 182,           4: 91,          12: 30,        52: 7,        0: 365 };
 
 async function fetchPolygonDividends(ticker) {
   if (!POLYGON_KEY) return null;

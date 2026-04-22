@@ -98,7 +98,7 @@ export default function AddHoldingModal({ onClose, onAdd, prefillTicker }) {
       setYld(String(details.yld))
     }
     // Auto-fill frequency if the API returned one of the three UI options
-    if (details.freq && ["Monthly", "Quarterly", "Annual"].includes(details.freq)) {
+    if (details.freq && ["Weekly", "Monthly", "Quarterly", "Annual"].includes(details.freq)) {
       setFreq(details.freq)
     }
     setLoading(false)
@@ -375,13 +375,16 @@ export default function AddHoldingModal({ onClose, onAdd, prefillTicker }) {
 
         <div style={{marginBottom:20}}>
           <div style={{fontSize:11,color:C.textMuted,fontWeight:600,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:6}}>Dividend Frequency</div>
-          <div style={{display:"flex",gap:8}}>
-            {["Monthly","Quarterly","Annual"].map(f=>(
+          <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
+            {["Weekly","Monthly","Quarterly","Annual"].map(f=>(
               <button key={f} onClick={()=>setFreq(f)}
-                style={{flex:1,background:freq===f?C.blueGlow:C.surface,border:`1px solid ${freq===f?C.blue:C.border}`,borderRadius:8,padding:"8px",fontSize:12,fontWeight:freq===f?600:400,color:freq===f?C.blue:C.textSub,cursor:"pointer",fontFamily:"inherit",transition:"all 0.15s"}}>
+                style={{flex:"1 1 70px",background:freq===f?C.blueGlow:C.surface,border:`1px solid ${freq===f?C.blue:C.border}`,borderRadius:8,padding:"8px",fontSize:12,fontWeight:freq===f?600:400,color:freq===f?C.blue:C.textSub,cursor:"pointer",fontFamily:"inherit",transition:"all 0.15s"}}>
                 {f}
               </button>
             ))}
+          </div>
+          <div style={{fontSize:10,color:C.textMuted,marginTop:6,lineHeight:1.5}}>
+            Weekly is for high-yield covered-call ETFs like YMAX, NVDY, TSLY.
           </div>
         </div>
 

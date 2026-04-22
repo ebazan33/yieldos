@@ -61,7 +61,7 @@ function generateAlerts(port, totMo, goal) {
     if (isNaN(ts)) continue;
     const days = Math.round((ts - now) / 86400000);
     if (days < 0 || days > 14) continue;
-    const per = h.freq === "Monthly" ? h.annual/12 : h.freq === "Annual" ? h.annual : h.annual/4;
+    const per = h.freq === "Weekly" ? h.annual/52 : h.freq === "Monthly" ? h.annual/12 : h.freq === "Annual" ? h.annual : h.annual/4;
     out.push({
       id: id++,
       icon: "💰",
@@ -276,7 +276,10 @@ function computeMonthlyPaychecks(port) {
   for (const h of port) {
     const annual = Number(h.annual) || ((Number(h.price)||0) * (Number(h.shares)||0) * (Number(h.yld)||0) / 100);
     if (!annual) continue;
-    if (h.freq === "Monthly") {
+    if (h.freq === "Weekly" || h.freq === "Monthly") {
+      // Both distribute evenly across 12 months. Weekly payers hit ~4.33x
+      // per month, but at the month-bucket grain that's indistinguishable
+      // from Monthly — annual/12 is the honest number for both.
       const per = annual / 12;
       for (let m = 0; m < 12; m++) buckets[m] += per;
       continue;
@@ -2203,7 +2206,7 @@ export default function AppMain() {
                         <td style={{padding:"13px 14px",fontSize:13,color:C.emerald,fontWeight:600}}>{h.yld}%</td>
                         <td style={{padding:"13px 14px",fontSize:13,fontWeight:600}}>{$(h.annual)}</td>
                         <td style={{padding:"13px 14px",fontSize:12,color:C.textSub}}>{$(h.monthly)}</td>
-                        <td style={{padding:"13px 14px"}}><Chip color={h.freq==="Monthly"?C.emerald:C.blue}>{h.freq?.[0]||"Q"}</Chip></td>
+                        <td style={{padding:"13px 14px"}}><Chip color={h.freq==="Weekly"?C.gold:h.freq==="Monthly"?C.emerald:C.blue}>{h.freq?.[0]||"Q"}</Chip></td>
                         <td style={{padding:"13px 14px"}} title={(SAFETY_META[h.safe]||SAFETY_META["N/A"]).blurb}><Chip color={safetyColor(h.safe)}>{h.safe||"N/A"}</Chip></td>
                         {/* Streak column — badge chip for Aristocrat/King/etc
                             on paid tiers, plain year count for everyone else.
@@ -2348,7 +2351,7 @@ export default function AppMain() {
           <p style={{fontSize:12,color:C.textSub,marginBottom:16}}>Every dividend payment, sorted by the next one to land in your account. Hit <b>Mark paid</b> when a payment arrives to log actual income.</p>
           <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:12,marginBottom:16}}>
             <StatCard label="Expected This Month" value={$(totMo)} sub={`${port.length} paycheck${port.length!==1?"s":""}`} subColor={C.emerald} glow={C.emerald}/>
-            <StatCard label="Paychecks Per Year"  value={port.reduce((n,h)=>{const map={Monthly:12,Quarterly:4,Annual:1};return n+(map[h.freq]||4);},0)} sub="across all holdings"/>
+            <StatCard label="Paychecks Per Year"  value={port.reduce((n,h)=>{const map={Weekly:52,Monthly:12,Quarterly:4,"Semi-Annual":2,Annual:1};return n+(map[h.freq]||4);},0)} sub="across all holdings"/>
             <StatCard label="Projected Annual"    value={$(totAnn)} sub="total paychecks for the year" subColor={C.blue} glow={C.blue}/>
           </div>
           {/* YTD received ledger — only renders for users who've logged payments.
@@ -2474,8 +2477,8 @@ export default function AppMain() {
                 const pb=Date.parse(`${b.next_div} ${new Date().getFullYear()}`);
                 return (isNaN(pa)?Infinity:pa)-(isNaN(pb)?Infinity:pb);
               }).map((h,i,arr)=>{
-                const per = h.freq==="Monthly" ? h.annual/12 : h.freq==="Annual" ? h.annual : h.annual/4;
-                const perLabel = h.freq==="Monthly" ? "per paycheck · monthly" : h.freq==="Annual" ? "per paycheck · yearly" : "per paycheck · quarterly";
+                const per = h.freq==="Weekly" ? h.annual/52 : h.freq==="Monthly" ? h.annual/12 : h.freq==="Annual" ? h.annual : h.annual/4;
+                const perLabel = h.freq==="Weekly" ? "per paycheck · weekly" : h.freq==="Monthly" ? "per paycheck · monthly" : h.freq==="Annual" ? "per paycheck · yearly" : "per paycheck · quarterly";
                 const hasDate = h.next_div && h.next_div !== "TBD";
                 const parts = hasDate ? String(h.next_div).split(" ") : [];
                 // Days-until countdown so paycheck urgency feels real
@@ -2510,7 +2513,7 @@ export default function AppMain() {
                       <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:3,flexWrap:"wrap"}}>
                         <Chip>{h.ticker}</Chip>
                         <span style={{fontSize:13,color:C.textSub}}>{h.name}</span>
-                        <Chip color={h.freq==="Monthly"?C.emerald:C.blue}>{h.freq||"Quarterly"}</Chip>
+                        <Chip color={h.freq==="Weekly"?C.gold:h.freq==="Monthly"?C.emerald:C.blue}>{h.freq||"Quarterly"}</Chip>
                         {soon && <Chip color={C.emerald}>💰 paycheck soon</Chip>}
                       </div>
                       <div style={{fontSize:11,color:C.textMuted}}>{h.shares} shares · {h.yld}% yield</div>
@@ -2550,7 +2553,7 @@ export default function AppMain() {
                               // we back-compute the native amount from price/yld/shares
                               // so the ledger stores raw CAD for CAD holdings.
                               const nativePer = h.currency === "CAD"
-                                ? (h.shares * h.price * h.yld / 100) / (h.freq === "Monthly" ? 12 : h.freq === "Annual" ? 1 : 4)
+                                ? (h.shares * h.price * h.yld / 100) / (h.freq === "Weekly" ? 52 : h.freq === "Monthly" ? 12 : h.freq === "Annual" ? 1 : 4)
                                 : per;
                               const res = await addPayment({
                                 ticker: h.ticker,
