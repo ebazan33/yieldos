@@ -235,36 +235,52 @@ export default function AddHoldingModal({ onClose, onAdd, prefillTicker }) {
           </div>
         )}
 
-        {/* Search */}
+        {/* Search — the results dropdown was previously position:absolute with
+            top:100%, which broke on mobile. When the soft keyboard opens, the
+            modal's maxHeight:90vh shrinks, the absolute-positioned dropdown
+            gets clipped by the modal's overflow:auto, and the user sees
+            "nothing pops up" even though results loaded. Making it flow inline
+            keeps it visible on every viewport and lets the modal scroll
+            naturally when results are long. */}
         <div style={{position:"relative",marginBottom:16}}>
-          <input
-            ref={searchRef}
-            style={inp}
-            placeholder={manualMode ? "Ticker (e.g. BNS.TO, ENB.TO)" : "Search ticker or company (e.g. SCHD, Apple, BNS.TO...)"}
-            value={query}
-            onChange={e=>{
-              setQuery(e.target.value)
-              // If the user edits the ticker out of TSX territory while in manual
-              // mode, drop back to the standard search flow so they can pick a
-              // US ticker normally.
-              if (manualMode && !isCanadianTicker(e.target.value)) {
-                setManualMode(false)
-                setManualName('')
-                setManualPrice('')
-              }
-            }}
-            autoFocus
-          />
-          {searching && (
-            <div style={{position:"absolute",right:12,top:"50%",transform:"translateY(-50%)",fontSize:11,color:C.textMuted}}>searching...</div>
-          )}
+          <div style={{position:"relative"}}>
+            <input
+              ref={searchRef}
+              style={inp}
+              type="search"
+              inputMode="search"
+              autoComplete="off"
+              autoCorrect="off"
+              autoCapitalize="characters"
+              spellCheck={false}
+              placeholder={manualMode ? "Ticker (e.g. BNS.TO, ENB.TO)" : "Search ticker or company (e.g. SCHD, Apple, BNS.TO...)"}
+              value={query}
+              onChange={e=>{
+                setQuery(e.target.value)
+                // If the user edits the ticker out of TSX territory while in manual
+                // mode, drop back to the standard search flow so they can pick a
+                // US ticker normally.
+                if (manualMode && !isCanadianTicker(e.target.value)) {
+                  setManualMode(false)
+                  setManualName('')
+                  setManualPrice('')
+                }
+              }}
+            />
+            {searching && (
+              <div style={{position:"absolute",right:12,top:"50%",transform:"translateY(-50%)",fontSize:11,color:C.textMuted,pointerEvents:"none"}}>searching...</div>
+            )}
+          </div>
           {results.length > 0 && (
-            <div style={{position:"absolute",top:"100%",left:0,right:0,background:C.card,border:`1px solid ${C.border}`,borderRadius:9,marginTop:4,zIndex:10,overflow:"hidden"}}>
+            <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:9,marginTop:6,overflow:"hidden"}}>
               {results.map(r=>(
-                <div key={r.ticker} onClick={()=>handleSelect(r)}
-                  style={{padding:"10px 14px",cursor:"pointer",transition:"background 0.12s",borderBottom:`1px solid ${C.border}`}}
+                <div key={r.ticker}
+                  onClick={()=>handleSelect(r)}
+                  onTouchStart={e=>{e.currentTarget.style.background=C.blueGlow}}
+                  onTouchEnd={e=>{e.currentTarget.style.background=""}}
                   onMouseEnter={e=>e.currentTarget.style.background=C.blueGlow}
-                  onMouseLeave={e=>e.currentTarget.style.background=""}>
+                  onMouseLeave={e=>e.currentTarget.style.background=""}
+                  style={{padding:"12px 14px",cursor:"pointer",transition:"background 0.12s",borderBottom:`1px solid ${C.border}`,WebkitTapHighlightColor:"transparent"}}>
                   <span style={{color:C.blue,fontWeight:600,fontSize:12,marginRight:10}}>{r.ticker}</span>
                   <span style={{fontSize:12,color:C.textSub}}>{r.name}</span>
                 </div>
