@@ -11,6 +11,7 @@ import ConfirmModal from "./components/ConfirmModal";
 import AccountModal from "./components/AccountModal";
 import TrialWelcomeModal from "./components/TrialWelcomeModal";
 import { getStockDetails } from "./lib/polygon";
+import { ensureFreshRates, getCachedRate, fxNote } from "./lib/fx";
 import { startCheckout, readCheckoutReturn, stripeConfigured, openCustomerPortal, customerPortalConfigured } from "./lib/stripe";
 
 const C = {
@@ -445,6 +446,7 @@ function Landing({ onEnter, onPickPlan, onDemo, onFeedback }) {
             <div style={{display:"flex",gap:22,fontSize:11,color:C.textMuted,fontWeight:500,flexWrap:"wrap"}}>
               <span>✓ Free forever plan</span>
               <span>✓ Import from Fidelity, Schwab, Vanguard</span>
+              <span>✓ US + Canadian (TSX) tickers</span>
               <span>✓ 2-min setup</span>
             </div>
           </div>
@@ -945,12 +947,35 @@ export default function AppMain() {
     return result;
   }
 
-  const port = holdings.map(h => ({
-    ...h,
-    value:   h.shares * h.price,
-    annual:  h.shares * h.price * (h.yld / 100),
-    monthly: h.shares * h.price * (h.yld / 100) / 12,
-  }));
+  // FX rate state. We keep a single scalar (CAD → USD) in React state so any
+  // change to the cached rate triggers a re-render and the dashboard math
+  // reflects today's rate. On mount we fire-and-forget refresh the cache;
+  // getCachedRate is the sync read that feeds the initial render.
+  const [cadRate, setCadRate] = useState(() => getCachedRate("CAD"));
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const rates = await ensureFreshRates(["CAD"]);
+      if (!cancelled && rates?.CAD != null) setCadRate(rates.CAD);
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  // Build the portfolio view model. Each row's raw price/yield stays in its
+  // native currency for display (so a CAD holding shows "C$72.40"), but the
+  // `value`/`annual`/`monthly` derived fields are normalized to USD using the
+  // cached FX rate. Every downstream sum (totals, Path to FIRE, calendar,
+  // alerts, goals) reads from these USD-normalized fields — no other code
+  // paths need currency awareness.
+  const port = holdings.map(h => {
+    const rate = h.currency && h.currency !== "USD" ? cadRate : 1;
+    return {
+      ...h,
+      value:   h.shares * h.price * rate,
+      annual:  h.shares * h.price * (h.yld / 100) * rate,
+      monthly: h.shares * h.price * (h.yld / 100) / 12 * rate,
+    };
+  });
   const totVal = port.reduce((s,h)=>s+h.value, 0);
   const totAnn = port.reduce((s,h)=>s+h.annual, 0);
   const totMo  = totAnn / 12;
@@ -1502,6 +1527,15 @@ export default function AppMain() {
                 </div>
               </div>
 
+              {/* FX footnote — only shown when the user actually holds CAD
+                  positions, so US-only users aren't confused by an irrelevant
+                  disclaimer. Refreshes daily via the fx helper's 6h cache. */}
+              {port.some(h => h.currency && h.currency !== "USD") && (
+                <div style={{fontSize:10,color:C.textMuted,marginBottom:12,textAlign:"right",letterSpacing:"0.01em"}}>
+                  Totals shown in USD · {fxNote("CAD", cadRate)}
+                </div>
+              )}
+
               {/* ═════════════════════ Path to FIRE hero card ═════════════════════
                   The single feature that sets Yieldos apart from every other
                   dividend tracker. Projects forward using:
@@ -1849,10 +1883,22 @@ export default function AppMain() {
                       <tr key={h.id||i} style={{borderBottom:i<port.length-1?`1px solid ${C.border}`:"none",transition:"background 0.12s",cursor:"default"}}
                         onMouseEnter={e=>e.currentTarget.style.background=C.blueGlow2}
                         onMouseLeave={e=>e.currentTarget.style.background=""}>
-                        <td style={{padding:"13px 14px"}}><Chip>{h.ticker}</Chip></td>
+                        <td style={{padding:"13px 14px"}}>
+                          <div style={{display:"inline-flex",alignItems:"center",gap:5}}>
+                            <Chip>{h.ticker}</Chip>
+                            {/* CAD marker on TSX holdings so mixed portfolios
+                                stay legible. Value / income columns show USD;
+                                the chip tells you the native price is CAD. */}
+                            {h.currency === "CAD" && (
+                              <span style={{background:`${C.emerald}18`,color:C.emerald,border:`1px solid ${C.emerald}40`,borderRadius:4,padding:"1px 5px",fontSize:9,fontWeight:700,letterSpacing:"0.06em"}}>CAD</span>
+                            )}
+                          </div>
+                        </td>
                         <td style={{padding:"13px 14px",fontSize:12,color:C.textSub}}>{h.name}</td>
                         <td style={{padding:"13px 14px",fontSize:13,fontWeight:500}}>{h.shares}</td>
-                        <td style={{padding:"13px 14px",fontSize:13}}>${parseFloat(h.price).toFixed(2)}</td>
+                        <td style={{padding:"13px 14px",fontSize:13}} title={h.currency==="CAD"?`≈ $${(parseFloat(h.price)*cadRate).toFixed(2)} USD at today's FX rate`:undefined}>
+                          {h.currency==="CAD" ? "C$" : "$"}{parseFloat(h.price).toFixed(2)}
+                        </td>
                         <td style={{padding:"13px 14px",fontSize:13,fontWeight:600}}>{$(h.value)}</td>
                         <td style={{padding:"13px 14px",fontSize:13,color:C.emerald,fontWeight:600}}>{h.yld}%</td>
                         <td style={{padding:"13px 14px",fontSize:13,fontWeight:600}}>{$(h.annual)}</td>

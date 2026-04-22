@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
 import { getStockDetails } from './../lib/polygon'
+import { getCachedRate } from './../lib/fx'
 
 export function useHoldings(userId) {
   const [holdings, setHoldings] = useState([])
@@ -26,8 +27,13 @@ export function useHoldings(userId) {
       const raw = localStorage.getItem(key)
       const snaps = raw ? JSON.parse(raw) : []
       const today = new Date().toISOString().slice(0, 10) // YYYY-MM-DD
-      const totalValue    = holdings.reduce((s, h) => s + (h.price || 0) * (h.shares || 0), 0)
-      const annualIncome  = holdings.reduce((s, h) => s + ((h.price || 0) * (h.shares || 0) * (h.yld || 0)) / 100, 0)
+      // Snapshots are the source of truth for the dashboard's portfolio-over-time
+      // chart, which is displayed in USD. Normalize each holding to USD using
+      // the cached FX rate before summing so a user with mixed USD + CAD
+      // positions sees a coherent line.
+      const usdValue = (h) => (h.price || 0) * (h.shares || 0) * (h.currency && h.currency !== 'USD' ? getCachedRate(h.currency) : 1)
+      const totalValue    = holdings.reduce((s, h) => s + usdValue(h), 0)
+      const annualIncome  = holdings.reduce((s, h) => s + (usdValue(h) * (h.yld || 0)) / 100, 0)
       const monthlyIncome = annualIncome / 12
       const snap = { date: today, totalValue, monthlyIncome, annualIncome, count: holdings.length }
       const idx = snaps.findIndex(s => s.date === today)
@@ -57,14 +63,24 @@ export function useHoldings(userId) {
       .select('*')
       .eq('user_id', userId)
       .order('created_at', { ascending: true })
-    if (!error) setHoldings(data || [])
+    if (!error) {
+      // Back-compat: if the currency column hasn't been migrated yet for a given
+      // row (pre-TSX-launch holdings), default to USD so downstream FX math
+      // treats the price as dollars. Keeps the app safe even if the migration
+      // hasn't been run in some environment.
+      const rows = (data || []).map(h => ({ ...h, currency: h.currency || 'USD' }))
+      setHoldings(rows)
+    }
     setLoading(false)
   }
 
   async function addHolding(holding) {
+    // Default currency to USD for any caller that forgot to pass it (old code
+    // paths, CSV import, etc.). TSX flow explicitly passes 'CAD'.
+    const payload = { ...holding, currency: holding.currency || 'USD', user_id: userId }
     const { data, error } = await supabase
       .from('holdings')
-      .insert([{ ...holding, user_id: userId }])
+      .insert([payload])
       .select()
     if (!error && data) setHoldings(prev => [...prev, data[0]])
     return { error }
@@ -102,6 +118,11 @@ export function useHoldings(userId) {
     try {
       const updates = []
       for (const h of holdings) {
+        // Skip non-USD holdings — Polygon doesn't cover TSX, and pinging it
+        // with a `.TO` ticker would either return nothing or (worse) match
+        // the wrong US ticker and overwrite the user's manually-entered price.
+        // CAD holdings refresh via manual edit only for now.
+        if (h.currency && h.currency !== 'USD') continue
         try {
           const live = await getStockDetails(h.ticker)
           if (live.price > 0) {

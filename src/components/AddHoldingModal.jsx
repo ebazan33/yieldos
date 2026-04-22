@@ -9,6 +9,16 @@ const C = {
   blueGlow:"var(--blue-glow)",
 }
 
+// TSX / TSX Venture / NEO / CSE suffixes. If a user types `BNS.TO` or `REI-UN.TO`,
+// we know (a) it's Canadian, (b) Polygon will not auto-fill it, so we route the
+// modal into a manual-entry flow and tag the holding's currency as CAD.
+// We detect both with and without the dot — some people type just the base.
+const TSX_SUFFIXES = ['.TO', '.V', '.NE', '.CN']
+function isCanadianTicker(raw) {
+  const t = String(raw || '').trim().toUpperCase()
+  return TSX_SUFFIXES.some(s => t.endsWith(s))
+}
+
 export default function AddHoldingModal({ onClose, onAdd, prefillTicker }) {
   const [query, setQuery]         = useState('')
   const [results, setResults]     = useState([])
@@ -19,6 +29,17 @@ export default function AddHoldingModal({ onClose, onAdd, prefillTicker }) {
   const [searching, setSearching] = useState(false)
   const [loading, setLoading]     = useState(false)
   const [error, setError]         = useState('')
+  // ── Manual-entry state (TSX / Canadian stocks) ────────────────────────────
+  // Polygon doesn't cover TSX, so when the user types a `.TO` / `.V` ticker we
+  // jump out of the search/autofill flow and into a form where they supply
+  // name + price + yield themselves. The holding is tagged currency='CAD' so
+  // the dashboard knows to FX-convert before summing. We keep a separate
+  // branch (rather than unifying with the US flow) to make the "we couldn't
+  // auto-fill this one" moment explicit — otherwise users would wonder why
+  // nothing filled in.
+  const [manualMode, setManualMode] = useState(false)
+  const [manualName,  setManualName]  = useState('')
+  const [manualPrice, setManualPrice] = useState('')
   // "Rapid-fire" mode: after a successful add, we clear the form and
   // refocus the search so the user can keep going. We track what's been
   // added this session both to acknowledge the add ("✓ SCHD added") and
@@ -31,6 +52,16 @@ export default function AddHoldingModal({ onClose, onAdd, prefillTicker }) {
 
   useEffect(() => {
     if (query.length < 1) { setResults([]); return }
+    // Canadian tickers bypass Polygon entirely — it would either return
+    // nothing or (worse) match the US ticker of the same root, clobbering
+    // what the user actually wanted. Skip the search, drop a hint banner
+    // below the input telling them to hit "Add manually" instead.
+    if (isCanadianTicker(query)) {
+      clearTimeout(debounce.current)
+      setResults([])
+      setSearching(false)
+      return
+    }
     clearTimeout(debounce.current)
     debounce.current = setTimeout(async () => {
       setSearching(true)
@@ -42,8 +73,12 @@ export default function AddHoldingModal({ onClose, onAdd, prefillTicker }) {
 
   // If the modal was opened with a prefilled ticker (from the Screener's + Add button),
   // auto-load its details so the user lands straight on the "enter shares" step.
+  // TSX tickers route to the manual-entry branch instead since Polygon can't
+  // auto-fill them.
   useEffect(() => {
-    if (prefillTicker) handleSelect({ ticker: prefillTicker })
+    if (!prefillTicker) return
+    if (isCanadianTicker(prefillTicker)) startManual(prefillTicker)
+    else                                   handleSelect({ ticker: prefillTicker })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [prefillTicker])
 
@@ -64,21 +99,63 @@ export default function AddHoldingModal({ onClose, onAdd, prefillTicker }) {
     setLoading(false)
   }
 
+  // Enter the manual-entry branch with whatever the user has already typed
+  // as the ticker. Called either by clicking the "Add manually" button in
+  // the TSX hint banner, or by the prefill path for a `.TO`/`.V` ticker.
+  function startManual(rawTicker) {
+    const ticker = String(rawTicker || query || '').trim().toUpperCase()
+    setManualMode(true)
+    setResults([])
+    setSearching(false)
+    setSelected(null)
+    setQuery(ticker)
+    // Canadian dividend stocks are most often quarterly — sensible default.
+    setFreq('Quarterly')
+  }
+
   async function handleAdd() {
-    if (!selected || !shares || !yld) { setError('Please fill in all fields'); return }
     setError('')
-    const addedTicker = selected.ticker
-    const holding = {
-      ticker:   addedTicker,
-      name:     selected.name,
-      price:    selected.price,
-      shares:   parseFloat(shares),
-      yld:      parseFloat(yld),
-      sector:   selected.sector,
-      freq,
-      safe:     selected.safe || 'N/A',
-      next_div: selected.nextDiv || 'TBD',
+    let holding
+
+    if (manualMode) {
+      // Manual / TSX path. Currency defaults to CAD if the ticker looks
+      // Canadian (almost always true in this branch); otherwise USD so the
+      // manual branch still works for oddball cases like OTC tickers.
+      if (!query || !manualName || !manualPrice || !shares || !yld) {
+        setError('Please fill in all fields')
+        return
+      }
+      const tickerUpper = String(query).trim().toUpperCase()
+      const currency = isCanadianTicker(tickerUpper) ? 'CAD' : 'USD'
+      holding = {
+        ticker:   tickerUpper,
+        name:     manualName.trim(),
+        price:    parseFloat(manualPrice),
+        shares:   parseFloat(shares),
+        yld:      parseFloat(yld),
+        sector:   'Unknown', // user didn't supply; shortSector default
+        freq,
+        safe:     'N/A', // no dividend history to grade from
+        next_div: 'TBD',
+        currency,
+      }
+    } else {
+      if (!selected || !shares || !yld) { setError('Please fill in all fields'); return }
+      holding = {
+        ticker:   selected.ticker,
+        name:     selected.name,
+        price:    selected.price,
+        shares:   parseFloat(shares),
+        yld:      parseFloat(yld),
+        sector:   selected.sector,
+        freq,
+        safe:     selected.safe || 'N/A',
+        next_div: selected.nextDiv || 'TBD',
+        currency: 'USD',
+      }
     }
+
+    const addedTicker = holding.ticker
     const { error } = await onAdd(holding)
     if (error) {
       // If useHoldings returned a specific error (e.g. Seed 5-holding cap),
@@ -96,6 +173,9 @@ export default function AddHoldingModal({ onClose, onAdd, prefillTicker }) {
     setSelected(null)
     setShares('')
     setYld('')
+    setManualMode(false)
+    setManualName('')
+    setManualPrice('')
     // Frequency intentionally persists — if someone's loading up a monthly-div
     // portfolio (JEPI, O, MAIN), they don't want to re-pick "Monthly" every time.
 
@@ -145,9 +225,19 @@ export default function AddHoldingModal({ onClose, onAdd, prefillTicker }) {
           <input
             ref={searchRef}
             style={inp}
-            placeholder="Search ticker or company (e.g. SCHD, Apple...)"
+            placeholder={manualMode ? "Ticker (e.g. BNS.TO, ENB.TO)" : "Search ticker or company (e.g. SCHD, Apple, BNS.TO...)"}
             value={query}
-            onChange={e=>setQuery(e.target.value)}
+            onChange={e=>{
+              setQuery(e.target.value)
+              // If the user edits the ticker out of TSX territory while in manual
+              // mode, drop back to the standard search flow so they can pick a
+              // US ticker normally.
+              if (manualMode && !isCanadianTicker(e.target.value)) {
+                setManualMode(false)
+                setManualName('')
+                setManualPrice('')
+              }
+            }}
             autoFocus
           />
           {searching && (
@@ -168,9 +258,30 @@ export default function AddHoldingModal({ onClose, onAdd, prefillTicker }) {
           )}
         </div>
 
-        {/* Selected stock info */}
+        {/* TSX hint — only shown when the user has typed a `.TO`/`.V` ticker
+            but hasn't entered manual mode yet. We don't auto-flip to manual
+            because the user might be mid-typing; the explicit "Add manually"
+            click gives them a chance to fix a typo first. */}
+        {!manualMode && isCanadianTicker(query) && (
+          <div style={{background:`${C.emerald}14`,border:`1px solid ${C.emerald}40`,borderRadius:10,padding:"12px 14px",marginBottom:16}}>
+            <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:4}}>
+              <span style={{fontSize:13}}>🇨🇦</span>
+              <span style={{fontSize:12,fontWeight:700,color:C.text}}>Canadian stock detected</span>
+            </div>
+            <div style={{fontSize:11,color:C.textSub,lineHeight:1.55,marginBottom:10}}>
+              TSX tickers need a couple of details filled in manually — our auto-fill covers US exchanges only (for now). We'll handle CAD → USD conversion on your dashboard for you.
+            </div>
+            <button
+              onClick={()=>startManual(query)}
+              style={{background:C.emerald,color:"#0b0b0b",border:"none",borderRadius:7,padding:"7px 12px",fontSize:11,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>
+              Add {query.toUpperCase()} manually →
+            </button>
+          </div>
+        )}
+
+        {/* Selected stock info — US flow */}
         {loading && <div style={{fontSize:12,color:C.textMuted,marginBottom:16}}>Loading stock data...</div>}
-        {selected && !loading && (
+        {selected && !loading && !manualMode && (
           <div style={{background:C.blueGlow,border:`1px solid ${C.blue}30`,borderRadius:10,padding:"12px 16px",marginBottom:20}}>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center"}}>
               <div>
@@ -180,6 +291,34 @@ export default function AddHoldingModal({ onClose, onAdd, prefillTicker }) {
               <span style={{fontFamily:"'Fraunces',serif",fontSize:18,fontWeight:700,color:C.text}}>${selected.price}</span>
             </div>
             <div style={{fontSize:11,color:C.textMuted,marginTop:4}}>{selected.sector}</div>
+          </div>
+        )}
+
+        {/* Manual-entry summary — CAD/TSX flow. Looks deliberately different
+            from the US blue card so the user knows they're in a different
+            flow and understands why they have to type the name/price. */}
+        {manualMode && (
+          <div style={{background:`${C.emerald}0d`,border:`1px solid ${C.emerald}40`,borderRadius:10,padding:"14px 16px",marginBottom:16}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
+              <div style={{display:"flex",alignItems:"center",gap:8}}>
+                <span style={{background:`${C.emerald}22`,color:C.emerald,border:`1px solid ${C.emerald}50`,borderRadius:5,padding:"2px 8px",fontSize:10,fontWeight:700,letterSpacing:"0.04em"}}>{(query||'').toUpperCase() || 'CAD'}</span>
+                <span style={{background:`${C.emerald}16`,color:C.emerald,border:`1px solid ${C.emerald}30`,borderRadius:4,padding:"1px 6px",fontSize:9,fontWeight:700,letterSpacing:"0.06em"}}>CAD</span>
+              </div>
+              <button onClick={()=>{setManualMode(false);setManualName('');setManualPrice('');setQuery('');setTimeout(()=>searchRef.current?.focus(),0)}}
+                style={{background:"transparent",border:"none",color:C.textMuted,fontSize:11,cursor:"pointer",fontFamily:"inherit"}}>
+                ← back to search
+              </button>
+            </div>
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:4}}>
+              <div>
+                <div style={{fontSize:10,color:C.textMuted,fontWeight:600,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:5}}>Company Name</div>
+                <input style={{...inp,padding:"8px 12px",fontSize:12}} type="text" placeholder="e.g. Bank of Nova Scotia" value={manualName} onChange={e=>setManualName(e.target.value)} />
+              </div>
+              <div>
+                <div style={{fontSize:10,color:C.textMuted,fontWeight:600,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:5}}>Price (CAD)</div>
+                <input style={{...inp,padding:"8px 12px",fontSize:12}} type="number" placeholder="e.g. 72.40" value={manualPrice} onChange={e=>setManualPrice(e.target.value)} step="0.01" min="0" />
+              </div>
+            </div>
           </div>
         )}
 
@@ -211,38 +350,65 @@ export default function AddHoldingModal({ onClose, onAdd, prefillTicker }) {
           </div>
         </div>
 
-        {/* Preview */}
-        {selected && shares && yld && (
-          <div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:10,padding:"12px 16px",marginBottom:20}}>
-            <div style={{fontSize:11,color:C.textMuted,fontWeight:600,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:8}}>Income Preview</div>
-            <div style={{display:"flex",justifyContent:"space-between"}}>
-              <div style={{textAlign:"center"}}>
-                <div style={{fontFamily:"'Fraunces',serif",fontSize:18,fontWeight:700,color:C.emerald}}>${((selected.price*parseFloat(shares||0)*parseFloat(yld||0))/100/12).toFixed(2)}</div>
-                <div style={{fontSize:10,color:C.textMuted}}>per month</div>
+        {/* Preview — works for both US (selected) and CAD (manual) flows.
+            Prices stay in native currency here; the USD conversion happens
+            on the dashboard. Labels reflect the currency so the user isn't
+            confused when their CAD total shows a CAD figure. */}
+        {(() => {
+          const activePrice = manualMode ? parseFloat(manualPrice || 0) : (selected?.price || 0)
+          const hasCore = manualMode
+            ? (manualPrice && shares && yld)
+            : (selected && shares && yld)
+          if (!hasCore) return null
+          const ccy = manualMode ? 'CAD' : 'USD'
+          const symbol = ccy === 'CAD' ? 'C$' : '$'
+          return (
+            <div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:10,padding:"12px 16px",marginBottom:20}}>
+              <div style={{fontSize:11,color:C.textMuted,fontWeight:600,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:8,display:"flex",alignItems:"center",gap:6}}>
+                Income Preview
+                {manualMode && <span style={{fontSize:9,color:C.emerald,fontWeight:700}}>· {ccy}</span>}
               </div>
-              <div style={{textAlign:"center"}}>
-                <div style={{fontFamily:"'Fraunces',serif",fontSize:18,fontWeight:700,color:C.text}}>${((selected.price*parseFloat(shares||0)*parseFloat(yld||0))/100).toFixed(2)}</div>
-                <div style={{fontSize:10,color:C.textMuted}}>per year</div>
+              <div style={{display:"flex",justifyContent:"space-between"}}>
+                <div style={{textAlign:"center"}}>
+                  <div style={{fontFamily:"'Fraunces',serif",fontSize:18,fontWeight:700,color:C.emerald}}>{symbol}{((activePrice*parseFloat(shares||0)*parseFloat(yld||0))/100/12).toFixed(2)}</div>
+                  <div style={{fontSize:10,color:C.textMuted}}>per month</div>
+                </div>
+                <div style={{textAlign:"center"}}>
+                  <div style={{fontFamily:"'Fraunces',serif",fontSize:18,fontWeight:700,color:C.text}}>{symbol}{((activePrice*parseFloat(shares||0)*parseFloat(yld||0))/100).toFixed(2)}</div>
+                  <div style={{fontSize:10,color:C.textMuted}}>per year</div>
+                </div>
+                <div style={{textAlign:"center"}}>
+                  <div style={{fontFamily:"'Fraunces',serif",fontSize:18,fontWeight:700,color:C.text}}>{symbol}{(activePrice*parseFloat(shares||0)).toFixed(2)}</div>
+                  <div style={{fontSize:10,color:C.textMuted}}>total value</div>
+                </div>
               </div>
-              <div style={{textAlign:"center"}}>
-                <div style={{fontFamily:"'Fraunces',serif",fontSize:18,fontWeight:700,color:C.text}}>${(selected.price*parseFloat(shares||0)).toFixed(2)}</div>
-                <div style={{fontSize:10,color:C.textMuted}}>total value</div>
-              </div>
+              {manualMode && (
+                <div style={{fontSize:10,color:C.textMuted,marginTop:8,lineHeight:1.5}}>
+                  Shown in CAD. Your dashboard totals will convert to USD automatically using today's FX rate.
+                </div>
+              )}
             </div>
-          </div>
-        )}
+          )
+        })()}
 
         {error && <div style={{fontSize:12,color:C.red,marginBottom:12}}>{error}</div>}
 
-        <div style={{display:"flex",gap:8}}>
-          <button onClick={onClose} style={{flex:1,background:"transparent",color:addedList.length>0?C.text:C.textSub,border:`1px solid ${addedList.length>0?C.emerald+"60":C.border}`,borderRadius:9,cursor:"pointer",fontFamily:"inherit",fontSize:12,fontWeight:addedList.length>0?600:500,padding:"10px",transition:"all 0.15s"}}>
-            {addedList.length > 0 ? `Done (${addedList.length})` : 'Cancel'}
-          </button>
-          <button onClick={handleAdd} disabled={!selected||!shares||!yld}
-            style={{flex:2,background:C.blue,color:"#fff",border:"none",borderRadius:9,cursor:(!selected||!shares||!yld)?"default":"pointer",fontFamily:"inherit",fontWeight:600,fontSize:13,padding:"10px",opacity:(!selected||!shares||!yld)?0.4:1,transition:"opacity 0.2s"}}>
-            {addedList.length === 0 ? 'Add to Portfolio' : 'Add another'}
-          </button>
-        </div>
+        {(() => {
+          const canAdd = manualMode
+            ? !!(query && manualName && manualPrice && shares && yld)
+            : !!(selected && shares && yld)
+          return (
+            <div style={{display:"flex",gap:8}}>
+              <button onClick={onClose} style={{flex:1,background:"transparent",color:addedList.length>0?C.text:C.textSub,border:`1px solid ${addedList.length>0?C.emerald+"60":C.border}`,borderRadius:9,cursor:"pointer",fontFamily:"inherit",fontSize:12,fontWeight:addedList.length>0?600:500,padding:"10px",transition:"all 0.15s"}}>
+                {addedList.length > 0 ? `Done (${addedList.length})` : 'Cancel'}
+              </button>
+              <button onClick={handleAdd} disabled={!canAdd}
+                style={{flex:2,background:C.blue,color:"#fff",border:"none",borderRadius:9,cursor:!canAdd?"default":"pointer",fontFamily:"inherit",fontWeight:600,fontSize:13,padding:"10px",opacity:!canAdd?0.4:1,transition:"opacity 0.2s"}}>
+                {addedList.length === 0 ? 'Add to Portfolio' : 'Add another'}
+              </button>
+            </div>
+          )
+        })()}
         <style>{`@keyframes fadein { from { opacity:0; transform:translateY(-4px);} to { opacity:1; transform:translateY(0);} }`}</style>
       </div>
     </div>
