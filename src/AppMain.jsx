@@ -2776,8 +2776,17 @@ export default function AppMain() {
                    "Click to load live dividend data"}
                 </p>
               </div>
-              <input placeholder="Search ticker or name…" value={screenerQuery} onChange={e=>setScreenerQuery(e.target.value)}
-                style={{width:220,background:C.surface,border:`1px solid ${C.border}`,borderRadius:9,color:C.text,fontFamily:"inherit",fontSize:12,padding:"8px 13px",outline:"none"}}/>
+              <input
+                type="search"
+                inputMode="search"
+                autoComplete="off"
+                autoCorrect="off"
+                autoCapitalize="characters"
+                spellCheck={false}
+                placeholder="Search ticker or name…"
+                value={screenerQuery}
+                onChange={e=>setScreenerQuery(e.target.value)}
+                style={{width:"min(220px, 100%)",minWidth:140,background:C.surface,border:`1px solid ${C.border}`,borderRadius:9,color:C.text,fontFamily:"inherit",fontSize:12,padding:"8px 13px",outline:"none"}}/>
             </div>
             <div style={{display:"flex",gap:8,marginBottom:14,flexWrap:"wrap",alignItems:"center"}}>
               {[
