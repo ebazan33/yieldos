@@ -9,6 +9,7 @@ import Toaster from "./components/Toast";
 import CountUp from "./components/CountUp";
 import ConfirmModal from "./components/ConfirmModal";
 import AccountModal from "./components/AccountModal";
+import TrialWelcomeModal from "./components/TrialWelcomeModal";
 import { getStockDetails } from "./lib/polygon";
 import { startCheckout, readCheckoutReturn, stripeConfigured, openCustomerPortal, customerPortalConfigured } from "./lib/stripe";
 
@@ -752,6 +753,10 @@ export default function AppMain() {
   // flash of "email prefix" on reload.
   const [displayName, setDisplayName] = useState(() => localStorage.getItem("yieldos_display_name") || "");
   const [showAccount, setShowAccount] = useState(false);
+  // Trial welcome modal — shown once to brand-new signups whose Grow trial
+  // is active. Gated by a localStorage flag (`yieldos_trial_welcomed`) so
+  // it never reappears after dismissal, even across reloads.
+  const [showTrialWelcome, setShowTrialWelcome] = useState(false);
   // Theme — "dark" (default) or "light". Applied by writing a data-theme
   // attribute onto <html>, which flips the CSS variables in index.html. We
   // cache in localStorage for instant paint on reload and mirror to Supabase
@@ -876,6 +881,19 @@ export default function AppMain() {
     ? Math.max(0, Math.ceil((new Date(trialEndsAt).getTime() - Date.now()) / (24 * 60 * 60 * 1000)))
     : 0;
   const effectivePlan = (plan === "Seed" && trialActive) ? "Grow" : plan;
+
+  // First-login welcome to new signups on an active Grow trial. Gated by a
+  // localStorage flag so it only fires once — re-runs would feel like nagging.
+  // Small delay so the dashboard paints before the modal lands, making it
+  // feel like a celebration rather than a gate.
+  useEffect(() => {
+    if (demoMode || !user || !trialActive) return;
+    let welcomed = false;
+    try { welcomed = localStorage.getItem("yieldos_trial_welcomed") === "true"; } catch {}
+    if (welcomed) return;
+    const t = setTimeout(() => setShowTrialWelcome(true), 600);
+    return () => clearTimeout(t);
+  }, [demoMode, user, trialActive]);
 
   // Name shown in greetings + nav. User-set display_name takes priority;
   // falls back to the email prefix (old behavior). Trimmed defensively so a
@@ -2695,6 +2713,17 @@ export default function AppMain() {
             // metadata-diff guard in the sync effect doesn't fire a redundant
             // update.
             if (updatedUser) setUser(updatedUser);
+          }}
+        />
+      )}
+      {showTrialWelcome && !demoMode && user && trialActive && (
+        <TrialWelcomeModal
+          daysLeft={trialDaysLeft}
+          onAddHolding={() => { setShowAdd(true); }}
+          onSeePlans={() => { navigate("plans"); }}
+          onClose={() => {
+            setShowTrialWelcome(false);
+            try { localStorage.setItem("yieldos_trial_welcomed", "true"); } catch {}
           }}
         />
       )}
