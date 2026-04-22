@@ -78,7 +78,22 @@ function detectCols(header) {
   // Currency column: common on Canadian brokerage CSVs where the account
   // holds both USD and CAD positions.
   const curIdx = h.findIndex(x => x === 'currency' || x === 'ccy')
-  return { symbolIdx: symbolIdxLoose, qtyIdx: qtyIdxLoose, priceIdx: priceIdxLoose, curIdx }
+  // Cost basis — almost every major brokerage exports this, but column names
+  // vary wildly. We prefer per-share "average cost" when available; if only
+  // total cost is present (Vanguard, Schwab's "Cost Basis" is total for some
+  // exports), we divide by shares at parse time.
+  // Per-share candidates: "average cost", "avg cost", "purchase price"
+  // Total candidates:     "cost basis", "cost basis total", "book value"
+  const costPerShareIdx = h.findIndex(x =>
+    x === 'average cost' || x === 'avg cost' || x === 'avg. cost' ||
+    x === 'purchase price' || x === 'cost per share' || x.includes('avg cost') || x.includes('average cost')
+  )
+  const costTotalIdx = h.findIndex(x =>
+    x === 'cost basis' || x === 'cost basis total' || x === 'total cost' ||
+    x === 'book value' || x === 'total cost basis' ||
+    (x.includes('cost basis') && !x.includes('per'))
+  )
+  return { symbolIdx: symbolIdxLoose, qtyIdx: qtyIdxLoose, priceIdx: priceIdxLoose, curIdx, costPerShareIdx, costTotalIdx }
 }
 
 // Filter out cash, money-market funds, and junk rows. Accepts both US-style
@@ -127,7 +142,7 @@ export default function ImportHoldingsModal({ onClose, onAdd }) {
         if (parsed.length < 2) { setError("This file doesn't look like a holdings CSV — we couldn't find any data rows."); return }
         const headerIdx = findHeaderRow(parsed)
         const header = parsed[headerIdx]
-        const { symbolIdx, qtyIdx, priceIdx, curIdx } = detectCols(header)
+        const { symbolIdx, qtyIdx, priceIdx, curIdx, costPerShareIdx, costTotalIdx } = detectCols(header)
         if (symbolIdx < 0 || qtyIdx < 0) {
           setError(`We couldn't find a "Symbol" and "Shares" column in this CSV. Headers we saw: ${header.slice(0, 8).join(', ')}…`)
           return
@@ -146,15 +161,35 @@ export default function ImportHoldingsModal({ onClose, onAdd }) {
           const csvPrice = priceIdx >= 0 ? parseNumber(r[priceIdx]) : NaN
           const csvCurRaw = curIdx >= 0 ? String(r[curIdx] || '').toUpperCase().trim() : ''
           const isTsx = isCanadianTicker(t)
+          // Cost basis. Prefer per-share, else derive from total / shares.
+          let csvCostBasis = null
+          if (costPerShareIdx >= 0) {
+            const v = parseNumber(r[costPerShareIdx])
+            if (isFinite(v) && v > 0) csvCostBasis = v
+          }
+          if (csvCostBasis == null && costTotalIdx >= 0 && q > 0) {
+            const v = parseNumber(r[costTotalIdx])
+            if (isFinite(v) && v > 0) csvCostBasis = v / q
+          }
           // Currency resolution: explicit column wins; otherwise TSX suffix
           // implies CAD, everything else defaults USD.
           let currency = 'USD'
           if (csvCurRaw === 'CAD' || csvCurRaw === 'USD') currency = csvCurRaw
           else if (isTsx)                                  currency = 'CAD'
-          // Deduplicate — some brokerages have the same ticker across accounts
+          // Deduplicate — some brokerages have the same ticker across accounts.
+          // When merging, blend the cost basis weighted by shares so total cost
+          // stays right across the combined position.
           const existing = detected.find(d => d.ticker === t)
           if (existing) {
-            existing.shares += q
+            const prevShares = existing.shares
+            const prevBasis  = existing.csvCostBasis
+            const newTotalShares = prevShares + q
+            if (prevBasis != null && csvCostBasis != null) {
+              existing.csvCostBasis = ((prevBasis * prevShares) + (csvCostBasis * q)) / newTotalShares
+            } else if (csvCostBasis != null) {
+              existing.csvCostBasis = csvCostBasis
+            }
+            existing.shares = newTotalShares
           } else {
             detected.push({
               ticker: t,
@@ -162,6 +197,7 @@ export default function ImportHoldingsModal({ onClose, onAdd }) {
               selected: true,
               currency,
               csvPrice: isFinite(csvPrice) && csvPrice > 0 ? csvPrice : null,
+              csvCostBasis,
               // Flag CAD rows with no usable price — they need manual entry
               // before import can proceed, otherwise we'd silently insert $0.
               needsManualPrice: currency === 'CAD' && (!isFinite(csvPrice) || csvPrice <= 0),
@@ -219,6 +255,7 @@ export default function ImportHoldingsModal({ onClose, onAdd }) {
               safe:     'N/A',
               next_div: 'TBD',
               currency: 'CAD',
+              cost_basis: row.csvCostBasis != null && row.csvCostBasis > 0 ? row.csvCostBasis : null,
             }
             const { error: addErr } = await onAdd(holding)
             if (addErr) { failed++; failedList.push(row.ticker) }
@@ -241,6 +278,10 @@ export default function ImportHoldingsModal({ onClose, onAdd }) {
               safe:     details.safe || 'N/A',
               next_div: details.nextDiv || 'TBD',
               currency: 'USD',
+              cost_basis: row.csvCostBasis != null && row.csvCostBasis > 0 ? row.csvCostBasis : null,
+              growth_streak: details.growthStreak ?? null,
+              pay_streak:    details.payStreak ?? null,
+              badge:         details.badge ?? null,
             }
             const { error: addErr } = await onAdd(holding)
             if (addErr) { failed++; failedList.push(row.ticker) }
@@ -271,7 +312,7 @@ export default function ImportHoldingsModal({ onClose, onAdd }) {
           <>
             <div style={{fontFamily:"'Fraunces',serif",fontSize:22,fontWeight:700,marginBottom:6,letterSpacing:"-0.01em",color:C.text}}>Import from your brokerage</div>
             <div style={{fontSize:12,color:C.textSub,marginBottom:22,lineHeight:1.6}}>
-              Export a holdings/positions CSV from Fidelity, Schwab, Vanguard, E*TRADE, TD Ameritrade, Robinhood, Questrade, or Wealthsimple. We'll detect your tickers and auto-fill live data for US holdings. Canadian (TSX) tickers keep the price from your CSV.
+              Export a holdings/positions CSV from Fidelity, Schwab, Vanguard, E*TRADE, TD Ameritrade, Robinhood, Questrade, or Wealthsimple. We'll detect your tickers, pull live data for US holdings, and grab your cost basis if your CSV includes it. Canadian (TSX) tickers keep the price from your CSV.
             </div>
 
             <div
@@ -327,6 +368,10 @@ export default function ImportHoldingsModal({ onClose, onAdd }) {
                     {rows.some(r => r.currency === 'CAD') && (
                       <th style={{padding:"10px 12px",textAlign:"left",fontSize:9,color:C.textMuted,textTransform:"uppercase",letterSpacing:"0.08em",fontWeight:700}}>Price (CAD)</th>
                     )}
+                    {/* Cost column — always shown so users can backfill per-share cost
+                        even if their brokerage didn't export it. The header hints
+                        at the currency when any CAD row is present. */}
+                    <th style={{padding:"10px 12px",textAlign:"left",fontSize:9,color:C.textMuted,textTransform:"uppercase",letterSpacing:"0.08em",fontWeight:700}}>Cost / Share</th>
                     <th style={{padding:"10px 12px",textAlign:"right",fontSize:9,color:C.textMuted,textTransform:"uppercase",letterSpacing:"0.08em",fontWeight:700,width:60}}></th>
                   </tr>
                 </thead>
@@ -374,6 +419,16 @@ export default function ImportHoldingsModal({ onClose, onAdd }) {
                             )}
                           </td>
                         )}
+                        <td style={{padding:"8px 12px"}}>
+                          <input type="number" step="0.01" min="0"
+                            value={r.csvCostBasis ?? ''}
+                            placeholder={isCad ? "optional (CAD)" : "optional"}
+                            onChange={e=>{
+                              const v = Number(e.target.value)
+                              updateRow(i,{ csvCostBasis: isFinite(v) && v > 0 ? v : null })
+                            }}
+                            style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:6,color:C.text,fontFamily:"inherit",fontSize:12,padding:"5px 8px",width:90,outline:"none"}}/>
+                        </td>
                         <td style={{padding:"8px 12px",textAlign:"right"}}>
                           <button onClick={()=>removeRow(i)} title="Remove"
                             style={{background:"transparent",border:`1px solid ${C.border}`,borderRadius:6,color:C.textMuted,cursor:"pointer",fontSize:11,padding:"3px 8px",fontFamily:"inherit"}}>✕</button>

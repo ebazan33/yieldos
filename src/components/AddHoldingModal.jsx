@@ -40,6 +40,11 @@ export default function AddHoldingModal({ onClose, onAdd, prefillTicker }) {
   const [manualMode, setManualMode] = useState(false)
   const [manualName,  setManualName]  = useState('')
   const [manualPrice, setManualPrice] = useState('')
+  // Cost basis (per share, native currency). Optional — if the user leaves it
+  // blank we don't populate it and the dashboard will just skip gains/YoC math
+  // for that row. We keep it as a string so empty stays empty (vs. 0, which
+  // would look like "I bought it for free").
+  const [costBasis, setCostBasis] = useState('')
   // "Rapid-fire" mode: after a successful add, we clear the form and
   // refocus the search so the user can keep going. We track what's been
   // added this session both to acknowledge the add ("✓ SCHD added") and
@@ -138,6 +143,9 @@ export default function AddHoldingModal({ onClose, onAdd, prefillTicker }) {
         safe:     'N/A', // no dividend history to grade from
         next_div: 'TBD',
         currency,
+        // Only send cost_basis when the user actually typed one. A NULL here
+        // is the signal that gains/YoC should be hidden for this row.
+        cost_basis: costBasis !== '' ? parseFloat(costBasis) : null,
       }
     } else {
       if (!selected || !shares || !yld) { setError('Please fill in all fields'); return }
@@ -152,6 +160,12 @@ export default function AddHoldingModal({ onClose, onAdd, prefillTicker }) {
         safe:     selected.safe || 'N/A',
         next_div: selected.nextDiv || 'TBD',
         currency: 'USD',
+        cost_basis: costBasis !== '' ? parseFloat(costBasis) : null,
+        // Persist streak data fetched from Polygon so the Holdings table
+        // can badge Aristocrats without re-querying on every paint.
+        growth_streak: selected.growthStreak ?? null,
+        pay_streak:    selected.payStreak ?? null,
+        badge:         selected.badge ?? null,
       }
     }
 
@@ -176,6 +190,7 @@ export default function AddHoldingModal({ onClose, onAdd, prefillTicker }) {
     setManualMode(false)
     setManualName('')
     setManualPrice('')
+    setCostBasis('')
     // Frequency intentionally persists — if someone's loading up a monthly-div
     // portfolio (JEPI, O, MAIN), they don't want to re-pick "Monthly" every time.
 
@@ -336,6 +351,26 @@ export default function AddHoldingModal({ onClose, onAdd, prefillTicker }) {
             <input style={inp} type="number" placeholder="e.g. 3.6" value={yld} onChange={e=>setYld(e.target.value)} step="0.1" min="0" />
             {selected && !selected.yld && <div style={{fontSize:10,color:C.textMuted,marginTop:4}}>Couldn't find yield automatically — please enter it manually</div>}
           </div>
+        </div>
+
+        {/* Cost basis — per share in native currency. Optional: lets the user
+            track gains, total return, and yield-on-cost. Leaving it blank
+            hides those columns for this row, so nobody feels forced to dig
+            through old brokerage statements just to add a ticker. */}
+        <div style={{marginBottom:16}}>
+          <div style={{fontSize:11,color:C.textMuted,fontWeight:600,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:6,display:"flex",alignItems:"center",gap:6}}>
+            Cost Basis per Share
+            <span style={{fontSize:9,color:C.textMuted,fontWeight:500,textTransform:"none",letterSpacing:0}}>optional — unlocks gains + yield-on-cost</span>
+          </div>
+          <input
+            style={inp}
+            type="number"
+            placeholder={manualMode ? "e.g. 65.20 (CAD)" : "e.g. 62.15 — what you paid per share"}
+            value={costBasis}
+            onChange={e=>setCostBasis(e.target.value)}
+            step="0.01"
+            min="0"
+          />
         </div>
 
         <div style={{marginBottom:20}}>

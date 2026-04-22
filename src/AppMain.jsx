@@ -1,8 +1,11 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { supabase } from "./lib/supabase";
 import { useHoldings } from "./hooks/useHoldings";
+import { useDividendPayments } from "./hooks/useDividendPayments";
+import { useWatchlist } from "./hooks/useWatchlist";
 import AddHoldingModal from "./components/AddHoldingModal";
 import ImportHoldingsModal from "./components/ImportHoldingsModal";
+import SharePortfolioModal from "./components/SharePortfolioModal";
 import AuthModal from "./components/AuthModal";
 import FeedbackModal from "./components/FeedbackModal";
 import Toaster from "./components/Toast";
@@ -153,23 +156,27 @@ function generateAlerts(port, totMo, goal) {
 // Seed-tier holding cap. Any attempt to add an N+1 holding shows the
 // upgrade modal instead. Keep this in sync with the PLANS copy below.
 const SEED_HOLDING_CAP = 5;
+// Free tier cap on watchlist entries. Kept intentionally generous relative
+// to the holdings cap because a watchlist IS the upgrade funnel — people
+// find a ticker they like, save it, then want unlimited later.
+const SEED_WATCHLIST_CAP = 10;
 
 const PLANS = [
   { name:"Seed", price:0, color:"var(--text-muted)",
-    features:[`Up to ${SEED_HOLDING_CAP} holdings`,"Income-first dashboard","Brokerage CSV import","FIRE preview","Community access"],
-    locked:["AI Insights","Paycheck Calendar","Screener","Alerts","Goal Tracker","Tax Estimates","Daily Briefing"] },
+    features:[`Up to ${SEED_HOLDING_CAP} holdings`,"Income-first dashboard","Brokerage CSV import","Watchlist (up to 10)","Dividend payment log","FIRE preview","Community access"],
+    locked:["AI Insights","Paycheck Calendar","Screener","Alerts","Goal Tracker","Tax Estimates","Daily Briefing","Yield-on-Cost","Public share link","Unlimited watchlist"] },
   { name:"Grow", price:9, color:"#4f8ef7", popular:true,
-    features:["Unlimited holdings","AI Portfolio Insights","Dividend Calendar","Smart Alerts","Goal Tracker","Stock Screener","Tax Estimator"],
+    features:["Unlimited holdings","AI Portfolio Insights","Dividend Calendar","Smart Alerts","Goal Tracker","Stock Screener","Tax Estimator","Yield-on-Cost + Aristocrat badges","Unlimited watchlist","Public share link","Tax-export CSV"],
     locked:["Advanced filters","Email alerts","CSV & PDF export"] },
   { name:"Harvest", price:19, color:"#f59e0b",
     features:["Everything in Grow","Advanced screener","CSV & PDF export","Email alerts","Priority support","Rebalance Ideas","Early access"],
     locked:[] },
 ];
 
-const TABS = ["dashboard","holdings","calendar","screener","alerts","goals","taxes","advisor","plans"];
+const TABS = ["dashboard","holdings","calendar","watchlist","screener","alerts","goals","taxes","advisor","plans"];
 // Display labels for nav — internal ids stay stable (so saved state / deep-links keep working)
 // but user-visible text deliberately avoids the regulated word "advisor".
-const TAB_LABELS = { dashboard:"dashboard", holdings:"holdings", calendar:"paychecks", screener:"screener", alerts:"alerts", goals:"goals", taxes:"taxes", advisor:"insights", plans:"plans" };
+const TAB_LABELS = { dashboard:"dashboard", holdings:"holdings", calendar:"paychecks", watchlist:"watchlist", screener:"screener", alerts:"alerts", goals:"goals", taxes:"taxes", advisor:"insights", plans:"plans" };
 
 // Map a safety grade to its swatch color (and a plain-English meaning for tooltips)
 const SAFETY_META = {
@@ -185,6 +192,53 @@ const SAFETY_META = {
 const safetyColor = g => (SAFETY_META[g] || SAFETY_META["N/A"]).color;
 const $ = (n,d=0) => new Intl.NumberFormat("en-US",{style:"currency",currency:"USD",minimumFractionDigits:d,maximumFractionDigits:d}).format(n);
 const rnd = (a,b) => Math.random()*(b-a)+a;
+
+// Short month labels for the 12-bucket paycheck distribution + tooltips.
+const MONTH_SHORT = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+
+// Compute expected income per calendar month (Jan=0..Dec=11) from the
+// holdings list. Monthly payers drop into every bucket; Quarterly payers
+// into their next-div month + 3,6,9 months; Annual payers into just
+// their next-div month. `next_div` comes as "MMM DD" (e.g. "Jun 25"); we
+// parse the month only and ignore the day. Falls back gracefully when the
+// date is missing — that holding just doesn't contribute, which is fine.
+//
+// Used by the lean-month detector on the Paycheck calendar to call out
+// months with disproportionately low projected income and nudge the user
+// toward diversification (e.g. add a monthly-payer ETF). Also powers a
+// compact bar chart so users can SEE the shape of their year.
+function computeMonthlyPaychecks(port) {
+  const buckets = [0,0,0,0,0,0,0,0,0,0,0,0];
+  for (const h of port) {
+    const annual = Number(h.annual) || ((Number(h.price)||0) * (Number(h.shares)||0) * (Number(h.yld)||0) / 100);
+    if (!annual) continue;
+    if (h.freq === "Monthly") {
+      const per = annual / 12;
+      for (let m = 0; m < 12; m++) buckets[m] += per;
+      continue;
+    }
+    // Parse the "MMM DD" next_div into a month index. Defensive: if we
+    // can't parse, skip this holding rather than leaking NaN into the
+    // buckets — a 0 bucket is the right fallback signal.
+    let startMonth = null;
+    if (h.next_div && h.next_div !== "TBD") {
+      const mStr = String(h.next_div).split(" ")[0];
+      const idx = MONTH_SHORT.findIndex(x => x.toLowerCase() === String(mStr).toLowerCase().slice(0,3));
+      if (idx >= 0) startMonth = idx;
+    }
+    if (startMonth == null) continue;
+    if (h.freq === "Annual") {
+      buckets[startMonth] += annual;
+    } else {
+      // Quarterly (default). 4 payments 3 months apart, starting at
+      // startMonth. Most US dividend stocks are quarterly; this covers
+      // the default case.
+      const per = annual / 4;
+      for (let k = 0; k < 4; k++) buckets[(startMonth + k * 3) % 12] += per;
+    }
+  }
+  return buckets;
+}
 
 function useTabTransition(initial) {
   const [active, setActive]   = useState(initial);
@@ -263,6 +317,40 @@ function Typing({ text }) {
   const [d,setD]=useState(""); const [done,setDone]=useState(false);
   useEffect(()=>{ setD(""); setDone(false); let i=0; const id=setInterval(()=>{ i++; setD(text.slice(0,i)); if(i>=text.length){clearInterval(id);setDone(true);} },13); return()=>clearInterval(id); },[text]);
   return <span>{d}{!done&&<span style={{color:C.blue,animation:"blink 0.9s infinite"}}>|</span>}</span>;
+}
+
+// Inline "add to watchlist" row — lives on the Watchlist page header. Kept
+// as a small standalone component so its local state (the input value)
+// doesn't leak into the parent and cause re-renders on every keystroke.
+function WatchlistAddRow({ onAdd, disabled, openUpgrade }) {
+  const [t, setT] = useState("");
+  const [busy, setBusy] = useState(false);
+  async function submit() {
+    if (!t.trim() || busy) return;
+    if (disabled) { openUpgrade?.("watchlist"); return; }
+    setBusy(true);
+    await onAdd(t.trim().toUpperCase());
+    setT("");
+    setBusy(false);
+  }
+  return (
+    <div style={{display:"flex",gap:6,alignItems:"center"}}>
+      <input
+        value={t}
+        onChange={e=>setT(e.target.value.toUpperCase())}
+        onKeyDown={e=>{ if (e.key === "Enter") submit(); }}
+        placeholder="Add ticker (e.g. SCHD)"
+        disabled={busy}
+        style={{background:"var(--surface)",border:`1px solid var(--border)`,borderRadius:9,color:"var(--text)",fontFamily:"inherit",fontSize:12,padding:"8px 13px",outline:"none",width:180}}
+      />
+      <button
+        onClick={submit}
+        disabled={!t.trim() || busy}
+        style={{background:"#4f8ef7",color:"#fff",border:"none",borderRadius:9,cursor:(!t.trim()||busy)?"default":"pointer",fontFamily:"inherit",fontSize:12,fontWeight:600,padding:"8px 14px",opacity:(!t.trim()||busy)?0.5:1,transition:"opacity 0.15s"}}>
+        {busy ? "Adding…" : "+ Add"}
+      </button>
+    </div>
+  );
 }
 
 function Landing({ onEnter, onPickPlan, onDemo, onFeedback }) {
@@ -793,6 +881,8 @@ export default function AppMain() {
   const [showAdd, setShowAdd]       = useState(false);
   const [showImport, setShowImport] = useState(false);
   const [showFeedback, setShowFeedback] = useState(false);
+  // Public-share management modal. Grow-only; gated in the button onClick.
+  const [showShare, setShowShare] = useState(false);
   // Confirm modal state — set to an object ({ title, body, confirmLabel, danger,
   // onConfirm }) to open the ConfirmModal, null to close. Used for destructive
   // actions (remove holding, etc.) so nothing destructive happens on a single tap.
@@ -802,6 +892,11 @@ export default function AppMain() {
   // Mobile-only: bottom tab bar has 4 pinned tabs + a More button that
   // opens this sheet listing the rest. Desktop ignores this state entirely.
   const [showMoreSheet, setShowMoreSheet] = useState(false);
+  // Inline cost-basis editor on the holdings table. Only one row can be in
+  // edit mode at a time; tapping the "—" / "Edit" in the Cost cell sets this
+  // to the holding id. Saved via updateHolding; Esc or blur clears state.
+  const [editBasisId, setEditBasisId] = useState(null);
+  const [editBasisVal, setEditBasisVal] = useState("");
   // ── Demo mode ──────────────────────────────────────────────────────────────
   // When true, the app runs with a hardcoded sample portfolio (DEMO_PORTFOLIO)
   // instead of the user's real Supabase holdings. Used by the "See a demo"
@@ -868,10 +963,40 @@ export default function AppMain() {
     // error so the vibe stays "try me out, no friction".
     addHolding:       async () => ({ error: { message: "Sign up to save holdings." } }),
     removeHolding:    async () => ({ error: { message: "Sign up to edit holdings." } }),
+    updateHolding:    async () => ({ error: { message: "Sign up to edit holdings." } }),
     refreshAllPrices: async () => {},
     getSnapshots:     () => [],
   };
-  const { holdings, loading: holdLoading, refreshing, lastRefresh, addHolding, removeHolding, refreshAllPrices, getSnapshots } = demoMode ? demoHoldingsAPI : realHoldings;
+  const { holdings, loading: holdLoading, refreshing, lastRefresh, addHolding, removeHolding, updateHolding, refreshAllPrices, getSnapshots } = demoMode ? demoHoldingsAPI : realHoldings;
+
+  // Dividend payment log — only meaningful for real (non-demo) users. Demo
+  // mode gets a stubbed API so the paycheck calendar's "mark paid" buttons
+  // can still render without throwing.
+  const realPayments = useDividendPayments(demoMode ? null : user?.id);
+  const demoPaymentsAPI = {
+    payments: [],
+    loading: false,
+    addPayment:    async () => ({ error: { message: "Sign up to log payments." } }),
+    removePayment: async () => ({ error: { message: "Sign up to log payments." } }),
+    ytdTotal: () => 0,
+    lifetimeTotal: () => 0,
+    hasPaymentOn: () => false,
+    refetch: () => {},
+  };
+  const { payments: paidPayments, addPayment, removePayment: removePaidPayment, ytdTotal, lifetimeTotal, hasPaymentOn } = demoMode ? demoPaymentsAPI : realPayments;
+
+  // Watchlist — tickers the user is tracking but doesn't own yet. Same
+  // demo-mode stub pattern as payments/holdings.
+  const realWatchlist = useWatchlist(demoMode ? null : user?.id);
+  const demoWatchlistAPI = {
+    watchlist: [],
+    loading: false,
+    addToWatchlist:      async () => ({ error: { message: "Sign up to use the watchlist." } }),
+    removeFromWatchlist: async () => ({ error: { message: "Sign up to use the watchlist." } }),
+    refresh:             async () => {},
+    refetch:             () => {},
+  };
+  const { watchlist, addToWatchlist, removeFromWatchlist, refresh: refreshWatchlist } = demoMode ? demoWatchlistAPI : realWatchlist;
 
   // Trial gating. A Seed user with an unexpired trial_ends_at gets Grow-level
   // access everywhere except UI that specifically says "you're on Seed" — the
@@ -969,17 +1094,50 @@ export default function AppMain() {
   // paths need currency awareness.
   const port = holdings.map(h => {
     const rate = h.currency && h.currency !== "USD" ? cadRate : 1;
+    const value   = h.shares * h.price * rate;
+    const annual  = h.shares * h.price * (h.yld / 100) * rate;
+    const monthly = annual / 12;
+    // Cost-basis derivations — only meaningful when the user has actually
+    // entered a basis. hasBasis gates every downstream display so we never
+    // render "$0 gain" on a holding with unknown cost.
+    const cb        = h.cost_basis != null && h.cost_basis !== "" ? Number(h.cost_basis) : null;
+    const hasBasis  = cb != null && !isNaN(cb) && cb > 0;
+    const totalCost = hasBasis ? h.shares * cb * rate : null;
+    const gain      = hasBasis ? value - totalCost : null;
+    const gainPct   = hasBasis && totalCost > 0 ? (gain / totalCost) * 100 : null;
+    // Yield-on-cost: what your current dividend stream represents against
+    // what you actually paid. This is the most under-appreciated metric in
+    // dividend investing — the selling point of long-term DGI.
+    const yoc       = hasBasis ? (h.yld * h.price) / cb : null;
     return {
       ...h,
-      value:   h.shares * h.price * rate,
-      annual:  h.shares * h.price * (h.yld / 100) * rate,
-      monthly: h.shares * h.price * (h.yld / 100) / 12 * rate,
+      value,
+      annual,
+      monthly,
+      hasBasis,
+      totalCost,
+      gain,
+      gainPct,
+      yoc,
     };
   });
   const totVal = port.reduce((s,h)=>s+h.value, 0);
   const totAnn = port.reduce((s,h)=>s+h.annual, 0);
   const totMo  = totAnn / 12;
   const blYld  = totVal > 0 ? (totAnn/totVal)*100 : 0;
+  // Portfolio-level cost basis rollup. We only sum rows that actually have
+  // a basis — a user with 8 holdings but basis on 6 should still see the
+  // partial gain figure (it's clearly labeled as such downstream).
+  const basisRows  = port.filter(h => h.hasBasis);
+  const hasAnyBasis = basisRows.length > 0;
+  const totCost    = basisRows.reduce((s,h) => s + h.totalCost, 0);
+  const totCostVal = basisRows.reduce((s,h) => s + h.value, 0); // current value of the basis-known rows, for honest % math
+  const totGain    = hasAnyBasis ? totCostVal - totCost : 0;
+  const totGainPct = hasAnyBasis && totCost > 0 ? (totGain / totCost) * 100 : 0;
+  // Portfolio-weighted yield-on-cost: total annual income from basis-known
+  // rows divided by total cost paid. This is the flagship FIRE metric.
+  const totAnnKnown = basisRows.reduce((s,h) => s + h.annual, 0);
+  const portYoC     = hasAnyBasis && totCost > 0 ? (totAnnKnown / totCost) * 100 : 0;
 
   // Derived alerts: built from real portfolio + goal, read state persisted locally
   const alertsRaw = generateAlerts(port, totMo, goal);
@@ -1177,10 +1335,17 @@ export default function AppMain() {
 
   function exportCsv() {
     if (!port.length) return;
-    const header = ["Ticker","Name","Shares","Price","Value","Yield %","Annual Income","Monthly Income","Frequency","Safety","Sector","Next Payment"];
+    const header = ["Ticker","Name","Shares","Price","Currency","Cost Basis","Total Cost","Value","Gain","Gain %","Yield %","YoC %","Annual Income","Monthly Income","Frequency","Safety","Sector","Next Payment"];
     const rows = port.map(h => [
-      h.ticker, `"${(h.name||"").replace(/"/g,'""')}"`, h.shares, h.price, h.value.toFixed(2),
-      h.yld, h.annual.toFixed(2), h.monthly.toFixed(2), h.freq||"", h.safe||"N/A",
+      h.ticker, `"${(h.name||"").replace(/"/g,'""')}"`, h.shares, h.price, h.currency || "USD",
+      h.hasBasis ? Number(h.cost_basis).toFixed(2) : "",
+      h.hasBasis ? (h.shares * Number(h.cost_basis)).toFixed(2) : "",
+      h.value.toFixed(2),
+      h.hasBasis ? h.gain.toFixed(2) : "",
+      h.hasBasis ? h.gainPct.toFixed(2) : "",
+      h.yld,
+      h.hasBasis ? h.yoc.toFixed(2) : "",
+      h.annual.toFixed(2), h.monthly.toFixed(2), h.freq||"", h.safe||"N/A",
       `"${(h.sector||"").replace(/"/g,'""')}"`, h.next_div||"TBD"
     ]);
     const csv = [header.join(","), ...rows.map(r=>r.join(","))].join("\n");
@@ -1803,6 +1968,12 @@ export default function AppMain() {
                     {refreshing ? "Refreshing…" : "↻ Refresh prices"}
                   </button>
                   <button style={gh} onClick={exportCsv}>↓ Download CSV</button>
+                  {/* Public share — Grow-only. Seed click opens upgrade modal
+                      so it still feels like a feature they can reach, not a
+                      dead button. Demo mode treats it as unlocked. */}
+                  <button style={gh} onClick={()=>isPro?setShowShare(true):openUpgrade("share")}>
+                    {isPro ? "🔗 Share" : "🔒 Share"}
+                  </button>
                 </>
               )}
               <button style={gh} onClick={()=>seedAtCap?openUpgrade("cap"):setShowImport(true)}>↑ Import CSV</button>
@@ -1873,7 +2044,7 @@ export default function AppMain() {
                 <table style={{width:"100%",borderCollapse:"collapse"}}>
                   <thead>
                     <tr style={{borderBottom:`1px solid ${C.border}`}}>
-                      {["Ticker","Company","Shares","Price","Value","Yield","Annual","Monthly","Freq","Safety","Next Pay","Trend",""].map(h=>(
+                      {["Ticker","Company","Shares","Price","Value","Cost","Gain","YoC","Yield","Annual","Monthly","Freq","Safety","Streak","Next Pay","Trend",""].map(h=>(
                         <th key={h} style={{padding:"10px 14px",textAlign:"left",fontSize:9,color:C.textMuted,textTransform:"uppercase",letterSpacing:"0.08em",fontWeight:600,whiteSpace:"nowrap"}}>{h}</th>
                       ))}
                     </tr>
@@ -1900,11 +2071,90 @@ export default function AppMain() {
                           {h.currency==="CAD" ? "C$" : "$"}{parseFloat(h.price).toFixed(2)}
                         </td>
                         <td style={{padding:"13px 14px",fontSize:13,fontWeight:600}}>{$(h.value)}</td>
+                        {/* Cost basis — shown in native currency with a CAD tooltip
+                            converting to USD. Clickable to open an inline editor
+                            so existing users can backfill without re-adding. */}
+                        <td style={{padding:"13px 14px",fontSize:12,color:h.hasBasis?C.textSub:C.textMuted,cursor:"pointer"}}
+                            title={h.hasBasis?`Total cost: ${h.currency==='CAD'?'C$':'$'}${(Number(h.cost_basis)*h.shares).toFixed(2)}${h.currency==='CAD'?` (≈ $${h.totalCost.toFixed(2)} USD)`:''} — click to edit`:'Click to add cost basis — unlocks gains and yield-on-cost'}
+                            onClick={()=>{
+                              if (demoMode) return;
+                              setEditBasisId(h.id);
+                              setEditBasisVal(h.hasBasis ? String(h.cost_basis) : "");
+                            }}>
+                          {editBasisId === h.id ? (
+                            <input
+                              autoFocus
+                              type="number"
+                              step="0.01"
+                              min="0"
+                              value={editBasisVal}
+                              onChange={e=>setEditBasisVal(e.target.value)}
+                              onClick={e=>e.stopPropagation()}
+                              onKeyDown={async e=>{
+                                if (e.key === "Escape") { setEditBasisId(null); setEditBasisVal(""); }
+                                if (e.key === "Enter") {
+                                  const v = editBasisVal === "" ? null : parseFloat(editBasisVal);
+                                  if (v === null || (!isNaN(v) && v >= 0)) {
+                                    await updateHolding(h.id, { cost_basis: v });
+                                    window.toast?.({ text: `${h.ticker} basis ${v==null?"cleared":"saved"}`, kind: "success" });
+                                  }
+                                  setEditBasisId(null); setEditBasisVal("");
+                                }
+                              }}
+                              onBlur={async ()=>{
+                                const v = editBasisVal === "" ? null : parseFloat(editBasisVal);
+                                if (v === null || (!isNaN(v) && v >= 0)) {
+                                  await updateHolding(h.id, { cost_basis: v });
+                                }
+                                setEditBasisId(null); setEditBasisVal("");
+                              }}
+                              placeholder={`${h.currency==='CAD'?'C$':'$'}/share`}
+                              style={{width:80,background:C.surface,border:`1px solid ${C.blue}`,borderRadius:5,color:C.text,fontSize:12,padding:"3px 6px",fontFamily:"inherit",outline:"none"}}
+                            />
+                          ) : h.hasBasis
+                            ? `${h.currency==='CAD'?'C$':'$'}${Number(h.cost_basis).toFixed(2)}`
+                            : <span style={{color:C.blue,fontSize:10,fontWeight:600,borderBottom:`1px dashed ${C.blue}50`}}>+ add</span>}
+                        </td>
+                        {/* Gain: absolute + % in one stacked cell. Green/red depending
+                            on direction. Always in USD since value/totalCost are
+                            already FX-converted. */}
+                        <td style={{padding:"13px 14px",fontSize:12,fontWeight:600,whiteSpace:"nowrap",color:h.hasBasis?(h.gain>=0?C.emerald:C.red):C.textMuted}}>
+                          {h.hasBasis
+                            ? (<span>
+                                {h.gain>=0?"+":""}{$(h.gain)}
+                                <span style={{fontSize:10,marginLeft:5,opacity:0.8}}>{h.gain>=0?"+":""}{h.gainPct.toFixed(1)}%</span>
+                              </span>)
+                            : <span style={{color:C.textMuted,fontSize:11}}>—</span>}
+                        </td>
+                        {/* Yield on cost — the number DGI investors brag about.
+                            Bumped vs. current yield gets a blue emphasis. */}
+                        <td style={{padding:"13px 14px",fontSize:12,fontWeight:600,color:h.hasBasis?(h.yoc>h.yld?C.blue:C.text):C.textMuted}}
+                            title={h.hasBasis?`Your current dividend stream (${h.yld}% on today's price) expressed against what you paid.`:'Needs cost basis.'}>
+                          {h.hasBasis ? `${h.yoc.toFixed(2)}%` : <span style={{color:C.textMuted,fontSize:11}}>—</span>}
+                        </td>
                         <td style={{padding:"13px 14px",fontSize:13,color:C.emerald,fontWeight:600}}>{h.yld}%</td>
                         <td style={{padding:"13px 14px",fontSize:13,fontWeight:600}}>{$(h.annual)}</td>
                         <td style={{padding:"13px 14px",fontSize:12,color:C.textSub}}>{$(h.monthly)}</td>
                         <td style={{padding:"13px 14px"}}><Chip color={h.freq==="Monthly"?C.emerald:C.blue}>{h.freq?.[0]||"Q"}</Chip></td>
                         <td style={{padding:"13px 14px"}} title={(SAFETY_META[h.safe]||SAFETY_META["N/A"]).blurb}><Chip color={safetyColor(h.safe)}>{h.safe||"N/A"}</Chip></td>
+                        {/* Streak column — badge chip for Aristocrat/King/etc
+                            on paid tiers, plain year count for everyone else.
+                            Grow-only gate lives on the chip style so free users
+                            still get to see the number (anchor) and hover tip. */}
+                        <td style={{padding:"13px 14px",whiteSpace:"nowrap"}}
+                            title={(h.growth_streak ?? 0) > 0
+                              ? `${h.growth_streak} consecutive years of dividend growth${h.badge ? ` — Dividend ${h.badge}` : ''}. Based on Polygon dividend history.`
+                              : (h.pay_streak ?? 0) > 0 ? `${h.pay_streak} consecutive years paying dividends (no verified growth streak).` : 'No verified streak.'}>
+                          {(h.growth_streak ?? 0) >= 5 && h.badge && isPro ? (
+                            <span style={{background:h.badge==="King"?`${C.gold}22`:h.badge==="Aristocrat"?`${C.blue}20`:`${C.emerald}18`,color:h.badge==="King"?C.gold:h.badge==="Aristocrat"?C.blue:C.emerald,border:`1px solid ${h.badge==="King"?`${C.gold}60`:h.badge==="Aristocrat"?`${C.blue}50`:`${C.emerald}40`}`,borderRadius:5,padding:"2px 7px",fontSize:10,fontWeight:700,letterSpacing:"0.04em"}}>
+                              {h.badge==="King"?"👑 ":""}{h.badge} · {h.growth_streak}y
+                            </span>
+                          ) : (h.growth_streak ?? 0) > 0 ? (
+                            <span style={{fontSize:12,color:C.text,fontWeight:600}}>{h.growth_streak}y</span>
+                          ) : (
+                            <span style={{fontSize:11,color:C.textMuted}}>—</span>
+                          )}
+                        </td>
                         <td style={{padding:"13px 14px",fontSize:12,color:h.next_div&&h.next_div!=="TBD"?C.text:C.textMuted,fontWeight:500,whiteSpace:"nowrap"}}>{h.next_div||"TBD"}</td>
                         <td style={{padding:"13px 14px"}}><Sparkline/></td>
                         <td style={{padding:"13px 14px"}}>
@@ -1934,6 +2184,45 @@ export default function AppMain() {
                 <StatCard label="Top Earner"     value={$(Math.max(...port.map(h=>h.annual)))} sub={port.reduce((a,b)=>a.annual>b.annual?a:b).ticker}/>
                 <StatCard label="Monthly Payers" value={port.filter(h=>h.freq==="Monthly").length} sub="holdings pay every month" subColor={C.blue}/>
               </div>
+              {/* Cost basis roll-up — only rendered when at least one holding
+                  has a basis. Three cards: total invested, unrealized gain, and
+                  portfolio yield-on-cost. The sub-line flags partial coverage
+                  so a user with basis on 2 of 10 rows doesn't think it's the
+                  whole picture. YoC is the Grow-only gate: free tier sees the
+                  other two. */}
+              {hasAnyBasis && (
+                <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:12,marginBottom:14}}>
+                  <StatCard
+                    label="Total Invested"
+                    value={$(totCost)}
+                    sub={basisRows.length < port.length ? `${basisRows.length} of ${port.length} holdings have a basis` : "across all holdings"}
+                  />
+                  <StatCard
+                    label={totGain>=0 ? "Unrealized Gain" : "Unrealized Loss"}
+                    value={`${totGain>=0?"+":""}${$(totGain)}`}
+                    sub={`${totGain>=0?"+":""}${totGainPct.toFixed(1)}% on cost`}
+                    subColor={totGain>=0?C.emerald:C.red}
+                    glow={totGain>=0?C.emerald:C.red}
+                  />
+                  {isPro ? (
+                    <StatCard
+                      label="Yield on Cost"
+                      value={`${portYoC.toFixed(2)}%`}
+                      sub={`vs ${blYld.toFixed(2)}% on today's price`}
+                      subColor={portYoC>blYld?C.blue:C.textSub}
+                      glow={C.blue}
+                    />
+                  ) : (
+                    // Grow-only teaser for Seed users — shows the shape without
+                    // the number, doubles as an upgrade nudge.
+                    <div style={{background:C.card,border:`1px dashed ${C.gold}50`,borderRadius:12,padding:"16px 18px",display:"flex",flexDirection:"column",justifyContent:"space-between",gap:4,cursor:"pointer"}} onClick={()=>openUpgrade("yoc")}>
+                      <div style={{fontSize:10,color:C.textMuted,fontWeight:600,textTransform:"uppercase",letterSpacing:"0.08em"}}>Yield on Cost</div>
+                      <div style={{fontFamily:"'Fraunces',serif",fontSize:22,fontWeight:700,color:C.gold,display:"flex",alignItems:"center",gap:6}}>🔒 Grow</div>
+                      <div style={{fontSize:11,color:C.textSub,lineHeight:1.45}}>See how your dividend stream grew against what you paid. <span style={{color:C.gold,fontWeight:600}}>Upgrade →</span></div>
+                    </div>
+                  )}
+                </div>
+              )}
               <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:14,padding:"18px 22px"}}>
                 <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:14,gap:12,flexWrap:"wrap"}}>
                   <div>
@@ -1958,16 +2247,125 @@ export default function AppMain() {
         </div>
       );
 
-      case "calendar": return (
+      case "calendar": {
+        const ytdReceived = ytdTotal();
+        const ytdGoal = totAnn * (new Date().getMonth() + (new Date().getDate() / 30)) / 12; // expected YTD by today
+        const ytdDelta = ytdReceived - ytdGoal;
+        // Lean-month detection. Compute the 12-month paycheck distribution
+        // and flag any month whose projected income is < 50% of the annual
+        // average. We only surface the banner when the portfolio is large
+        // enough that the analysis is meaningful (≥3 holdings and at least
+        // some total income) — otherwise single-position newcomers get a
+        // scary "10 lean months!" warning that isn't actionable.
+        const monthlyBuckets = computeMonthlyPaychecks(port);
+        const monthlyBucketMax = Math.max(...monthlyBuckets, 0);
+        const monthlyBucketAvg = totAnn / 12;
+        const leanMonthsIdx = (port.length >= 3 && totAnn > 0)
+          ? monthlyBuckets
+              .map((v, i) => ({ v, i }))
+              .filter(x => x.v < monthlyBucketAvg * 0.5)
+              .map(x => x.i)
+          : [];
+        return (
         <div style={{position:"relative"}}>
           {!isPro&&<Lock onUp={()=>setShowUp(true)}/>}
           <h2 style={{fontFamily:"'Fraunces',serif",fontSize:22,fontWeight:700,marginBottom:3,letterSpacing:"-0.01em"}}>💸 Your Paychecks</h2>
-          <p style={{fontSize:12,color:C.textSub,marginBottom:16}}>Every dividend payment, sorted by the next one to land in your account.</p>
+          <p style={{fontSize:12,color:C.textSub,marginBottom:16}}>Every dividend payment, sorted by the next one to land in your account. Hit <b>Mark paid</b> when a payment arrives to log actual income.</p>
           <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:12,marginBottom:16}}>
             <StatCard label="Expected This Month" value={$(totMo)} sub={`${port.length} paycheck${port.length!==1?"s":""}`} subColor={C.emerald} glow={C.emerald}/>
             <StatCard label="Paychecks Per Year"  value={port.reduce((n,h)=>{const map={Monthly:12,Quarterly:4,Annual:1};return n+(map[h.freq]||4);},0)} sub="across all holdings"/>
             <StatCard label="Projected Annual"    value={$(totAnn)} sub="total paychecks for the year" subColor={C.blue} glow={C.blue}/>
           </div>
+          {/* YTD received ledger — only renders for users who've logged payments.
+              Surfaces the delta vs. projection so users see "on track" or
+              "behind" at a glance. A Grow-only export-to-CSV lives in this
+              same strip. */}
+          {paidPayments.length > 0 && (
+            <div style={{display:"grid",gridTemplateColumns:"repeat(3,1fr)",gap:12,marginBottom:16}}>
+              <StatCard
+                label="Received YTD"
+                value={$(ytdReceived)}
+                sub={`${paidPayments.filter(p => new Date(p.pay_date).getFullYear() === new Date().getFullYear()).length} payments logged`}
+                subColor={C.emerald}
+                glow={C.emerald}
+              />
+              <StatCard
+                label={ytdDelta >= 0 ? "Ahead of projection" : "Behind projection"}
+                value={`${ytdDelta>=0?"+":""}${$(ytdDelta)}`}
+                sub={`vs ${$(ytdGoal)} expected YTD`}
+                subColor={ytdDelta>=0?C.emerald:C.gold}
+                glow={ytdDelta>=0?C.emerald:C.gold}
+              />
+              <StatCard
+                label="Lifetime Received"
+                value={$(lifetimeTotal())}
+                sub={`${paidPayments.length} payments logged all-time`}
+              />
+            </div>
+          )}
+          {/* Paycheck distribution — 12 bars showing projected income by
+              month. Current month is highlighted. Lean months (< 50% of
+              average) are tinted gold and named out in the companion banner
+              underneath. Only renders for users with at least 3 holdings
+              so the shape of the year is actually meaningful. */}
+          {port.length >= 3 && monthlyBucketMax > 0 && (
+            <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:14,padding:"16px 18px",marginBottom:16}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"baseline",marginBottom:12,flexWrap:"wrap",gap:8}}>
+                <div>
+                  <div style={{fontSize:12,fontWeight:600,color:C.text}}>Paycheck shape — 12-month distribution</div>
+                  <div style={{fontSize:11,color:C.textMuted,marginTop:2}}>
+                    {leanMonthsIdx.length === 0
+                      ? "Well-balanced across the year. Each month pulls its weight."
+                      : `${leanMonthsIdx.length} lean month${leanMonthsIdx.length===1?"":"s"} — below 50% of your ${$(monthlyBucketAvg)} average.`}
+                  </div>
+                </div>
+                <div style={{fontSize:11,color:C.textSub}}>
+                  Avg <b style={{color:C.text}}>{$(monthlyBucketAvg)}</b> / mo
+                </div>
+              </div>
+              <div style={{display:"grid",gridTemplateColumns:"repeat(12,1fr)",gap:6,alignItems:"end",height:82}}>
+                {monthlyBuckets.map((v, i) => {
+                  const thisMonth = i === new Date().getMonth();
+                  const isLean = leanMonthsIdx.includes(i);
+                  const pct = monthlyBucketMax > 0 ? (v / monthlyBucketMax) * 100 : 0;
+                  const bg = isLean ? C.gold : thisMonth ? C.blue : C.emerald;
+                  return (
+                    <div key={i} style={{display:"flex",flexDirection:"column",alignItems:"center",gap:4}} title={`${MONTH_SHORT[i]}: ${$(v)}`}>
+                      <div style={{width:"100%",height:64,display:"flex",alignItems:"flex-end"}}>
+                        <div style={{width:"100%",height:`${Math.max(pct,2)}%`,background:bg,opacity:thisMonth?1:isLean?0.85:0.7,borderRadius:"3px 3px 0 0",transition:"height 300ms ease"}}/>
+                      </div>
+                      <div style={{fontSize:9,color:thisMonth?C.blue:C.textMuted,fontWeight:thisMonth?700:500,letterSpacing:"0.04em"}}>{MONTH_SHORT[i]}</div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+          {/* Lean-month actionable callout. Only shows when there's something
+              to do about it (1+ lean months). Suggests adding a monthly-payer
+              ETF or pointing them at the screener — the concrete next step is
+              the whole point of surfacing this. */}
+          {leanMonthsIdx.length > 0 && (
+            <div style={{background:`${C.gold}14`,border:`1px solid ${C.gold}40`,borderRadius:12,padding:"14px 18px",marginBottom:16,display:"flex",gap:14,alignItems:"flex-start"}}>
+              <div style={{fontSize:22,flexShrink:0}}>📉</div>
+              <div style={{flex:1}}>
+                <div style={{fontSize:13,fontWeight:600,color:C.text,marginBottom:4}}>
+                  Your calendar dips in {leanMonthsIdx.map(i => MONTH_SHORT[i]).join(", ")}
+                </div>
+                <div style={{fontSize:11,color:C.textSub,lineHeight:1.6,marginBottom:10}}>
+                  {leanMonthsIdx.length === 1
+                    ? `That month pays under half your ${$(monthlyBucketAvg)} average.`
+                    : `Those months each pay under half your ${$(monthlyBucketAvg)} average.`}
+                  {" "}Adding a monthly-payer ETF (SCHD covers the quarterly months, JEPI/O/MAIN fill every month) smooths the curve.
+                </div>
+                <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+                  <button style={{...bl,padding:"7px 13px",fontSize:12}} onClick={()=>navigate("screener")}>Open Screener →</button>
+                  <button style={{...gh,padding:"7px 13px",fontSize:12}} onClick={()=>{setPrefillTicker("JEPI");setShowAdd(true);}}>+ Add JEPI</button>
+                  <button style={{...gh,padding:"7px 13px",fontSize:12}} onClick={()=>{setPrefillTicker("O");setShowAdd(true);}}>+ Add O</button>
+                </div>
+              </div>
+            </div>
+          )}
           <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:14,overflow:"hidden"}}>
             {port.length===0 ? <div style={{padding:40,textAlign:"center",color:C.textMuted,fontSize:13}}>Add holdings to see your upcoming paychecks</div>
             : [...port].sort((a,b)=>{
@@ -2019,13 +2417,239 @@ export default function AppMain() {
                     <div style={{textAlign:"right",flexShrink:0}}>
                       <div style={{fontFamily:"'Fraunces',serif",fontSize:20,fontWeight:700,color:C.emerald}}>+{$(per)}</div>
                       <div style={{fontSize:10,color:C.textMuted}}>{perLabel}</div>
+                      {/* Mark-paid CTA. If a payment already exists for this
+                          ticker on this pay date, the button flips to a
+                          subdued "✓ paid" state (but still clickable to undo).
+                          Always uses the holding's native currency so TSX
+                          positions log in CAD. */}
+                      {(() => {
+                        const payDateISO = (() => {
+                          if (!hasDate) return null;
+                          const d = Date.parse(`${h.next_div} ${new Date().getFullYear()}`);
+                          if (isNaN(d)) return null;
+                          return new Date(d).toISOString().slice(0, 10);
+                        })();
+                        const alreadyPaid = payDateISO && hasPaymentOn(h.ticker, payDateISO);
+                        if (!hasDate) return null;
+                        return (
+                          <button
+                            onClick={async () => {
+                              if (!isPro) { setShowUp(true); return; }
+                              if (alreadyPaid) {
+                                // Undo — find + remove. Rare action; no confirm needed since it's 1 click to re-add.
+                                const found = paidPayments.find(p => p.ticker === h.ticker && p.pay_date === payDateISO);
+                                if (found) {
+                                  await removePaidPayment(found.id);
+                                  window.toast?.({ text: `Unmarked ${h.ticker} (${h.next_div})`, kind: "success" });
+                                }
+                                return;
+                              }
+                              // Log the payment in the holding's native currency.
+                              // The "per" amount is already FX-converted for display;
+                              // we back-compute the native amount from price/yld/shares
+                              // so the ledger stores raw CAD for CAD holdings.
+                              const nativePer = h.currency === "CAD"
+                                ? (h.shares * h.price * h.yld / 100) / (h.freq === "Monthly" ? 12 : h.freq === "Annual" ? 1 : 4)
+                                : per;
+                              const res = await addPayment({
+                                ticker: h.ticker,
+                                holding_id: h.id,
+                                pay_date: payDateISO,
+                                amount: Number(nativePer.toFixed(4)),
+                                shares_at_pay: Number(h.shares),
+                                currency: h.currency || "USD",
+                              });
+                              if (!res.error) window.toast?.({ text: `✓ ${h.ticker} logged (${h.next_div})`, kind: "success" });
+                              else window.toast?.({ text: res.error.message || "Couldn't save — try again", kind: "error" });
+                            }}
+                            style={{marginTop:6,background:alreadyPaid?`${C.emerald}14`:"transparent",color:alreadyPaid?C.emerald:C.textSub,border:`1px solid ${alreadyPaid?`${C.emerald}60`:C.border}`,borderRadius:6,cursor:"pointer",fontSize:10,fontWeight:600,padding:"3px 9px",fontFamily:"inherit",transition:"all 0.15s"}}>
+                            {alreadyPaid ? "✓ Paid" : "Mark paid"}
+                          </button>
+                        );
+                      })()}
                     </div>
                   </div>
                 );
               })}
           </div>
+          {/* Recent logged payments panel — shows the last 10 received
+              dividends and lets the user delete a mistaken log entry. */}
+          {paidPayments.length > 0 && (
+            <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:14,padding:"18px 22px",marginTop:14}}>
+              <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
+                <div>
+                  <div style={{fontSize:10,color:C.textMuted,fontWeight:600,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:3}}>Payment Log</div>
+                  <div style={{fontFamily:"'Fraunces',serif",fontSize:15,fontWeight:700}}>Recent dividends received</div>
+                </div>
+                {isPro && (
+                  <button style={gh} onClick={() => {
+                    // CSV export of the full log. Useful for tax prep.
+                    const header = ["Pay Date","Ticker","Amount","Currency","Shares at Pay","Note"];
+                    const rows = paidPayments.map(p => [
+                      p.pay_date, p.ticker, Number(p.amount).toFixed(4), p.currency, p.shares_at_pay || "", `"${(p.note||"").replace(/"/g,'""')}"`
+                    ]);
+                    const csv = [header.join(","), ...rows.map(r => r.join(","))].join("\n");
+                    const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement("a"); a.href = url; a.download = `yieldos-dividends-${new Date().toISOString().slice(0,10)}.csv`; a.click();
+                    URL.revokeObjectURL(url);
+                  }}>↓ Export for taxes</button>
+                )}
+              </div>
+              <div style={{display:"flex",flexDirection:"column",gap:6}}>
+                {paidPayments.slice(0, 10).map(p => (
+                  <div key={p.id} style={{display:"flex",alignItems:"center",justifyContent:"space-between",padding:"8px 12px",background:C.surface,border:`1px solid ${C.border}`,borderRadius:8,gap:10}}>
+                    <div style={{display:"flex",alignItems:"center",gap:10,flex:1,minWidth:0}}>
+                      <Chip>{p.ticker}</Chip>
+                      <span style={{fontSize:11,color:C.textMuted}}>{new Date(p.pay_date).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"})}</span>
+                      {p.currency === "CAD" && <span style={{background:`${C.emerald}14`,color:C.emerald,border:`1px solid ${C.emerald}30`,borderRadius:4,padding:"1px 5px",fontSize:9,fontWeight:700,letterSpacing:"0.06em"}}>CAD</span>}
+                    </div>
+                    <div style={{fontFamily:"'Fraunces',serif",fontSize:15,fontWeight:700,color:C.emerald}}>
+                      +{p.currency==="CAD"?"C$":"$"}{Number(p.amount).toFixed(2)}
+                    </div>
+                    <button
+                      onClick={async () => {
+                        await removePaidPayment(p.id);
+                        window.toast?.({ text: `Removed ${p.ticker} log entry`, kind: "success" });
+                      }}
+                      title="Delete log entry"
+                      style={{background:"transparent",border:`1px solid ${C.border}`,borderRadius:6,color:C.textMuted,cursor:"pointer",fontSize:10,padding:"3px 7px",fontFamily:"inherit"}}>✕</button>
+                  </div>
+                ))}
+                {paidPayments.length > 10 && (
+                  <div style={{fontSize:11,color:C.textMuted,textAlign:"center",marginTop:4}}>…and {paidPayments.length - 10} more</div>
+                )}
+              </div>
+            </div>
+          )}
         </div>
-      );
+        );
+      }
+
+      case "watchlist": {
+        // Watchlist is available on all tiers. Seed is capped at 10 entries;
+        // Grow/Harvest get unlimited. Adding new entries uses Polygon for
+        // auto-fill, so there's no manual-entry flow here (user would just
+        // add to Holdings if they wanted full manual control).
+        const seedWatchAtCap = !demoMode && effectivePlan === "Seed" && watchlist.length >= SEED_WATCHLIST_CAP;
+        return (
+          <div style={{position:"relative"}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14,flexWrap:"wrap",gap:10}}>
+              <div>
+                <h2 style={{fontFamily:"'Fraunces',serif",fontSize:20,fontWeight:700,marginBottom:2,letterSpacing:"-0.01em"}}>Watchlist</h2>
+                <p style={{fontSize:12,color:C.textSub}}>
+                  {watchlist.length === 0
+                    ? "Track tickers before you buy — price, yield, dividend streak at a glance."
+                    : `${watchlist.length} ticker${watchlist.length===1?"":"s"} · live from Polygon`}
+                </p>
+              </div>
+              <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
+                {watchlist.length > 0 && (
+                  <button style={gh} onClick={refreshWatchlist}>↻ Refresh</button>
+                )}
+                {/* Add row is inline on the watchlist page (no modal) because
+                    the flow is so minimal — just a ticker. */}
+                <WatchlistAddRow
+                  disabled={seedWatchAtCap}
+                  onAdd={async (t) => {
+                    if (seedWatchAtCap) { openUpgrade("watchlist"); return; }
+                    const res = await addToWatchlist(t);
+                    if (res.error) window.toast?.({ text: res.error.message, kind: "error" });
+                    else {
+                      window.toast?.({ text: `✓ ${(res.data?.ticker || t)} added to watchlist`, kind: "success" });
+                      if (port.length === 0) {/* no-op */}
+                    }
+                  }}
+                  openUpgrade={openUpgrade}
+                />
+              </div>
+            </div>
+            {effectivePlan === "Seed" && (
+              <div style={{background:seedWatchAtCap?`${C.gold}14`:C.card,border:`1px solid ${seedWatchAtCap?`${C.gold}40`:C.border}`,borderRadius:12,padding:"12px 16px",marginBottom:14,display:"flex",alignItems:"center",justifyContent:"space-between",gap:14,flexWrap:"wrap"}}>
+                <div style={{display:"flex",alignItems:"center",gap:12}}>
+                  <div style={{fontSize:18}}>{seedWatchAtCap?"🔒":"👀"}</div>
+                  <div>
+                    <div style={{fontSize:13,fontWeight:600,color:C.text,marginBottom:2}}>
+                      {seedWatchAtCap
+                        ? `You've hit the Seed watchlist limit (${SEED_WATCHLIST_CAP}).`
+                        : `Seed plan · ${watchlist.length} of ${SEED_WATCHLIST_CAP} watched`}
+                    </div>
+                    <div style={{fontSize:11,color:C.textSub}}>
+                      Upgrade to Grow for unlimited watchlist entries + price/yield alerts.
+                    </div>
+                  </div>
+                </div>
+                <button style={{background:C.gold,color:"#0b0b0b",border:"none",borderRadius:8,padding:"8px 16px",fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:"inherit",whiteSpace:"nowrap"}} onClick={()=>openUpgrade("watchlist")}>
+                  Upgrade to Grow →
+                </button>
+              </div>
+            )}
+            {watchlist.length === 0 ? (
+              <div style={{background:C.card,border:`1px dashed ${C.border}`,borderRadius:14,padding:"40px 20px",textAlign:"center"}}>
+                <div style={{fontSize:32,marginBottom:10,opacity:0.6}}>👀</div>
+                <div style={{fontFamily:"'Fraunces',serif",fontSize:18,fontWeight:700,marginBottom:6}}>Nothing on your watchlist yet</div>
+                <div style={{fontSize:12,color:C.textSub,maxWidth:400,margin:"0 auto",lineHeight:1.55}}>
+                  Add tickers you're researching or considering. We'll track price, yield, and dividend streak — no shares required.
+                </div>
+              </div>
+            ) : (
+              <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:14,overflow:"hidden"}}>
+                <table style={{width:"100%",borderCollapse:"collapse"}}>
+                  <thead>
+                    <tr style={{borderBottom:`1px solid ${C.border}`}}>
+                      {["Ticker","Company","Price","Yield","Safety","Streak","Added",""].map(h=>(
+                        <th key={h} style={{padding:"10px 14px",textAlign:"left",fontSize:9,color:C.textMuted,textTransform:"uppercase",letterSpacing:"0.08em",fontWeight:600,whiteSpace:"nowrap"}}>{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {watchlist.map((w, i) => (
+                      <tr key={w.id||i} style={{borderBottom:i<watchlist.length-1?`1px solid ${C.border}`:"none"}}>
+                        <td style={{padding:"13px 14px"}}><Chip>{w.ticker}</Chip></td>
+                        <td style={{padding:"13px 14px",fontSize:12,color:C.textSub}}>{w.name||w.ticker}</td>
+                        <td style={{padding:"13px 14px",fontSize:13}}>${Number(w.price||0).toFixed(2)}</td>
+                        <td style={{padding:"13px 14px",fontSize:13,color:C.emerald,fontWeight:600}}>{w.yld ? `${Number(w.yld).toFixed(2)}%` : "—"}</td>
+                        <td style={{padding:"13px 14px"}}><Chip color={safetyColor(w.safe)}>{w.safe||"N/A"}</Chip></td>
+                        <td style={{padding:"13px 14px",whiteSpace:"nowrap"}}>
+                          {(w.growth_streak ?? 0) >= 5 && w.badge && isPro ? (
+                            <span style={{background:w.badge==="King"?`${C.gold}22`:w.badge==="Aristocrat"?`${C.blue}20`:`${C.emerald}18`,color:w.badge==="King"?C.gold:w.badge==="Aristocrat"?C.blue:C.emerald,border:`1px solid ${w.badge==="King"?`${C.gold}60`:w.badge==="Aristocrat"?`${C.blue}50`:`${C.emerald}40`}`,borderRadius:5,padding:"2px 7px",fontSize:10,fontWeight:700}}>
+                              {w.badge==="King"?"👑 ":""}{w.badge} · {w.growth_streak}y
+                            </span>
+                          ) : (w.growth_streak ?? 0) > 0 ? (
+                            <span style={{fontSize:12,color:C.text,fontWeight:600}}>{w.growth_streak}y</span>
+                          ) : (
+                            <span style={{fontSize:11,color:C.textMuted}}>—</span>
+                          )}
+                        </td>
+                        <td style={{padding:"13px 14px",fontSize:11,color:C.textMuted,whiteSpace:"nowrap"}}>{new Date(w.added_at).toLocaleDateString("en-US",{month:"short",day:"numeric"})}</td>
+                        <td style={{padding:"13px 14px",whiteSpace:"nowrap"}}>
+                          <button
+                            onClick={() => {
+                              // Promote to holding — opens the Add modal prefilled.
+                              if (seedAtCap) { openUpgrade("cap"); return; }
+                              setPrefillTicker(w.ticker);
+                              setShowAdd(true);
+                            }}
+                            style={{background:`${C.blue}14`,color:C.blue,border:`1px solid ${C.blue}40`,borderRadius:6,cursor:"pointer",fontSize:10,padding:"4px 9px",fontFamily:"inherit",fontWeight:600,marginRight:6}}>
+                            + Buy
+                          </button>
+                          <button
+                            onClick={async () => {
+                              await removeFromWatchlist(w.id);
+                              window.toast?.({ text: `Removed ${w.ticker} from watchlist`, kind: "success" });
+                            }}
+                            title="Remove"
+                            style={{background:"transparent",border:`1px solid ${C.border}`,borderRadius:6,color:C.textMuted,cursor:"pointer",fontSize:10,padding:"4px 9px",fontFamily:"inherit"}}>✕</button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        );
+      }
 
       case "screener": {
         const rows = screenerData || [];
@@ -2731,6 +3355,13 @@ export default function AppMain() {
 
       {showAdd&&<AddHoldingModal onClose={()=>{setShowAdd(false);setPrefillTicker(null);}} onAdd={addHoldingGated} prefillTicker={prefillTicker}/>}
       {showImport&&<ImportHoldingsModal onClose={()=>setShowImport(false)} onAdd={addHoldingGated}/>}
+      {showShare && isPro && !demoMode && user?.id && (
+        <SharePortfolioModal
+          userId={user.id}
+          displayLabel={displayLabel}
+          onClose={()=>setShowShare(false)}
+        />
+      )}
       {showAuth&&<AuthModal onClose={()=>setShowAuth(false)} onAuth={(u)=>{setUser(u);setPage("app");setShowAuth(false);setDemoMode(false);}}/>}
       {showFeedback&&<FeedbackModal onClose={()=>setShowFeedback(false)} user={user} page={page} plan={plan}/>}
       {confirmState && <ConfirmModal {...confirmState}/>}
@@ -2803,7 +3434,7 @@ export default function AppMain() {
       {!demoMode && user && (() => {
         const PRIMARY = ["dashboard","holdings","calendar","advisor"];
         const SECONDARY = TABS.filter(t => !PRIMARY.includes(t));
-        const shortLabel = { dashboard:"Home", holdings:"Holdings", calendar:"Paychecks", advisor:"Insights" };
+        const shortLabel = { dashboard:"Home", holdings:"Holdings", calendar:"Paychecks", watchlist:"Watch", advisor:"Insights" };
         const icons = {
           dashboard: <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12 L12 4 L21 12"/><path d="M5 10 V20 H19 V10"/></svg>,
           holdings:  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="6" width="18" height="14" rx="2"/><path d="M3 10 H21"/><path d="M8 3 V6"/><path d="M16 3 V6"/></svg>,

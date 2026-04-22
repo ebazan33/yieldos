@@ -84,7 +84,9 @@ const FREQ_DAYS  = { 1: 365,      2: 182,           4: 91,          12: 30,     
 async function fetchPolygonDividends(ticker) {
   if (!POLYGON_KEY) return null;
   try {
-    const url = `https://api.polygon.io/v3/reference/dividends?ticker=${encodeURIComponent(ticker)}&limit=20&order=desc&apiKey=${POLYGON_KEY}`;
+    // limit=500 is plenty — even monthly payers like O top out at ~360 in 30 years.
+    // This gives us enough history to compute multi-decade growth streaks.
+    const url = `https://api.polygon.io/v3/reference/dividends?ticker=${encodeURIComponent(ticker)}&limit=500&order=desc&apiKey=${POLYGON_KEY}`;
     const res = await fetch(url);
     if (!res.ok) { console.warn("[stock] Polygon dividends HTTP error:", res.status); return null; }
     const data = await res.json();
@@ -95,6 +97,67 @@ async function fetchPolygonDividends(ticker) {
     console.warn("[stock] Polygon dividends error:", e.message);
     return null;
   }
+}
+
+// Consecutive years of dividend growth, calculated from Polygon's payment
+// history. A "year" here is annual summed cash_amount — more robust than
+// comparing quarterly payouts since many companies hold a quarter flat then
+// raise the next. Returns { growthStreak, payStreak, badge } where:
+//  - growthStreak: consecutive years where total dividends > prior year
+//  - payStreak:    consecutive years where any dividend was paid
+//  - badge:        one of "King" (50+), "Aristocrat" (25+), "Achiever" (10+),
+//                  "Contender" (10+), "Challenger" (5+), or null
+// Polygon's free tier dividend data typically extends back 20+ years for
+// mature names, less for newer issuances. We treat the oldest year as
+// incomplete and drop it from the streak count unless we have clear evidence
+// it's a real zero-gap year.
+export function computeDividendStreak(dividends) {
+  if (!dividends || !dividends.length) return { growthStreak: 0, payStreak: 0, badge: null };
+  // Group by payment year. We use pay_date if available, else ex_dividend_date.
+  const byYear = new Map();
+  for (const d of dividends) {
+    const ts = new Date(d.pay_date || d.ex_dividend_date || 0);
+    if (isNaN(ts.getTime())) continue;
+    const y = ts.getFullYear();
+    if (y < 1990 || y > new Date().getFullYear() + 1) continue;
+    byYear.set(y, (byYear.get(y) || 0) + (Number(d.cash_amount) || 0));
+  }
+  if (byYear.size < 2) return { growthStreak: 0, payStreak: byYear.size, badge: null };
+  const years = [...byYear.keys()].sort((a, b) => b - a); // newest first
+  // Ignore the current year if we're mid-year — it's partial and would read
+  // as a "cut" vs. last year even when the company raised.
+  const now = new Date();
+  const currentYear = now.getFullYear();
+  const midYear = now.getMonth() < 11; // before December = incomplete year
+  const startIdx = (years[0] === currentYear && midYear) ? 1 : 0;
+
+  let growthStreak = 0;
+  for (let i = startIdx; i < years.length - 1; i++) {
+    const thisY = byYear.get(years[i]);
+    const prevY = byYear.get(years[i + 1]);
+    if (thisY > prevY) growthStreak++;
+    else break;
+  }
+
+  // Pay streak — how many consecutive years have any dividend at all
+  let payStreak = 0;
+  let prev = years[startIdx];
+  for (let i = startIdx; i < years.length; i++) {
+    if (i === startIdx || years[i] === prev - 1) {
+      payStreak++;
+      prev = years[i];
+    } else {
+      break;
+    }
+  }
+
+  let badge = null;
+  if      (growthStreak >= 50) badge = "King";
+  else if (growthStreak >= 25) badge = "Aristocrat";
+  else if (growthStreak >= 10) badge = "Achiever";
+  else if (growthStreak >= 5)  badge = "Challenger";
+
+  return { growthStreak, payStreak, badge };
 }
 
 // Sum dividend payments within the trailing 12 months → TTM dividend per share.
@@ -213,11 +276,17 @@ export async function getStockDetails(rawTicker) {
   const yld       = yldRaw > 0 ? +yldRaw.toFixed(2) : null;
   const nextDiv   = nextDivLabel(dividends, freqCode);
   const { grade: safe } = computeSafetyGrade(dividends, yld);
+  // Dividend growth streak + Aristocrat/King badges. Cheap to compute (just
+  // groups the history we already fetched) so we always ship it with details.
+  const { growthStreak, payStreak, badge } = computeDividendStreak(dividends);
 
   log(
-    `${ticker} — price=$${price} yld=${yld ?? "?"}% freq=${freq} sector=${sector} safe=${safe}`,
+    `${ticker} — price=$${price} yld=${yld ?? "?"}% freq=${freq} sector=${sector} safe=${safe} streak=${growthStreak}y`,
     dividends ? `(TTM div/sh=$${ttm.toFixed(4)}, ${dividends.length} payments)` : "(no div history)"
   );
 
-  return { ticker, name, price: +price.toFixed(2), sector, yld, freq, nextDiv, safe };
+  return {
+    ticker, name, price: +price.toFixed(2), sector, yld, freq, nextDiv, safe,
+    growthStreak, payStreak, badge,
+  };
 }

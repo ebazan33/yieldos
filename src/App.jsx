@@ -10,6 +10,7 @@ import { useEffect, useState } from "react";
 import AppMain from "./AppMain.jsx";
 import { PrivacyPage, TermsPage } from "./components/LegalPage.jsx";
 import ResetPasswordModal from "./components/ResetPasswordModal.jsx";
+import SharedPortfolioView from "./components/SharedPortfolioView.jsx";
 import { supabase } from "./lib/supabase";
 
 function readHash() {
@@ -17,8 +18,19 @@ function readHash() {
   return (window.location.hash || "").replace(/^#/, "").toLowerCase();
 }
 
+// Path-based share route. Anything under /share/<slug> short-circuits the
+// logged-in app and mounts the public SharedPortfolioView. We only accept
+// the exact shape /share/<slug> (single path segment) so downstream
+// path additions don't accidentally match.
+function readSharedSlug() {
+  if (typeof window === "undefined") return null;
+  const m = window.location.pathname.match(/^\/share\/([A-Za-z0-9_-]+)\/?$/);
+  return m ? m[1] : null;
+}
+
 export default function App() {
   const [route, setRoute] = useState(readHash);
+  const [sharedSlug] = useState(readSharedSlug);
   const [showReset, setShowReset] = useState(false);
 
   useEffect(() => {
@@ -46,7 +58,10 @@ export default function App() {
   };
 
   let main;
-  if (route === "privacy")      main = <PrivacyPage onBack={goHome} />;
+  // Public share viewer runs standalone — no AppMain auth flow, no hash legal
+  // pages. If the URL matches /share/<slug>, that's the whole page.
+  if (sharedSlug)               main = <SharedPortfolioView slug={sharedSlug} />;
+  else if (route === "privacy") main = <PrivacyPage onBack={goHome} />;
   else if (route === "terms")   main = <TermsPage   onBack={goHome} />;
   else                          main = <AppMain />;
 
