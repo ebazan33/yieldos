@@ -30,6 +30,19 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="apple-touch-icon" href="/favicon.svg" />
 
+    <!-- PWA manifest — lets mobile users "Add to Home Screen" and open
+         YieldOS full-screen like a native app. No app store needed. -->
+    <link rel="manifest" href="/manifest.webmanifest" />
+
+    <!-- iOS-specific — tells Safari to render full-screen with a dark
+         status bar when the user adds YieldOS to their home screen. Also
+         sets the title that appears under the home-screen icon. -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="YieldOS" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="format-detection" content="telephone=no" />
+
     <!-- JSON-LD schema so Google understands what this is -->
     <script type="application/ld+json">
       {

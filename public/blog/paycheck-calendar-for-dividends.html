@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#080b10" />
+
+  <title>Build a Paycheck Calendar for Your Dividends (2026 Guide)</title>
+  <meta name="description" content="How to build a paycheck calendar from your dividend portfolio — and why seeing payouts as monthly income changes how you invest. Free template + tool recommendations." />
+  <meta name="keywords" content="paycheck calendar for dividends, dividend calendar, monthly dividend income, dividend paycheck tracker, dividend income calendar, passive income calendar" />
+  <meta name="author" content="YieldOS" />
+  <link rel="canonical" href="https://yieldos.app/blog/paycheck-calendar-for-dividends.html" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+  <meta property="og:type" content="article" />
+  <meta property="og:title" content="Build a Paycheck Calendar for Your Dividends (2026 Guide)" />
+  <meta property="og:description" content="How to build a paycheck calendar from your dividend portfolio — and why seeing payouts as monthly income changes how you invest." />
+  <meta property="og:url" content="https://yieldos.app/blog/paycheck-calendar-for-dividends.html" />
+  <meta property="og:image" content="https://yieldos.app/og-image.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": "Build a Paycheck Calendar for Your Dividends",
+    "description": "How to build a paycheck calendar from your dividend portfolio, and why it changes how you invest.",
+    "image": "https://yieldos.app/og-image.png",
+    "author": { "@type": "Organization", "name": "YieldOS", "url": "https://yieldos.app" },
+    "publisher": { "@type": "Organization", "name": "YieldOS", "logo": { "@type": "ImageObject", "url": "https://yieldos.app/favicon.svg" } },
+    "datePublished": "2026-04-23",
+    "dateModified": "2026-04-23",
+    "mainEntityOfPage": { "@type": "WebPage", "@id": "https://yieldos.app/blog/paycheck-calendar-for-dividends.html" }
+  }
+  </script>
+
+  <style>
+    :root {
+      --bg:#080b10; --surface:#0f1420; --card:#131925; --border:#1c2536;
+      --text:#f1f5f9; --text-sub:#94a3b8; --text-muted:#64748b;
+      --blue:#4f8ef7; --emerald:#34d399; --gold:#f59e0b;
+    }
+    *{box-sizing:border-box;} html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:'Inter',system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased;}
+    @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,700;0,9..144,800&family=Inter:wght@400;500;600;700&display=swap');
+    a{color:var(--blue);text-decoration:none;} a:hover{text-decoration:underline;}
+    nav{position:sticky;top:0;z-index:10;background:rgba(8,11,16,0.94);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:14px 22px;display:flex;justify-content:space-between;align-items:center;}
+    nav .logo{display:flex;align-items:center;gap:10px;font-family:'Fraunces',serif;font-weight:700;font-size:17px;letter-spacing:-0.01em;color:var(--text);}
+    nav .cta{background:var(--blue);color:#fff;padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;}
+    nav .cta:hover{text-decoration:none;opacity:0.9;}
+    main{max-width:720px;margin:0 auto;padding:48px 22px 80px;}
+    .kicker{font-size:11px;color:var(--blue);font-weight:700;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:14px;}
+    h1{font-family:'Fraunces',serif;font-size:clamp(32px,5vw,44px);font-weight:800;line-height:1.12;letter-spacing:-0.02em;margin:0 0 16px;}
+    .byline{font-size:12px;color:var(--text-muted);margin-bottom:38px;}
+    h2{font-family:'Fraunces',serif;font-size:clamp(22px,3vw,28px);font-weight:700;letter-spacing:-0.015em;margin:44px 0 14px;}
+    h3{font-family:'Fraunces',serif;font-size:18px;font-weight:700;margin:28px 0 8px;}
+    p{font-size:16px;line-height:1.75;color:var(--text-sub);margin:0 0 18px;}
+    p strong,li strong{color:var(--text);}
+    ul,ol{padding-left:22px;color:var(--text-sub);font-size:16px;line-height:1.8;}
+    li{margin-bottom:8px;}
+    .callout{background:var(--card);border:1px solid var(--border);border-left:3px solid var(--blue);border-radius:10px;padding:18px 22px;margin:22px 0;font-size:15px;line-height:1.7;color:var(--text-sub);}
+    .callout strong{color:var(--text);}
+    .calendar-demo{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px;margin:22px 0;overflow-x:auto;}
+    .calendar-demo table{width:100%;border-collapse:collapse;font-size:13px;min-width:540px;}
+    .calendar-demo th{text-align:left;padding:8px 10px;color:var(--text-muted);font-weight:600;font-size:11px;letter-spacing:0.06em;text-transform:uppercase;border-bottom:1px solid var(--border);}
+    .calendar-demo td{padding:10px;border-bottom:1px solid var(--border);color:var(--text-sub);}
+    .calendar-demo td:first-child{color:var(--text);font-weight:500;}
+    .calendar-demo .amt{color:var(--emerald);font-variant-numeric:tabular-nums;font-weight:600;}
+    .calendar-demo tr:last-child td{border-bottom:none;font-weight:700;color:var(--text);background:rgba(52,211,153,0.05);}
+    .cta-box{background:linear-gradient(135deg,rgba(79,142,247,0.14),rgba(52,211,153,0.08));border:1px solid rgba(79,142,247,0.3);border-radius:14px;padding:28px;margin:36px 0;text-align:center;}
+    .cta-box h3{margin:0 0 8px;font-size:20px;color:var(--text);}
+    .cta-box p{margin:0 0 16px;color:var(--text-sub);}
+    .cta-box a{display:inline-block;background:var(--blue);color:#fff;padding:11px 22px;border-radius:9px;font-size:14px;font-weight:600;}
+    .cta-box a:hover{text-decoration:none;opacity:0.92;}
+    footer{border-top:1px solid var(--border);padding:24px 22px;text-align:center;font-size:12px;color:var(--text-muted);}
+    .related{background:var(--surface);border-radius:12px;padding:20px 22px;margin:28px 0;border:1px solid var(--border);}
+    .related h4{font-family:'Fraunces',serif;font-size:14px;color:var(--text);margin:0 0 10px;}
+    .related a{display:block;padding:6px 0;font-size:14px;}
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="/" class="logo">
+      <svg width="26" height="26" viewBox="0 0 28 28"><rect width="28" height="28" rx="7" fill="#4f8ef7"/><path d="M8 20 L14 8 L20 20" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/><circle cx="14" cy="17" r="2" fill="#fff"/></svg>
+      YieldOS
+    </a>
+    <a href="/" class="cta">Try YieldOS free →</a>
+  </nav>
+
+  <main>
+    <div class="kicker">INCOME INVESTING · 8 MIN READ</div>
+    <h1>Build a Paycheck Calendar for Your Dividends</h1>
+    <div class="byline">Updated April 23, 2026 · Written by the YieldOS team</div>
+
+    <p>Most dividend investors look at their portfolio as a single yield percentage — a 4.2% here, a 3.6% there. It's abstract. A paycheck calendar takes the same portfolio and reorganizes it as a month-by-month stream of dollars you're actually going to receive. When you see July is $312 but August is only $84, you stop owning a yield and start owning a cash flow.</p>
+
+    <p>This guide walks through how to build one — by hand in a spreadsheet, or automatically with a tracker — and why the mental shift matters more than the math.</p>
+
+    <h2>What a dividend paycheck calendar actually is</h2>
+    <p>A paycheck calendar is a twelve-month grid of projected dividend payments, broken down by ticker, grouped by the month they'll land. The point is to translate "yield" into "income on a date." It answers three questions a percentage can't:</p>
+
+    <ul>
+      <li><strong>How much will I get paid next month?</strong> Not annualized — next month, in dollars.</li>
+      <li><strong>Which months are lean?</strong> Most US stocks pay quarterly, and many cluster payments on the same calendar months. If you own six stocks that all pay in March-June-September-December, three months a year you get nothing.</li>
+      <li><strong>Where's my concentration risk in income terms?</strong> You might have 18% of your portfolio in one stock but 42% of your dividend income coming from it. That's a different picture.</li>
+    </ul>
+
+    <div class="callout">
+      <strong>The mindset shift:</strong> Yield-thinking makes you chase the biggest number. Paycheck-thinking makes you smooth the biggest gap. One leads you toward concentrated high-yielders, the other toward a diversified calendar. The second one tends to age better.
+    </div>
+
+    <h2>What it looks like</h2>
+    <p>Here's a simplified calendar for a $100k portfolio holding SCHD, JEPI, O, VYM, and MSFT:</p>
+
+    <div class="calendar-demo">
+      <table>
+        <thead>
+          <tr><th>Month</th><th>SCHD</th><th>JEPI</th><th>O</th><th>VYM</th><th>MSFT</th><th>Total</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Jan</td><td>—</td><td class="amt">$78</td><td class="amt">$24</td><td>—</td><td>—</td><td class="amt">$102</td></tr>
+          <tr><td>Feb</td><td>—</td><td class="amt">$78</td><td class="amt">$24</td><td>—</td><td>—</td><td class="amt">$102</td></tr>
+          <tr><td>Mar</td><td class="amt">$112</td><td class="amt">$78</td><td class="amt">$24</td><td class="amt">$64</td><td class="amt">$58</td><td class="amt">$336</td></tr>
+          <tr><td>Apr</td><td>—</td><td class="amt">$78</td><td class="amt">$24</td><td>—</td><td>—</td><td class="amt">$102</td></tr>
+          <tr><td>May</td><td>—</td><td class="amt">$78</td><td class="amt">$24</td><td>—</td><td>—</td><td class="amt">$102</td></tr>
+          <tr><td>Jun</td><td class="amt">$112</td><td class="amt">$78</td><td class="amt">$24</td><td class="amt">$64</td><td class="amt">$58</td><td class="amt">$336</td></tr>
+          <tr><td>Annual</td><td>$448</td><td>$936</td><td>$288</td><td>$256</td><td>$232</td><td>$2,160</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>Notice the shape. Three months land at $336 each. Eight months land at $102. That's a 3.3x swing. If you're thinking of dividends as "a second salary," you can't budget around a number that triples and drops every month. But you can fix it — which is the point of making the calendar in the first place.</p>
+
+    <h2>How to build one manually (spreadsheet method)</h2>
+    <ol>
+      <li><strong>List every holding</strong> with share count, current price, and trailing 12-month dividend (check the company's investor relations page or Yahoo Finance — not the "forward yield" number, the actual dividend history).</li>
+      <li><strong>Find the ex-dividend and pay dates</strong> for each stock's last four payments. Most US companies are on a rigid quarterly schedule — the same four months every year. ETFs like SCHD and VYM follow a similar pattern, though some REITs and BDCs pay monthly.</li>
+      <li><strong>Calculate per-payment dollars</strong>: shares × last dividend per share = dollars that month.</li>
+      <li><strong>Lay it out in a 12-row grid</strong> with tickers as columns. Fill in the cells for the months each ticker pays. Zero out the rest.</li>
+      <li><strong>Sum each row.</strong> You now have your paycheck calendar. Compare the highest month to the lowest — that's your smoothness gap.</li>
+    </ol>
+
+    <p>If you're doing this by hand, budget 20-30 minutes for a ten-stock portfolio. Rebuild it once a quarter, or when you add/remove a position.</p>
+
+    <h2>How to smooth the lean months</h2>
+    <p>Once you've built the calendar, the fix usually falls into one of three buckets:</p>
+
+    <h3>1. Add off-cycle payers</h3>
+    <p>US ex-dividend months cluster. Roughly 70% of S&P 500 dividends are paid in March, June, September, and December. The other eight months are starving. Adding tickers that pay in January-April-July-October (e.g., JNJ, PG's off-cycle peers) or February-May-August-November (e.g., many REITs) will redistribute income without changing your total yield much.</p>
+
+    <h3>2. Add monthly payers</h3>
+    <p>Stocks and ETFs that pay twelve times a year flatten the curve by default. Realty Income (O), Main Street Capital (MAIN), JEPI, and QYLD all pay monthly. A 10-20% allocation to monthly payers can eliminate most lean-month anxiety. Just watch the sustainability of the underlying yield — some monthly payers are return-of-capital schemes in disguise.</p>
+
+    <h3>3. Add Canadian payers (if your broker supports them)</h3>
+    <p>Canadian dividend stocks — Enbridge, BCE, the big five banks — follow a different fiscal calendar than US companies. Their pay months often fill exactly the gaps that US-only portfolios leave. If you have a brokerage that allows TSX trading without punitive FX fees, a 10-15% Canadian allocation can do more for smoothing than adding another US dividend aristocrat.</p>
+
+    <div class="callout">
+      <strong>Don't optimize for flatness at the cost of quality.</strong> The goal isn't a perfectly even $200/month. The goal is to stop feeling like you're starving three months out of the year. A 2:1 high-to-low ratio is already psychologically fine. You don't need 1:1.
+    </div>
+
+    <h2>Tools that build the calendar for you</h2>
+    <p>If you'd rather not run a spreadsheet, a few tools auto-generate a paycheck calendar from your holdings. We cover the full comparison in <a href="/blog/best-dividend-trackers-2026.html">our 2026 dividend tracker review</a>, but the short version:</p>
+
+    <ul>
+      <li><strong>Snowball Analytics</strong> — has a calendar view, but it's buried inside a broader analytics product priced at $8-15/month.</li>
+      <li><strong>Stock Events</strong> — mobile-first, free tier has the calendar. Polished for iOS/Android; lean on desktop.</li>
+      <li><strong>YieldOS</strong> — we built the paycheck calendar as the centerpiece of the product. It's on the free tier. <a href="/?utm_source=blog&utm_medium=post&utm_campaign=paycheck-calendar">Try it here</a> — import a portfolio and you'll have a calendar in under a minute.</li>
+      <li><strong>Simply Safe Dividends</strong> — includes a dividend schedule, but it's a table, not a true month-view calendar.</li>
+    </ul>
+
+    <h2>Why the paycheck view changes how you invest</h2>
+    <p>Once income is concrete — in dollars, on dates — three things tend to happen:</p>
+
+    <ul>
+      <li><strong>You stop chasing yield and start chasing reliability.</strong> A 7% yielder that cuts in year three is worse than a 3.5% yielder that compounds for fifteen.</li>
+      <li><strong>You notice concentration you couldn't see before.</strong> "22% of my income comes from one REIT" is a different feeling than "I have 15% of my portfolio in O."</li>
+      <li><strong>You start thinking in months covered.</strong> "Dividends cover my car payment in June-September" is the first step toward "dividends cover my rent year-round" — which is the first step toward full coverage.</li>
+    </ul>
+
+    <p>That last progression is the whole point of income investing. A percentage never tells you what you can afford to stop doing. A paycheck calendar does.</p>
+
+    <div class="cta-box">
+      <h3>Skip the spreadsheet</h3>
+      <p>Connect your portfolio to YieldOS and get a paycheck calendar, FIRE projection, and daily AI briefing in under a minute. Free forever plan — no credit card.</p>
+      <a href="/?utm_source=blog&utm_medium=post&utm_campaign=paycheck-calendar-cta">Build my paycheck calendar →</a>
+    </div>
+
+    <div class="related">
+      <h4>Related reading</h4>
+      <a href="/blog/best-dividend-trackers-2026.html">→ Best dividend trackers in 2026: honest comparison</a>
+      <a href="/blog/path-to-fire-dividend-calculator.html">→ Path to FIRE: calculator + framework for dividend investors</a>
+    </div>
+
+    <p style="font-size:12px;color:var(--text-muted);margin-top:36px;line-height:1.6;"><strong>Disclosure:</strong> YieldOS is the dividend tracker we build. This post mentions competitor products honestly — we'd rather you pick the right tool than pick ours. Nothing in this article is investment advice. Dividend payments are never guaranteed; companies cut them all the time. Do your own research.</p>
+  </main>
+
+  <footer>
+    © 2026 YieldOS · <a href="/">Home</a> · <a href="/#pricing">Pricing</a> · <a href="/#privacy">Privacy</a>
+  </footer>
+</body>
+</html>

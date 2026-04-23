@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#080b10" />
+
+  <title>Path to FIRE: A Dividend Calculator + Framework That Actually Works (2026)</title>
+  <meta name="description" content="Calculate your exact year to financial independence using dividend income instead of the 4% rule. Free framework, formulas, and tool recommendations for FIRE dividend investors." />
+  <meta name="keywords" content="fire calculator for dividend investors, dividend fire calculator, path to fire, financial independence dividend, fire number, dividend income fire, 4 percent rule alternative" />
+  <meta name="author" content="YieldOS" />
+  <link rel="canonical" href="https://yieldos.app/blog/path-to-fire-dividend-calculator.html" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+  <meta property="og:type" content="article" />
+  <meta property="og:title" content="Path to FIRE: A Dividend Calculator + Framework That Actually Works" />
+  <meta property="og:description" content="Calculate your exact year to financial independence using dividend income instead of the 4% rule." />
+  <meta property="og:url" content="https://yieldos.app/blog/path-to-fire-dividend-calculator.html" />
+  <meta property="og:image" content="https://yieldos.app/og-image.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": "Path to FIRE: A Dividend Calculator + Framework That Actually Works",
+    "description": "Calculate your exact year to financial independence using dividend income instead of the 4% rule.",
+    "image": "https://yieldos.app/og-image.png",
+    "author": { "@type": "Organization", "name": "YieldOS", "url": "https://yieldos.app" },
+    "publisher": { "@type": "Organization", "name": "YieldOS", "logo": { "@type": "ImageObject", "url": "https://yieldos.app/favicon.svg" } },
+    "datePublished": "2026-04-23",
+    "dateModified": "2026-04-23",
+    "mainEntityOfPage": { "@type": "WebPage", "@id": "https://yieldos.app/blog/path-to-fire-dividend-calculator.html" }
+  }
+  </script>
+
+  <style>
+    :root {
+      --bg:#080b10; --surface:#0f1420; --card:#131925; --border:#1c2536;
+      --text:#f1f5f9; --text-sub:#94a3b8; --text-muted:#64748b;
+      --blue:#4f8ef7; --emerald:#34d399; --gold:#f59e0b;
+    }
+    *{box-sizing:border-box;} html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:'Inter',system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased;}
+    @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,700;0,9..144,800&family=Inter:wght@400;500;600;700&display=swap');
+    a{color:var(--blue);text-decoration:none;} a:hover{text-decoration:underline;}
+    nav{position:sticky;top:0;z-index:10;background:rgba(8,11,16,0.94);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:14px 22px;display:flex;justify-content:space-between;align-items:center;}
+    nav .logo{display:flex;align-items:center;gap:10px;font-family:'Fraunces',serif;font-weight:700;font-size:17px;letter-spacing:-0.01em;color:var(--text);}
+    nav .cta{background:var(--blue);color:#fff;padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;}
+    nav .cta:hover{text-decoration:none;opacity:0.9;}
+    main{max-width:720px;margin:0 auto;padding:48px 22px 80px;}
+    .kicker{font-size:11px;color:var(--blue);font-weight:700;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:14px;}
+    h1{font-family:'Fraunces',serif;font-size:clamp(32px,5vw,44px);font-weight:800;line-height:1.12;letter-spacing:-0.02em;margin:0 0 16px;}
+    .byline{font-size:12px;color:var(--text-muted);margin-bottom:38px;}
+    h2{font-family:'Fraunces',serif;font-size:clamp(22px,3vw,28px);font-weight:700;letter-spacing:-0.015em;margin:44px 0 14px;}
+    h3{font-family:'Fraunces',serif;font-size:18px;font-weight:700;margin:28px 0 8px;}
+    p{font-size:16px;line-height:1.75;color:var(--text-sub);margin:0 0 18px;}
+    p strong,li strong{color:var(--text);}
+    ul,ol{padding-left:22px;color:var(--text-sub);font-size:16px;line-height:1.8;}
+    li{margin-bottom:8px;}
+    .callout{background:var(--card);border:1px solid var(--border);border-left:3px solid var(--blue);border-radius:10px;padding:18px 22px;margin:22px 0;font-size:15px;line-height:1.7;color:var(--text-sub);}
+    .callout strong{color:var(--text);}
+    .formula{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:18px 22px;margin:20px 0;font-family:'SF Mono',Monaco,Menlo,monospace;font-size:14px;line-height:1.8;color:var(--text);overflow-x:auto;}
+    .formula .comment{color:var(--text-muted);}
+    .formula .var{color:var(--emerald);}
+    .formula .num{color:var(--gold);}
+    .example-box{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:22px 24px;margin:24px 0;}
+    .example-box h3{margin-top:0;color:var(--text);}
+    .example-box .row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:14px;}
+    .example-box .row:last-of-type{border-bottom:none;font-weight:700;color:var(--text);padding-top:12px;}
+    .example-box .row .label{color:var(--text-sub);}
+    .example-box .row .val{color:var(--text);font-variant-numeric:tabular-nums;font-weight:600;}
+    .example-box .row .val.good{color:var(--emerald);}
+    .cta-box{background:linear-gradient(135deg,rgba(79,142,247,0.14),rgba(52,211,153,0.08));border:1px solid rgba(79,142,247,0.3);border-radius:14px;padding:28px;margin:36px 0;text-align:center;}
+    .cta-box h3{margin:0 0 8px;font-size:20px;color:var(--text);}
+    .cta-box p{margin:0 0 16px;color:var(--text-sub);}
+    .cta-box a{display:inline-block;background:var(--blue);color:#fff;padding:11px 22px;border-radius:9px;font-size:14px;font-weight:600;}
+    .cta-box a:hover{text-decoration:none;opacity:0.92;}
+    footer{border-top:1px solid var(--border);padding:24px 22px;text-align:center;font-size:12px;color:var(--text-muted);}
+    .related{background:var(--surface);border-radius:12px;padding:20px 22px;margin:28px 0;border:1px solid var(--border);}
+    .related h4{font-family:'Fraunces',serif;font-size:14px;color:var(--text);margin:0 0 10px;}
+    .related a{display:block;padding:6px 0;font-size:14px;}
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="/" class="logo">
+      <svg width="26" height="26" viewBox="0 0 28 28"><rect width="28" height="28" rx="7" fill="#4f8ef7"/><path d="M8 20 L14 8 L20 20" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/><circle cx="14" cy="17" r="2" fill="#fff"/></svg>
+      YieldOS
+    </a>
+    <a href="/" class="cta">Try YieldOS free →</a>
+  </nav>
+
+  <main>
+    <div class="kicker">FIRE PLANNING · 10 MIN READ</div>
+    <h1>Path to FIRE: A Dividend Calculator That Actually Works</h1>
+    <div class="byline">Updated April 23, 2026 · Written by the YieldOS team</div>
+
+    <p>The standard FIRE calculator — multiply your annual expenses by 25, withdraw 4% a year, hope the market cooperates — works fine for total-return investors. For dividend investors it's the wrong framework. You don't care about portfolio value. You care about whether income covers expenses, reliably, without selling shares. That's a different math problem, and this guide walks through it.</p>
+
+    <p>We'll build the formula step by step, run three realistic examples, show where the 4% rule breaks down for income investors, and point to tools that automate the projection.</p>
+
+    <h2>Why the 4% rule is the wrong question for dividend investors</h2>
+    <p>The 4% rule came from the Trinity Study — a retrospective simulation of 30-year retirements using a 60/40 stock/bond mix, withdrawing 4% of the starting portfolio value adjusted for inflation. It works, broadly. But it assumes:</p>
+
+    <ul>
+      <li><strong>You'll sell shares every year</strong> to fund expenses. For income investors, that's the thing you built a dividend portfolio to avoid.</li>
+      <li><strong>Sequence-of-returns risk is your main problem.</strong> It is — if you're selling. If you're living off dividends, sequence risk becomes dividend-cut risk, which is a different failure mode.</li>
+      <li><strong>25x expenses is your FIRE number.</strong> A 3% yielding portfolio actually needs ~33x. A 5% yielder only needs 20x. The multiple flexes with yield.</li>
+    </ul>
+
+    <div class="callout">
+      <strong>The dividend FIRE question is simpler:</strong> when does my annual dividend income, after tax, cover my annual expenses — without touching principal? Answer that and you have your exact year.
+    </div>
+
+    <h2>The core formula</h2>
+    <p>Here's the full formula, broken into pieces:</p>
+
+    <div class="formula">
+<span class="comment"># Your annual income in year N, with reinvestment</span><br>
+<span class="var">annualIncome(N)</span> = <span class="var">P₀</span> × (1 + <span class="var">r</span>) ^ N × <span class="var">y</span><br>
+<br>
+<span class="comment"># Where:</span><br>
+<span class="var">P₀</span>  = current portfolio value<br>
+<span class="var">r</span>   = dividend reinvestment + dividend growth rate (annual)<br>
+<span class="var">y</span>   = current portfolio yield<br>
+<span class="var">N</span>   = years from today<br>
+<br>
+<span class="comment"># FIRE year = smallest N such that:</span><br>
+<span class="var">annualIncome(N)</span> × (<span class="num">1</span> - <span class="var">taxRate</span>) ≥ <span class="var">expenses</span> × (<span class="num">1</span> + <span class="var">inflation</span>) ^ N
+    </div>
+
+    <p>In plain English: grow the portfolio each year by (reinvestment + organic dividend growth), multiply by the yield to get that year's income, subtract taxes, and compare against your expenses — which are themselves inflating each year. The first year income beats inflated expenses is your FIRE year.</p>
+
+    <h2>The three numbers that actually matter</h2>
+    <p>Three inputs dominate the answer. Everything else is noise at the precision most investors can forecast with.</p>
+
+    <h3>1. Annual contribution</h3>
+    <p>This is the biggest lever, especially early. Adding $500/month to a $50k portfolio compounds into a totally different outcome than adding $200/month. If you want to shorten FIRE by 5+ years, increase contributions. No other input moves the needle that much.</p>
+
+    <h3>2. Portfolio yield</h3>
+    <p>Not the SEC yield on one holding — your blended average. A 3% yield takes longer than a 5% yield to hit the same income number, but 5% yields often come from riskier holdings that cut in recessions. The sweet spot for sustainable FIRE is typically <strong>3.5-4.5% blended yield from quality dividend growers</strong>, not 7-8% from covered-call ETFs.</p>
+
+    <h3>3. Dividend growth rate</h3>
+    <p>A company that grows its dividend 8%/year doubles your income in ~9 years. One that grows at 3%/year takes 24 years. For dividend growth investors, this is the whole ballgame. Look at 10-year dividend CAGRs, not one-year bumps — one year of special dividends can make the math look unrealistically good.</p>
+
+    <h2>Three worked examples</h2>
+
+    <div class="example-box">
+      <h3>Example 1: The early-career investor</h3>
+      <div class="row"><span class="label">Starting portfolio</span><span class="val">$15,000</span></div>
+      <div class="row"><span class="label">Annual contribution</span><span class="val">$6,000</span></div>
+      <div class="row"><span class="label">Blended yield</span><span class="val">4.0%</span></div>
+      <div class="row"><span class="label">Dividend growth rate</span><span class="val">7.5%</span></div>
+      <div class="row"><span class="label">Target annual expenses</span><span class="val">$45,000</span></div>
+      <div class="row"><span class="label">Tax rate on dividends</span><span class="val">15%</span></div>
+      <div class="row"><span class="label">Assumed inflation</span><span class="val">2.5%</span></div>
+      <div class="row"><span class="label">Years to FIRE</span><span class="val good">~28 years</span></div>
+    </div>
+
+    <p>That's long. But the same person upping contributions to $12,000/year cuts it to ~22. Upping to $18,000/year cuts it to ~18. Contribution size dominates everything.</p>
+
+    <div class="example-box">
+      <h3>Example 2: The mid-career investor</h3>
+      <div class="row"><span class="label">Starting portfolio</span><span class="val">$180,000</span></div>
+      <div class="row"><span class="label">Annual contribution</span><span class="val">$24,000</span></div>
+      <div class="row"><span class="label">Blended yield</span><span class="val">3.8%</span></div>
+      <div class="row"><span class="label">Dividend growth rate</span><span class="val">6.0%</span></div>
+      <div class="row"><span class="label">Target annual expenses</span><span class="val">$65,000</span></div>
+      <div class="row"><span class="label">Tax rate on dividends</span><span class="val">15%</span></div>
+      <div class="row"><span class="label">Assumed inflation</span><span class="val">2.5%</span></div>
+      <div class="row"><span class="label">Years to FIRE</span><span class="val good">~14 years</span></div>
+    </div>
+
+    <p>Mid-career investors benefit from compounding that's already happening. $180k generating $6,800/year in dividends is a real tailwind — that's another $6,800 reinvested each year on top of contributions.</p>
+
+    <div class="example-box">
+      <h3>Example 3: The coast-FIRE candidate</h3>
+      <div class="row"><span class="label">Starting portfolio</span><span class="val">$420,000</span></div>
+      <div class="row"><span class="label">Annual contribution</span><span class="val">$0 (stops contributing)</span></div>
+      <div class="row"><span class="label">Blended yield</span><span class="val">3.5%</span></div>
+      <div class="row"><span class="label">Dividend growth rate</span><span class="val">7.0%</span></div>
+      <div class="row"><span class="label">Target annual expenses</span><span class="val">$55,000</span></div>
+      <div class="row"><span class="label">Tax rate on dividends</span><span class="val">15%</span></div>
+      <div class="row"><span class="label">Assumed inflation</span><span class="val">2.5%</span></div>
+      <div class="row"><span class="label">Years to FIRE</span><span class="val good">~17 years</span></div>
+    </div>
+
+    <p>This is the interesting one. If you can hit a threshold and then just let compounding do its thing — contribute nothing, just reinvest dividends — you can still retire. The threshold depends on your timeline, but for a 45-year-old wanting to retire at 62, $400-500k in quality dividend growers is often enough.</p>
+
+    <h2>Where the math lies to you</h2>
+
+    <h3>Dividend cuts aren't modeled</h3>
+    <p>The formula assumes every company you own grows its dividend forever. In reality, 10-15% of dividend payers cut during a major recession (2008, 2020). A conservative model should stress-test a 20% income haircut in year N and see if you still survive. If a single recession blows up your FIRE plan, you're too concentrated or too levered on yield.</p>
+
+    <h3>Inflation isn't 2.5%</h3>
+    <p>It wasn't in 2022-2023. Lifestyle inflation is worse than CPI — your expenses grow faster than the basket Bureau of Labor Statistics tracks. Budget a 3-4% expense growth rate for planning. Being pleasantly surprised beats missing a target.</p>
+
+    <h3>Taxes aren't flat 15%</h3>
+    <p>Qualified dividends in the US are 0/15/20% depending on income. If you're retiring into a low-income year, your effective tax rate on dividends can drop to 0%. REITs pay non-qualified dividends taxed at ordinary rates. Mix matters.</p>
+
+    <div class="callout">
+      <strong>Rule of thumb:</strong> model with conservative numbers (lower yield, lower growth, higher inflation, higher taxes) and your actual outcome is usually 2-4 years earlier than the projection. Model optimistically and you'll keep getting disappointed.
+    </div>
+
+    <h2>Tools that do the math for you</h2>
+    <p>You can build this in a spreadsheet — Google Sheets handles it with a single amortization-style table. For something interactive that updates with your actual live holdings, a few options:</p>
+
+    <ul>
+      <li><strong>Snowball Analytics</strong> — has a FIRE projection, but it's a linear extrapolation without dividend-growth modeling.</li>
+      <li><strong>Simply Safe Dividends</strong> — offers retirement planning as part of its $499/year product, focused more on income sustainability than years-to-FIRE.</li>
+      <li><strong>YieldOS Path to FIRE</strong> — the tool we build. Takes your actual holdings, your contribution plan, and your target expenses, and gives you an exact year with sensitivity bands for yield and growth assumptions. <a href="/?utm_source=blog&utm_medium=post&utm_campaign=fire-calculator">Try it free →</a></li>
+      <li><strong>Personal Capital / Empower</strong> — has a retirement planner but assumes the 4% rule framework, not income-replacement.</li>
+    </ul>
+
+    <h2>The honest bottom line</h2>
+    <p>FIRE through dividends is slower than FIRE through index-and-sell. You'll typically hit a "coverage" number 2-4 years later than a pure total-return investor with the same contributions. What you trade those years for is a different retirement: one where you never sell into a crash, never worry about sequence risk, and where the income stream is visible in dollars-per-month instead of percentage-of-balance.</p>
+
+    <p>Whether that trade is worth it is a question only you can answer. But you can't answer it without running the numbers for your actual portfolio — so run them.</p>
+
+    <div class="cta-box">
+      <h3>Run the math on your actual portfolio</h3>
+      <p>YieldOS imports your holdings and projects your exact FIRE year with live dividend data. Free forever plan — no credit card.</p>
+      <a href="/?utm_source=blog&utm_medium=post&utm_campaign=fire-calculator-cta">Calculate my FIRE year →</a>
+    </div>
+
+    <div class="related">
+      <h4>Related reading</h4>
+      <a href="/blog/best-dividend-trackers-2026.html">→ Best dividend trackers in 2026: honest comparison</a>
+      <a href="/blog/paycheck-calendar-for-dividends.html">→ Build a paycheck calendar for your dividends</a>
+    </div>
+
+    <p style="font-size:12px;color:var(--text-muted);margin-top:36px;line-height:1.6;"><strong>Disclosure:</strong> YieldOS is the dividend tracker we build. Nothing in this article is investment or tax advice. Dividend payments, dividend growth rates, and yields are not guaranteed. Past performance does not predict future results. Consult a licensed professional for personalized advice.</p>
+  </main>
+
+  <footer>
+    © 2026 YieldOS · <a href="/">Home</a> · <a href="/#pricing">Pricing</a> · <a href="/#privacy">Privacy</a>
+  </footer>
+</body>
+</html>

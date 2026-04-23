@@ -815,19 +815,32 @@ function Landing({ onEnter, onPickPlan, onDemo, onFeedback }) {
         </div>
       </div>
 
-      {/* Testimonials */}
+      {/* "What we built differently" — an honest section instead of fake
+          testimonials. Replace with real user quotes (name + handle, with
+          permission) once we have 3 willing to be quoted. Until then, the
+          strongest social proof we have is the product itself — lean into
+          the three things that actually differentiate us. */}
       <div style={{maxWidth:940,margin:"0 auto 80px",padding:"0 24px"}}>
-        <h2 style={{fontFamily:"'Fraunces',serif",fontSize:30,fontWeight:700,textAlign:"center",marginBottom:44,letterSpacing:"-0.015em"}}>What early users say</h2>
+        <div style={{textAlign:"center",marginBottom:36}}>
+          <div style={{display:"inline-block",fontSize:11,color:C.emerald,fontWeight:700,letterSpacing:"0.12em",marginBottom:12}}>BUILT FOR INCOME INVESTORS</div>
+          <h2 style={{fontFamily:"'Fraunces',serif",fontSize:"clamp(24px,3.2vw,30px)",fontWeight:700,letterSpacing:"-0.015em",marginBottom:10}}>Three things we obsess over.</h2>
+          <p style={{color:C.textSub,fontSize:13,maxWidth:520,margin:"0 auto"}}>
+            We're an indie project built by an investor for investors — not a VC-backed stock ticker. Here's what we care about most.
+          </p>
+        </div>
         <div className="feature-grid">
           {[
-            {n:"Sarah K.",  h:"@dividendsarah", t:"The FIRE projection was the moment. Seeing the exact month my dividends replace my salary changed how I invest."},
-            {n:"Marcus T.", h:"@marcusdiv",     t:"The paycheck calendar is such a smart reframe. Caught $400 in dividends last quarter I would have missed."},
-            {n:"Priya M.",  h:"@quietmoney",    t:"Every other tracker shows me yields. YieldOS shows me when I can stop working. That's a different product."},
-          ].map((t,i)=>(
+            { emoji:"🎯", title:"Income as the hero number",
+              body:"Every other tracker shows you portfolio value. We put your monthly passive income front and center — because that's the number that actually buys your time back." },
+            { emoji:"🔬", title:"Honest projections, no hype",
+              body:"Path to FIRE uses a real compounding model with your actual yield, contributions, and dividend growth. No inflated returns, no assumptions you didn't set yourself." },
+            { emoji:"🇨🇦", title:"US + Canadian coverage",
+              body:"Other trackers ignore the TSX. We support Canadian tickers natively with live FX conversion, so your dividend portfolio is one dashboard no matter where you invest." },
+          ].map((v,i)=>(
             <div key={i} style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:12,padding:22}}>
-              <div style={{color:C.gold,fontSize:13,marginBottom:12}}>★★★★★</div>
-              <p style={{fontSize:13,color:C.textSub,lineHeight:1.7,marginBottom:18}}>"{t.t}"</p>
-              <div style={{fontSize:13,fontWeight:600}}>{t.n} <span style={{color:C.textMuted,fontWeight:400,fontSize:11}}>{t.h}</span></div>
+              <div style={{fontSize:24,marginBottom:12}}>{v.emoji}</div>
+              <div style={{fontFamily:"'Fraunces',serif",fontSize:16,fontWeight:700,marginBottom:8,letterSpacing:"-0.01em"}}>{v.title}</div>
+              <p style={{fontSize:13,color:C.textSub,lineHeight:1.7,margin:0}}>{v.body}</p>
             </div>
           ))}
         </div>
@@ -2690,11 +2703,37 @@ export default function AppMain() {
               </div>
             )}
             {watchlist.length === 0 ? (
-              <div style={{background:C.card,border:`1px dashed ${C.border}`,borderRadius:14,padding:"40px 20px",textAlign:"center"}}>
-                <div style={{fontSize:32,marginBottom:10,opacity:0.6}}>👀</div>
+              /* Empty-state card with starter suggestions. Matches the dashboard
+                 Empty component's pattern — a headline, one-line value prop,
+                 and four one-click starter tickers. Quick-add button uses the
+                 same addToWatchlist API as the inline WatchlistAddRow so the
+                 success toast and Seed-cap check still fire correctly. */
+              <div style={{background:C.card,border:`1px dashed ${C.border}`,borderRadius:14,padding:"36px 22px 28px",textAlign:"center"}}>
+                <div style={{fontSize:32,marginBottom:10,opacity:0.7}}>👀</div>
                 <div style={{fontFamily:"'Fraunces',serif",fontSize:18,fontWeight:700,marginBottom:6}}>Nothing on your watchlist yet</div>
-                <div style={{fontSize:12,color:C.textSub,maxWidth:400,margin:"0 auto",lineHeight:1.55}}>
-                  Add tickers you're researching or considering. We'll track price, yield, and dividend streak — no shares required.
+                <div style={{fontSize:12,color:C.textSub,maxWidth:420,margin:"0 auto 20px",lineHeight:1.55}}>
+                  Track tickers you're researching — price, yield, dividend streak, safety grade — no shares required. Try a starter below, or search for any ticker up top.
+                </div>
+                <div style={{display:"flex",gap:8,flexWrap:"wrap",justifyContent:"center"}}>
+                  {[
+                    { t:"SCHD", tag:"Diversified", color:C.blue },
+                    { t:"O",    tag:"Monthly",     color:C.emerald },
+                    { t:"KO",   tag:"Aristocrat",  color:"#a78bfa" },
+                    { t:"ABBV", tag:"High Yield",  color:C.gold },
+                  ].map(s=>(
+                    <button key={s.t}
+                      onClick={async ()=>{
+                        if (seedWatchAtCap) { openUpgrade("watchlist"); return; }
+                        const res = await addToWatchlist(s.t);
+                        if (res.error) { window.toast?.({ text: res.error.message, kind: "error" }); return; }
+                        window.toast?.({ text: `✓ ${s.t} added to watchlist`, kind: "success" });
+                      }}
+                      style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:9,padding:"8px 14px",fontSize:12,color:C.text,fontWeight:600,cursor:"pointer",fontFamily:"inherit",display:"inline-flex",alignItems:"center",gap:8,transition:"all 0.15s"}}
+                      onMouseEnter={e=>{e.currentTarget.style.borderColor=s.color;}}
+                      onMouseLeave={e=>{e.currentTarget.style.borderColor=C.border;}}>
+                      + {s.t}<span style={{fontSize:10,color:s.color,fontWeight:500}}>{s.tag}</span>
+                    </button>
+                  ))}
                 </div>
               </div>
             ) : (
@@ -2869,7 +2908,30 @@ export default function AppMain() {
             </div>
           </div>
           <div style={{display:"flex",flexDirection:"column",gap:8,marginBottom:22}}>
-            {alerts.map(a=>(
+            {alerts.length === 0 ? (
+              /* Empty-state card. Shown when the user has no alerts yet —
+                 either because they're brand-new or because their portfolio
+                 hasn't triggered any rules. Keeps the page from feeling
+                 broken and teaches what alerts will look like. */
+              <div style={{background:C.card,border:`1px dashed ${C.border}`,borderRadius:14,padding:"32px 22px",textAlign:"center"}}>
+                <div style={{fontSize:32,marginBottom:10,opacity:0.6}}>🔔</div>
+                <div style={{fontFamily:"'Fraunces',serif",fontSize:17,fontWeight:700,marginBottom:6}}>All quiet — no alerts right now</div>
+                <div style={{fontSize:12,color:C.textSub,maxWidth:420,margin:"0 auto 14px",lineHeight:1.55}}>
+                  {port.length === 0
+                    ? "Add a holding to start getting smart alerts on upcoming payments, yield drops, and dividend cuts."
+                    : "We'll ping you 3 days before each payment, flag yield drops above 0.5%, and warn you immediately if any holding cuts its dividend."}
+                </div>
+                {port.length === 0 ? (
+                  <button style={{...bl,fontSize:12,padding:"8px 16px"}} onClick={()=>setTab("dashboard")}>Add your first holding →</button>
+                ) : (
+                  <div style={{display:"inline-flex",gap:8,flexWrap:"wrap",justifyContent:"center",marginTop:4}}>
+                    {["💰 Payment reminder","📉 Yield drop","✂️ Dividend cut","🎯 Goal milestone"].map(x=>(
+                      <span key={x} style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:6,padding:"4px 10px",fontSize:11,color:C.textSub}}>{x}</span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ) : alerts.map(a=>(
               <div key={a.id} onClick={()=>markRead(`${a.ticker||""}:${a.msg}`)}
                 style={{background:a.read?C.card:C.blueGlow,border:`1px solid ${a.read?C.border:`${C.blue}40`}`,borderRadius:12,padding:"15px 18px",display:"flex",alignItems:"center",gap:14,cursor:"pointer",transition:"all 0.15s"}}>
                 <div style={{fontSize:20,width:34,textAlign:"center",flexShrink:0}}>{a.icon}</div>

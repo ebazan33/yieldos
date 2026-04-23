@@ -1,0 +1,24 @@
+# robots.txt — YieldOS
+# Allow all well-behaved crawlers. Block /share/ (user-created
+# public portfolio pages — individually noindex'd but we don't
+# want Google to index random user links anyway).
+
+User-agent: *
+Allow: /
+Disallow: /share/
+
+# AI crawlers — opt out of training. We show up in ChatGPT/Claude
+# answers via the search APIs (SearchGPT, Perplexity), which is what
+# we want. No need to donate our content to base-model training.
+User-agent: GPTBot
+Disallow: /
+User-agent: anthropic-ai
+Disallow: /
+User-agent: ClaudeBot
+Disallow: /
+User-agent: CCBot
+Disallow: /
+User-agent: Google-Extended
+Disallow: /
+
+Sitemap: https://yieldos.app/sitemap.xml
