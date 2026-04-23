@@ -35,11 +35,11 @@ export default function Toaster() {
   }
 
   return (
-    <div style={{position:"fixed",bottom:20,right:20,zIndex:9999,display:"flex",flexDirection:"column",gap:8,pointerEvents:"none"}}>
+    <div className="yieldos-toast-stack" style={{position:"fixed",bottom:20,right:20,zIndex:9999,display:"flex",flexDirection:"column",gap:8,pointerEvents:"none"}}>
       {toasts.map(t => {
         const p = palette[t.kind] || palette.success
         return (
-          <div key={t.id} style={{
+          <div key={t.id} className="yieldos-toast" style={{
             background: p.bg,
             border: `1px solid ${p.border}`,
             borderLeft: `3px solid ${p.accent}`,
@@ -67,6 +67,21 @@ export default function Toaster() {
         @keyframes toastIn {
           from { opacity: 0; transform: translateX(40px) scale(0.94); }
           to   { opacity: 1; transform: translateX(0) scale(1); }
+        }
+        /* Mobile: anchor the stack to the bottom edge so it clears the
+           iOS/Android nav bar, and let toasts flex to the full width
+           minus side padding so they don't get clipped on a 360px screen. */
+        @media (max-width: 640px) {
+          .yieldos-toast-stack {
+            left: 12px !important;
+            right: 12px !important;
+            bottom: max(12px, env(safe-area-inset-bottom)) !important;
+          }
+          .yieldos-toast {
+            min-width: 0 !important;
+            max-width: 100% !important;
+            font-size: 13px;
+          }
         }
       `}</style>
     </div>

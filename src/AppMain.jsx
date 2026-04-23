@@ -557,6 +557,11 @@ function Landing({ onEnter, onPickPlan, onDemo, onFeedback }) {
              when 4 columns try to fit in <640px. The self-contained per-tier
              feature lists inside each .pricecol card carry the info instead. */
           .pricing-matrix{display:none!important;}
+          /* Pull in the oversized desktop padding on footer bands so content
+             has room to breathe on a 360px viewport. */
+          .landing-footer-band{padding:28px 20px 20px!important;}
+          .landing-footer-row{padding:18px 20px 12px!important;}
+          .landing-disclaimer{padding:0 20px 22px!important;}
         }
         /* On desktop/tablet we keep the matrix visible and hide the in-card
            feature lists (matrix is the cleaner side-by-side comparison there). */
@@ -859,7 +864,7 @@ function Landing({ onEnter, onPickPlan, onDemo, onFeedback }) {
           visitors with a question don't have to scroll past tiny boilerplate
           to find it. Email goes to hello@yieldos.app (Resend handles outbound,
           ImprovMX handles inbound forwarding to Elian's personal inbox). ── */}
-      <div style={{borderTop:`1px solid ${C.border}`,padding:"36px 48px 28px",background:C.surface}}>
+      <div className="landing-footer-band" style={{borderTop:`1px solid ${C.border}`,padding:"36px 48px 28px",background:C.surface}}>
         <div style={{maxWidth:1100,margin:"0 auto",display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(220px,1fr))",gap:18}}>
           <div>
             <div style={{fontSize:11,color:C.textMuted,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:10}}>Need help?</div>
@@ -884,7 +889,7 @@ function Landing({ onEnter, onPickPlan, onDemo, onFeedback }) {
       </div>
 
       {/* Footer + disclaimer */}
-      <div style={{borderTop:`1px solid ${C.border}`,padding:"22px 48px 14px",display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:10}}>
+      <div className="landing-footer-row" style={{borderTop:`1px solid ${C.border}`,padding:"22px 48px 14px",display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:10}}>
         <span style={{fontFamily:"'Fraunces',serif",fontWeight:700,fontSize:14}}>YieldOS</span>
         <div style={{display:"flex",alignItems:"center",gap:16,flexWrap:"wrap"}}>
           <a href="#privacy" style={{fontSize:11,color:C.textSub,textDecoration:"none"}}>Privacy</a>
@@ -893,7 +898,7 @@ function Landing({ onEnter, onPickPlan, onDemo, onFeedback }) {
           <span style={{fontSize:11,color:C.textMuted}}>© 2026 YieldOS · Built for passive income investors</span>
         </div>
       </div>
-      <div style={{padding:"0 48px 26px",fontSize:10,color:C.textMuted,lineHeight:1.6,textAlign:"center",maxWidth:960,margin:"0 auto"}}>
+      <div className="landing-disclaimer" style={{padding:"0 48px 26px",fontSize:10,color:C.textMuted,lineHeight:1.6,textAlign:"center",maxWidth:960,margin:"0 auto"}}>
         <strong style={{color:C.textSub}}>Disclaimer:</strong> YieldOS is an informational dividend-tracking tool and is not a registered investment advisor, broker-dealer, or tax professional. Content shown in the app — including AI-generated output, safety grades, screener results, and income projections — is educational only and must not be treated as financial, investment, or tax advice. Data may be delayed or inaccurate. Past performance does not indicate future results. Always conduct your own research and consult a licensed professional before making any investment decision.
       </div>
     </div>
@@ -1561,12 +1566,25 @@ export default function AppMain() {
   }, [user?.id, isPro, holdings.length, plan]);
 
   if (!authChecked) return (
-    <div style={{minHeight:"100vh",background:C.bg,color:C.textMuted,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'Plus Jakarta Sans',sans-serif",fontSize:13,letterSpacing:"0.04em"}}>
-      <div style={{display:"flex",alignItems:"center",gap:12}}>
-        <svg width="24" height="24" viewBox="0 0 28 28"><rect width="28" height="28" rx="7" fill={C.blue}/><path d="M8 20 L14 8 L20 20" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" fill="none"/><circle cx="14" cy="17" r="2" fill="#fff"/></svg>
-        <span style={{animation:"pulse 1.2s ease-in-out infinite"}}>Loading YieldOS…</span>
+    <div style={{minHeight:"100vh",background:C.bg,color:C.textMuted,display:"flex",alignItems:"center",justifyContent:"center",fontFamily:"'Plus Jakarta Sans',sans-serif",fontSize:13,letterSpacing:"0.04em",padding:"0 20px"}}>
+      {/* Splash animation — logo gently pulses while Supabase validates the
+          user's session. A subtle shimmer bar underneath makes the wait feel
+          intentional rather than stalled. */}
+      <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:18,maxWidth:280}}>
+        <svg width="44" height="44" viewBox="0 0 28 28" style={{animation:"splashLogo 1.8s ease-in-out infinite"}}>
+          <rect width="28" height="28" rx="7" fill={C.blue}/>
+          <path d="M8 20 L14 8 L20 20" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+          <circle cx="14" cy="17" r="2" fill="#fff"/>
+        </svg>
+        <div style={{fontFamily:"'Fraunces',serif",fontSize:22,fontWeight:700,color:"var(--text)",letterSpacing:"-0.01em"}}>YieldOS</div>
+        <div style={{width:160,height:3,borderRadius:2,background:"var(--border)",overflow:"hidden",position:"relative"}}>
+          <div style={{position:"absolute",inset:0,background:`linear-gradient(90deg,transparent,${C.blue},transparent)`,animation:"splashBar 1.2s ease-in-out infinite"}}/>
+        </div>
       </div>
-      <style>{`@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.35}}`}</style>
+      <style>{`
+        @keyframes splashLogo{0%,100%{transform:scale(1);opacity:0.95}50%{transform:scale(1.06);opacity:1}}
+        @keyframes splashBar{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
+      `}</style>
     </div>
   );
 
@@ -1704,7 +1722,11 @@ export default function AppMain() {
                       <div style={{fontSize:9,color:C.textMuted}}>· powered by Claude</div>
                     </div>
                     {briefingLoading ? (
-                      <div style={{fontSize:13,color:C.textMuted,fontStyle:"italic"}}>Writing your briefing…</div>
+                      <div style={{display:"flex",flexDirection:"column",gap:6,marginTop:2}}>
+                        <div className="skeleton" style={{height:10,width:"88%",borderRadius:4}}/>
+                        <div className="skeleton" style={{height:10,width:"74%",borderRadius:4}}/>
+                        <div className="skeleton" style={{height:10,width:"46%",borderRadius:4}}/>
+                      </div>
                     ) : briefingError ? (
                       <div style={{fontSize:12,color:C.textMuted}}>{briefingError}</div>
                     ) : (
@@ -1737,8 +1759,8 @@ export default function AppMain() {
                   other metrics are secondary. This is Yieldos's positioning:
                   "how much cash hits your account next month", not "what's
                   my P&L". */}
-              <div style={{display:"grid",gridTemplateColumns:"1.35fr 1fr",gap:12,marginBottom:16}}>
-                <div style={{background:`linear-gradient(135deg, ${C.emerald}10 0%, ${C.card} 55%, ${C.card} 100%)`,border:`1px solid ${C.emerald}35`,borderRadius:16,padding:"26px 28px",position:"relative",overflow:"hidden",display:"flex",flexDirection:"column",justifyContent:"space-between",minHeight:180}}>
+              <div className="dash-hero-grid" style={{display:"grid",gridTemplateColumns:"1.35fr 1fr",gap:12,marginBottom:16}}>
+                <div style={{background:`linear-gradient(135deg, ${C.emerald}10 0%, ${C.card} 55%, ${C.card} 100%)`,border:`1px solid ${C.emerald}35`,borderRadius:16,padding:"clamp(18px,4vw,28px)",position:"relative",overflow:"hidden",display:"flex",flexDirection:"column",justifyContent:"space-between",minHeight:180,animation:"up 0.5s cubic-bezier(0.2,0.8,0.3,1)"}}>
                   <div>
                     <div style={{fontSize:10,color:C.emerald,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:10,display:"flex",alignItems:"center",gap:6}}>
                       <span>💸</span> Monthly Passive Income
@@ -1765,7 +1787,7 @@ export default function AppMain() {
                     </div>
                   </div>
                 </div>
-                <div style={{display:"grid",gridTemplateRows:"repeat(3,1fr)",gap:12}}>
+                <div className="dash-hero-stats" style={{display:"grid",gridTemplateRows:"repeat(3,1fr)",gap:12}}>
                   <StatCard label="Portfolio Value" value={$(totVal)} sub={totVal>0?"tracking live":"Add holdings to start"} subColor={C.emerald} glow={C.blue}/>
                   <StatCard label="Annual Income"   value={$(totAnn)} sub={`Across ${port.length} holding${port.length!==1?"s":""}`}/>
                   <StatCard label="Goal Progress"   value={`${Math.round((totMo/goal)*100)}%`} sub={`${$(totMo)}/mo of ${$(goal,0)} goal`} subColor={C.gold} glow={C.gold}/>
@@ -2045,7 +2067,12 @@ export default function AppMain() {
               {port.length > 0 && (
                 <>
                   <button style={gh} onClick={()=>refreshAllPrices({force:true})} disabled={refreshing}>
-                    {refreshing ? "Refreshing…" : "↻ Refresh prices"}
+                    {refreshing ? (
+                      <span style={{display:"inline-flex",alignItems:"center",gap:7}}>
+                        <span style={{display:"inline-block",width:11,height:11,borderRadius:"50%",border:`1.6px solid ${C.textMuted}`,borderTopColor:C.blue,animation:"spinRefresh 0.8s linear infinite"}}/>
+                        Refreshing…
+                      </span>
+                    ) : "↻ Refresh prices"}
                   </button>
                   <button style={gh} onClick={exportCsv}>↓ Download CSV</button>
                   {/* Public share — Grow-only + requires a logged-in user
@@ -2120,7 +2147,23 @@ export default function AppMain() {
               </div>
             )
           )}
-          {holdLoading ? <div style={{textAlign:"center",padding:40,color:C.textMuted,fontSize:13}}>Loading your portfolio...</div>
+          {holdLoading ? (
+            // Skeleton table — 5 shimmer rows mimicking the real layout. Reduces
+            // perceived load time vs a plain "Loading..." string and keeps the
+            // page height stable so nothing below jumps when data arrives.
+            <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:14,overflow:"hidden",padding:14}}>
+              {[0,1,2,3,4].map(i=>(
+                <div key={i} style={{display:"flex",alignItems:"center",gap:12,padding:"12px 4px",borderBottom:i<4?`1px solid ${C.border}`:"none",animationDelay:`${i*60}ms`}}>
+                  <div className="skeleton" style={{width:52,height:22,borderRadius:6}}/>
+                  <div className="skeleton" style={{flex:1,height:14,minWidth:80}}/>
+                  <div className="skeleton" style={{width:60,height:14,display:"none"}} data-sm="1"/>
+                  <div className="skeleton" style={{width:70,height:14}}/>
+                  <div className="skeleton" style={{width:80,height:14}}/>
+                  <div className="skeleton" style={{width:24,height:24,borderRadius:"50%"}}/>
+                </div>
+              ))}
+            </div>
+          )
           : port.length===0 ? <Empty/>
           : (
             <>
@@ -3335,8 +3378,33 @@ export default function AppMain() {
         table{max-width:100%;display:block;overflow-x:auto;}
         @keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
         @keyframes pulse{0%,100%{opacity:1}50%{opacity:0.2}}
+        @keyframes up{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+        @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+        @keyframes spinRefresh{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+        .tab-fade-in{animation:tabFade 0.32s cubic-bezier(0.2,0.8,0.25,1);}
+        @keyframes tabFade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+        /* Staggered card entrance used on dashboard cards. Each card that
+           declares .card-in gets the fade-up; cards can also set an
+           animation-delay inline for a cascading reveal. */
+        .card-in{animation:up 0.45s cubic-bezier(0.2,0.8,0.3,1) both;}
         ::-webkit-scrollbar{width:3px;height:3px;}
         ::-webkit-scrollbar-thumb{background:${C.border};border-radius:2px;}
+
+        /* Dashboard hero layout — two-column on desktop, single column on
+           narrow screens so the Monthly-Income headline never competes with
+           the 3 stat cards on the right. Below 720px the stat column also
+           switches from a 3-row stack to a 3-col horizontal strip so it
+           doesn't balloon the page height on phones. */
+        @media (max-width: 820px) {
+          .dash-hero-grid{grid-template-columns:1fr!important;gap:10px!important;}
+          .dash-hero-stats{grid-template-rows:none!important;grid-template-columns:repeat(3,1fr)!important;}
+        }
+        @media (max-width: 480px) {
+          /* On very narrow phones, stack stats vertically so each stat
+             label + value has room to breathe rather than truncating. */
+          .dash-hero-stats{grid-template-columns:1fr 1fr!important;}
+          .dash-hero-stats > *:nth-child(3){grid-column:1 / -1;}
+        }
 
         /* In-app top nav — desktop shows a centered tab strip between the
            logo and user cluster. On mobile the top tabs hide and a native-
@@ -3489,7 +3557,10 @@ export default function AppMain() {
       </div>
 
       <div className="app-content-wrap" style={{maxWidth:1160,margin:"0 auto",padding:"24px 22px 24px"}}>
-        <div style={wrapStyle}>{Tab()}</div>
+        {/* Re-key on visible tab so React remounts the subtree — triggers the
+            CSS fade-in every time the user switches tabs. Nicer than static
+            content jumping into place. */}
+        <div key={visible} className="tab-fade-in" style={wrapStyle}>{Tab()}</div>
       </div>
 
       {/* Stripe checkout success banner — auto-dismisses after 8s */}
