@@ -1730,7 +1730,7 @@ export default function AppMain() {
                     <div style={{fontSize:10,color:C.emerald,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:10,display:"flex",alignItems:"center",gap:6}}>
                       <span>💸</span> Monthly Passive Income
                     </div>
-                    <div style={{fontFamily:"'Fraunces',serif",fontSize:56,fontWeight:800,color:C.text,lineHeight:1,letterSpacing:"-0.025em"}}>
+                    <div style={{fontFamily:"'Fraunces',serif",fontSize:"clamp(38px, 7vw, 56px)",fontWeight:800,color:C.text,lineHeight:1,letterSpacing:"-0.025em"}}>
                       <CountUp value={totMo} decimals={totMo>=1000?0:2} duration={1100}/>
                     </div>
                     <div style={{fontSize:12,color:C.textSub,fontWeight:500,marginTop:6}}>{totMo>0?`landing in your account every month · updated ${refreshAgo()}`:`Add holdings to start earning`}</div>
@@ -1842,7 +1842,7 @@ export default function AppMain() {
                         ) : (
                           <>
                             <div style={{fontFamily:"'Fraunces',serif",fontSize:15,fontWeight:500,color:C.textSub,marginBottom:2}}>You hit <span style={{color:C.gold,fontWeight:700}}>{$(goal,0)}/month</span> in</div>
-                            <div style={{fontFamily:"'Fraunces',serif",fontSize:32,fontWeight:800,letterSpacing:"-0.02em",lineHeight:1}}>
+                            <div style={{fontFamily:"'Fraunces',serif",fontSize:"clamp(24px, 4.2vw, 32px)",fontWeight:800,letterSpacing:"-0.02em",lineHeight:1}}>
                               <span style={{color:C.gold}}>{hitYears}</span> yr{hitYears!==1?"s":""}
                               {hitMonthsRem > 0 && <>, <span style={{color:C.gold}}>{hitMonthsRem}</span> mo</>}
                             </div>
@@ -2768,7 +2768,7 @@ export default function AppMain() {
         return (
           <div style={{position:"relative"}}>
             {!isPro&&<Lock onUp={()=>setShowUp(true)}/>}
-            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14}}>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:14,gap:10,flexWrap:"wrap"}}>
               <div>
                 <h2 style={{fontFamily:"'Fraunces',serif",fontSize:20,fontWeight:700,marginBottom:2,letterSpacing:"-0.01em"}}>Stock Screener</h2>
                 <p style={{fontSize:12,color:C.textSub}}>
@@ -2858,12 +2858,12 @@ export default function AppMain() {
       case "alerts": return (
         <div style={{position:"relative"}}>
           {!isPro&&<Lock onUp={()=>setShowUp(true)}/>}
-          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
+          <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16,gap:10,flexWrap:"wrap"}}>
             <div>
               <h2 style={{fontFamily:"'Fraunces',serif",fontSize:20,fontWeight:700,marginBottom:2,letterSpacing:"-0.01em"}}>Smart Alerts</h2>
               <p style={{fontSize:12,color:C.textSub}}>{unread} unread · {alerts.length} total</p>
             </div>
-            <div style={{display:"flex",gap:8}}>
+            <div style={{display:"flex",gap:8,flexWrap:"wrap"}}>
               <button style={gh} onClick={markAllRead}>Mark all read</button>
               <button style={bl}>+ New Alert Rule</button>
             </div>
@@ -2931,7 +2931,7 @@ export default function AppMain() {
           <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:14}}>
             <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:14,padding:22}}>
               <div style={{fontSize:10,color:C.textMuted,fontWeight:600,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:8}}>Current Progress</div>
-              <div style={{fontFamily:"'Fraunces',serif",fontSize:40,fontWeight:800,color:C.emerald,marginBottom:8,letterSpacing:"-0.02em"}}>{Math.round((totMo/goal)*100)}%</div>
+              <div style={{fontFamily:"'Fraunces',serif",fontSize:"clamp(30px, 5.5vw, 40px)",fontWeight:800,color:C.emerald,marginBottom:8,letterSpacing:"-0.02em"}}>{Math.round((totMo/goal)*100)}%</div>
               <Bar pct={(totMo/goal)*100} color={C.emerald} h={8}/>
               <div style={{display:"flex",justifyContent:"space-between",marginTop:8,fontSize:11,color:C.textSub,fontWeight:500}}>
                 <span>{$(totMo)}/mo now</span><span>{$(goal)}/mo goal</span>
@@ -2939,7 +2939,7 @@ export default function AppMain() {
             </div>
             <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:14,padding:22}}>
               <div style={{fontSize:10,color:C.textMuted,fontWeight:600,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:8}}>Gap to Close</div>
-              <div style={{fontFamily:"'Fraunces',serif",fontSize:40,fontWeight:800,letterSpacing:"-0.02em",marginBottom:6}}>{$(Math.max(0,goal-totMo))}</div>
+              <div style={{fontFamily:"'Fraunces',serif",fontSize:"clamp(30px, 5.5vw, 40px)",fontWeight:800,letterSpacing:"-0.02em",marginBottom:6}}>{$(Math.max(0,goal-totMo))}</div>
               <div style={{fontSize:12,color:C.textSub,marginBottom:10}}>more per month needed</div>
               <div style={{fontSize:12,color:C.blue,fontWeight:500,background:C.blueGlow,border:`1px solid ${C.blue}20`,borderRadius:8,padding:"8px 12px",lineHeight:1.5}}>
                 At 4% yield, invest {$(Math.max(0,goal-totMo)*12/0.04)} more to close the gap.

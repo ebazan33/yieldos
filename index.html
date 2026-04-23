@@ -94,9 +94,41 @@
       html[data-theme="light"] [style*="border-radius: 16"] {
         box-shadow: 0 1px 2px rgba(15,23,42,0.04), 0 4px 12px -4px rgba(15,23,42,0.08);
       }
-      html, body { background: var(--bg); color: var(--text); margin: 0; padding: 0; overflow-x: hidden; -webkit-font-smoothing: antialiased; transition: background 0.2s ease; }
+      html { scroll-behavior: smooth; }
+      html, body { background: var(--bg); color: var(--text); margin: 0; padding: 0; overflow-x: hidden; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; transition: background 0.2s ease; text-rendering: optimizeLegibility; }
       #root { background: var(--bg); min-height: 100vh; }
       * { -webkit-tap-highlight-color: transparent; }
+
+      /* Accessible focus ring — only shows on keyboard navigation, not mouse
+         clicks, so the UI stays clean for pointer users while remaining
+         navigable for keyboard users and screen readers. */
+      :focus { outline: none; }
+      :focus-visible {
+        outline: 2px solid #4f8ef7;
+        outline-offset: 2px;
+        border-radius: 4px;
+      }
+      button:focus-visible, a:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible, [role="button"]:focus-visible {
+        outline: 2px solid #4f8ef7;
+        outline-offset: 2px;
+      }
+
+      /* Inputs inherit font family from parent so placeholder text isn't a
+         different typeface than the surrounding UI. Also restore the selection
+         color so highlights look intentional across light+dark themes. */
+      input, textarea, select, button { font-family: inherit; }
+      ::selection { background: rgba(79,142,247,0.35); color: var(--text); }
+
+      /* Respect reduced-motion preference — disable transitions/animations
+         for users who have motion sensitivity enabled at the OS level. */
+      @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after {
+          animation-duration: 0.01ms !important;
+          animation-iteration-count: 1 !important;
+          transition-duration: 0.01ms !important;
+          scroll-behavior: auto !important;
+        }
+      }
 
       /* ── Tablet (≤900px) ─────────────────────────────────────────── */
       @media (max-width: 900px) {

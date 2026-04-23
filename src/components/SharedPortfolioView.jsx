@@ -103,7 +103,7 @@ export default function SharedPortfolioView({ slug }) {
     <Shell>
       <div style={{ marginBottom: 22 }}>
         <div style={{ fontSize: 11, color: C.textMuted, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.12em", marginBottom: 6 }}>Public portfolio</div>
-        <h1 style={{ fontFamily: "'Fraunces',serif", fontSize: 32, fontWeight: 700, letterSpacing: "-0.02em", margin: 0, lineHeight: 1.15 }}>{headline}</h1>
+        <h1 style={{ fontFamily: "'Fraunces',serif", fontSize: "clamp(24px, 5vw, 32px)", fontWeight: 700, letterSpacing: "-0.02em", margin: 0, lineHeight: 1.15 }}>{headline}</h1>
         <div style={{ fontSize: 12, color: C.textSub, marginTop: 6 }}>
           {holdings.length} position{holdings.length === 1 ? "" : "s"} · read-only snapshot
         </div>

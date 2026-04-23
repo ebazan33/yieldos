@@ -39,8 +39,8 @@ export default function TrialWelcomeModal({ daysLeft = 14, onAddHolding, onSeePl
   ]
 
   return (
-    <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.88)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:110,backdropFilter:"blur(8px)",padding:"20px"}} onClick={onClose}>
-      <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:16,padding:32,maxWidth:480,width:"100%",position:"relative"}} onClick={e=>e.stopPropagation()}>
+    <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.88)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:110,backdropFilter:"blur(8px)",padding:"16px"}} onClick={onClose}>
+      <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:16,padding:32,maxWidth:480,width:"100%",maxHeight:"calc(100dvh - 32px)",overflowY:"auto",position:"relative"}} onClick={e=>e.stopPropagation()}>
         {/* Celebratory accent strip at the top — makes the moment feel like
             a "thing just happened" instead of another dashboard chrome box. */}
         <div style={{position:"absolute",top:-1,left:24,right:24,height:3,background:`linear-gradient(90deg,${C.emerald},${C.blue})`,borderRadius:"0 0 3px 3px"}}/>
