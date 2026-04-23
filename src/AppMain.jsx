@@ -359,10 +359,10 @@ function Sparkline({ color=C.emerald }) {
 }
 
 const StatCard = ({ label, value, sub, subColor=C.textSub, glow }) => (
-  <div style={{background:glow?`${glow}07`:C.card,border:`1px solid ${glow?glow+"30":C.border}`,borderRadius:14,padding:"20px 22px"}}>
-    <div style={{fontSize:10,color:C.textMuted,fontWeight:600,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:8}}>{label}</div>
-    <div style={{fontFamily:"'Fraunces',serif",fontSize:28,fontWeight:700,color:C.text,marginBottom:4,letterSpacing:"-0.02em"}}>{value}</div>
-    <div style={{fontSize:11,color:subColor,fontWeight:500}}>{sub}</div>
+  <div style={{background:glow?`${glow}07`:C.card,border:`1px solid ${glow?glow+"30":C.border}`,borderRadius:14,padding:"clamp(14px,3vw,22px) clamp(14px,3vw,22px)",minWidth:0}}>
+    <div style={{fontSize:10,color:C.textMuted,fontWeight:600,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:6,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{label}</div>
+    <div style={{fontFamily:"'Fraunces',serif",fontSize:"clamp(20px,5vw,28px)",fontWeight:700,color:C.text,marginBottom:4,letterSpacing:"-0.02em",wordBreak:"break-word"}}>{value}</div>
+    <div style={{fontSize:11,color:subColor,fontWeight:500,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{sub}</div>
   </div>
 );
 
@@ -2151,15 +2151,18 @@ export default function AppMain() {
             // Skeleton table — 5 shimmer rows mimicking the real layout. Reduces
             // perceived load time vs a plain "Loading..." string and keeps the
             // page height stable so nothing below jumps when data arrives.
-            <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:14,overflow:"hidden",padding:14}}>
+            // Mobile-safe widths: ticker chip + flex-name + value + action; the
+            // wider mid-columns only appear on ≥640px (.skel-md) so the row never
+            // overflows a 360px viewport.
+            <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:14,overflow:"hidden",padding:"6px 14px"}}>
               {[0,1,2,3,4].map(i=>(
-                <div key={i} style={{display:"flex",alignItems:"center",gap:12,padding:"12px 4px",borderBottom:i<4?`1px solid ${C.border}`:"none",animationDelay:`${i*60}ms`}}>
-                  <div className="skeleton" style={{width:52,height:22,borderRadius:6}}/>
-                  <div className="skeleton" style={{flex:1,height:14,minWidth:80}}/>
-                  <div className="skeleton" style={{width:60,height:14,display:"none"}} data-sm="1"/>
-                  <div className="skeleton" style={{width:70,height:14}}/>
-                  <div className="skeleton" style={{width:80,height:14}}/>
-                  <div className="skeleton" style={{width:24,height:24,borderRadius:"50%"}}/>
+                <div key={i} style={{display:"flex",alignItems:"center",gap:10,padding:"14px 2px",borderBottom:i<4?`1px solid ${C.border}`:"none"}}>
+                  <div className="skeleton" style={{width:46,height:20,borderRadius:6,flexShrink:0}}/>
+                  <div className="skeleton" style={{flex:1,height:12,minWidth:40,maxWidth:180}}/>
+                  <div className="skeleton skel-md" style={{width:60,height:12,flexShrink:0}}/>
+                  <div className="skeleton skel-md" style={{width:52,height:12,flexShrink:0}}/>
+                  <div className="skeleton" style={{width:60,height:12,flexShrink:0}}/>
+                  <div className="skeleton" style={{width:22,height:22,borderRadius:"50%",flexShrink:0}}/>
                 </div>
               ))}
             </div>
@@ -3404,6 +3407,11 @@ export default function AppMain() {
              label + value has room to breathe rather than truncating. */
           .dash-hero-stats{grid-template-columns:1fr 1fr!important;}
           .dash-hero-stats > *:nth-child(3){grid-column:1 / -1;}
+        }
+        /* Skeleton row — hide mid-columns on narrow phones so ticker + name +
+           value + action always fit without horizontal overflow at 360px. */
+        @media (max-width: 639px) {
+          .skel-md{display:none!important;}
         }
 
         /* In-app top nav — desktop shows a centered tab strip between the
