@@ -47,23 +47,93 @@ function formatMonthLabel(key) {
 // ── Data fetch ──────────────────────────────────────────────────────────────
 //
 // Monthly adjusted OHLC from Polygon. `adjusted=true` means the prices are
-// split-adjusted (so a 2-for-1 split doesn't look like a 50% crash). We sort
-// ascending and pull up to 50 years — Polygon will just return what it has.
+// split-adjusted (so a 2-for-1 split doesn't look like a 50% crash).
+//
+// RATE-LIMIT HANDLING: Polygon's free/starter tier is 5 requests/min. Every
+// simulator run fires 2 requests (this + dividends), so a user clicking a
+// couple popular-ticker chips in quick succession blows the budget. We
+// wrap every fetch in:
+//   1. An in-memory cache keyed on ticker + (for prices) date range.
+//      Popular-chip switches that go back to a previously-run ticker are
+//      free after the first fetch.
+//   2. sessionStorage mirror of that cache so page reloads don't re-fetch.
+//   3. Exponential backoff on 429 — wait 2s, 5s, 12s before giving up.
+//      Polygon's reset window is 60s, so 2+5+12 = 19s is conservative but
+//      usually gets us through transient throttles.
+
+const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+
+// In-memory cache. Survives within a single page session. Populated from
+// sessionStorage on first read so reloads are free.
+const _mem = new Map();
+const CACHE_VERSION = "v1";
+
+function cacheKey(kind, ticker, extra = "") {
+  return `yieldos_sim_${CACHE_VERSION}_${kind}_${ticker.toUpperCase()}${extra ? "_" + extra : ""}`;
+}
+
+function cacheGet(key) {
+  if (_mem.has(key)) return _mem.get(key);
+  try {
+    const raw = sessionStorage.getItem(key);
+    if (!raw) return null;
+    const { data, ts } = JSON.parse(raw);
+    // Session cache only lives for the session anyway, but also refuse
+    // entries older than 6 hours so we pick up dividend updates on long-
+    // lived tabs.
+    if (Date.now() - ts > 6 * 60 * 60 * 1000) return null;
+    _mem.set(key, data);
+    return data;
+  } catch { return null; }
+}
+
+function cacheSet(key, data) {
+  _mem.set(key, data);
+  try {
+    sessionStorage.setItem(key, JSON.stringify({ data, ts: Date.now() }));
+  } catch {
+    // sessionStorage can throw if quota exceeded — silent failure is fine,
+    // in-memory cache still works for the session.
+  }
+}
+
+// Fetch with exponential backoff + jitter on 429. On any other status, fail
+// fast. Jitter matters because our 2 requests run in parallel — without it,
+// they'd both 429 together, both sleep exactly 2s, and both retry together,
+// reproducing the burst that triggered the original limit.
+async function fetchWithRetry(url, { retries = 3, startDelayMs = 2000 } = {}) {
+  let delay = startDelayMs;
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    const res = await fetch(url);
+    if (res.status !== 429) return res;
+    if (attempt === retries) return res;
+    // 0–500ms jitter so the two in-flight requests desynchronize.
+    const jitter = Math.floor(Math.random() * 500);
+    await sleep(delay + jitter);
+    delay = Math.min(delay * 2.5, 15000);
+  }
+  return fetch(url);
+}
 
 async function fetchMonthlyPrices(ticker, fromDate, toDate) {
   if (!POLYGON_KEY) throw new Error("Polygon API key missing");
+  const rangeTag = `${ymd(fromDate)}_${ymd(toDate).slice(0, 7)}`; // day precision on start, month on end
+  const ck = cacheKey("prices", ticker, rangeTag);
+  const cached = cacheGet(ck);
+  if (cached) return cached;
+
   const url = `https://api.polygon.io/v2/aggs/ticker/${encodeURIComponent(ticker)}/range/1/month/${ymd(fromDate)}/${ymd(toDate)}?adjusted=true&sort=asc&limit=5000&apiKey=${POLYGON_KEY}`;
-  const res = await fetch(url);
+  const res = await fetchWithRetry(url);
   if (!res.ok) {
     if (res.status === 404) throw new Error(`No price history found for ${ticker}`);
+    if (res.status === 429) throw new Error(`Data provider is rate-limiting us. Wait ~30 seconds and try again — or try a ticker you've already run (those are cached and free).`);
+    if (res.status === 401 || res.status === 403) throw new Error(`API access denied — check your Polygon key tier`);
     throw new Error(`Polygon price fetch failed (HTTP ${res.status})`);
   }
   const json = await res.json();
   const bars = json.results || [];
   if (!bars.length) throw new Error(`No price data available for ${ticker} in this range`);
-  // Map to { monthKey, close, open, ts }. Polygon returns `t` as Unix ms at the
-  // START of the period, so a "March 2020" bar has t = 2020-03-01.
-  return bars.map(b => ({
+  const mapped = bars.map(b => ({
     ts: b.t,
     monthKey: monthKey(b.t),
     open: b.o,
@@ -71,23 +141,33 @@ async function fetchMonthlyPrices(ticker, fromDate, toDate) {
     high: b.h,
     low: b.l,
   }));
+  cacheSet(ck, mapped);
+  return mapped;
 }
 
-// Full dividend history — used to credit dividends in the simulation window.
-// Polygon's dividends endpoint is free of date filters for the free tier, so
-// we just pull the full list and filter in JS.
+// Full dividend history — cached per ticker since dividend data doesn't
+// change based on requested date range.
 async function fetchDividends(ticker) {
   if (!POLYGON_KEY) throw new Error("Polygon API key missing");
+  const ck = cacheKey("divs", ticker);
+  const cached = cacheGet(ck);
+  if (cached) return cached;
+
   const url = `https://api.polygon.io/v3/reference/dividends?ticker=${encodeURIComponent(ticker)}&limit=500&order=asc&apiKey=${POLYGON_KEY}`;
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`Polygon dividend fetch failed (HTTP ${res.status})`);
+  const res = await fetchWithRetry(url);
+  if (!res.ok) {
+    if (res.status === 429) throw new Error(`Data provider is rate-limiting us. Wait ~30 seconds and try again — or try a ticker you've already run (those are cached and free).`);
+    throw new Error(`Polygon dividend fetch failed (HTTP ${res.status})`);
+  }
   const json = await res.json();
-  return (json.results || []).map(d => ({
+  const mapped = (json.results || []).map(d => ({
     exDate: d.ex_dividend_date || d.pay_date,
     payDate: d.pay_date || d.ex_dividend_date,
     cash: Number(d.cash_amount) || 0,
     frequency: d.frequency || null,
   })).filter(d => d.exDate && d.cash > 0);
+  cacheSet(ck, mapped);
+  return mapped;
 }
 
 // Group dividends by the month key of the ex-dividend date.
