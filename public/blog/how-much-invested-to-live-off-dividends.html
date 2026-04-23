@@ -83,7 +83,8 @@
     li{margin-bottom:8px;}
     .takeaway{background:linear-gradient(135deg,rgba(52,211,153,0.08),rgba(79,142,247,0.06));border:1px solid rgba(52,211,153,0.28);border-radius:12px;padding:18px 22px;margin:22px 0;font-size:15px;line-height:1.7;color:var(--text);}
     .takeaway strong{color:var(--emerald);}
-    table{width:100%;border-collapse:collapse;margin:18px 0;background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;font-size:14px;}
+    .table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:18px 0;border-radius:12px;border:1px solid var(--border);}
+    table{width:100%;border-collapse:collapse;background:var(--card);font-size:14px;min-width:480px;}
     th,td{padding:10px 14px;text-align:left;border-bottom:1px solid var(--border);}
     th{background:var(--surface);color:var(--text-muted);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;}
     td{color:var(--text-sub);}
@@ -147,7 +148,7 @@
     <h2>The yield question: how realistic is 4%?</h2>
     <p>Every yield assumption is a bet. Higher yields let you retire sooner but usually come with one of three costs: lower dividend growth, higher principal risk, or both. Here's how to think about the realistic range:</p>
 
-    <table>
+    <div class="table-wrap"><table>
       <thead><tr><th>Yield</th><th>Typical vehicle</th><th>Tradeoff</th></tr></thead>
       <tbody>
         <tr><td class="em">3.0–4.0%</td><td>SCHD, VYM, DGRO, individual aristocrats</td><td>Strong dividend growth (8–11% CAGR), lowest principal risk</td></tr>
@@ -155,14 +156,14 @@
         <tr><td class="gd">6.0–8.0%</td><td>JEPI, JEPQ, DIVO (covered-call ETFs)</td><td>Flat or minimal dividend growth; underperforms in strong bull markets</td></tr>
         <tr><td style="color:#f87171;font-weight:600">9%+</td><td>mREITs, BDCs, closed-end funds, YieldMax</td><td>Dividend cuts are common; NAV often decays over time</td></tr>
       </tbody>
-    </table>
+    </table></div>
 
     <p>For a portfolio you actually want to live on, <strong>3.5–5% is the honest, sustainable range</strong>. You can push to 6–7% with covered-call ETFs if you accept that your payout won't grow much, which means inflation will eat into it over 20+ years.</p>
 
     <h2>The real numbers by monthly spend</h2>
     <p>Here's what you actually need invested at different monthly spend levels, assuming a 4% average yield (a reasonable SCHD-weighted blend). Pre-tax; we'll handle taxes in a moment.</p>
 
-    <table>
+    <div class="table-wrap"><table>
       <thead><tr><th>Monthly spend</th><th>Annual spend</th><th>Portfolio needed at 4%</th><th>At 6%</th></tr></thead>
       <tbody>
         <tr><td><strong>$2,000</strong></td><td>$24,000</td><td>$600,000</td><td>$400,000</td></tr>
@@ -172,7 +173,7 @@
         <tr><td><strong>$7,500</strong></td><td>$90,000</td><td>$2,250,000</td><td>$1,500,000</td></tr>
         <tr><td><strong>$10,000</strong></td><td>$120,000</td><td>$3,000,000</td><td>$2,000,000</td></tr>
       </tbody>
-    </table>
+    </table></div>
 
     <p>Two things to notice. First, the difference between 4% and 6% is enormous — a 6% yielder cuts the required portfolio by a third. Second, these numbers are pre-tax. A qualified dividend in the 15% bracket leaves you with about 85% of the headline. If you want $4,000/month <em>after tax</em>, multiply by 1.18 to get a rough pre-tax target.</p>
 

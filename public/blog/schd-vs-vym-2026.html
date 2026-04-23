@@ -81,7 +81,8 @@
     p strong,li strong,td strong{color:var(--text);}
     ul,ol{padding-left:22px;color:var(--text-sub);font-size:16px;line-height:1.8;}
     li{margin-bottom:8px;}
-    table{width:100%;border-collapse:collapse;margin:18px 0;background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;font-size:14px;}
+    .table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:18px 0;border-radius:12px;border:1px solid var(--border);}
+    table{width:100%;border-collapse:collapse;background:var(--card);font-size:14px;min-width:440px;}
     th,td{padding:10px 14px;text-align:left;border-bottom:1px solid var(--border);}
     th{background:var(--surface);color:var(--text-muted);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;}
     td{color:var(--text-sub);}
@@ -166,7 +167,7 @@
     <h2>2. Dividend growth: SCHD wins decisively</h2>
     <p>This is the lever nobody talks about enough. SCHD's 5-year dividend CAGR is roughly 11% annually. VYM's is about 6%. That's not a small difference — it compounds aggressively:</p>
 
-    <table>
+    <div class="table-wrap"><table>
       <thead><tr><th>Year</th><th>SCHD income (starting $1,000)</th><th>VYM income (starting $1,000)</th></tr></thead>
       <tbody>
         <tr><td>Year 0</td><td>$1,000</td><td>$1,000</td></tr>
@@ -174,7 +175,7 @@
         <tr><td>Year 10</td><td>$2,839</td><td>$1,791</td></tr>
         <tr><td>Year 20</td><td><strong>$8,062</strong></td><td>$3,207</td></tr>
       </tbody>
-    </table>
+    </table></div>
 
     <p>Assuming those CAGRs hold, in 20 years SCHD's dividend stream is more than 2.5× VYM's from the same starting dollar. Even if SCHD's growth moderates to 8% and VYM's holds at 6%, SCHD still wins by a wide margin.</p>
 
