@@ -11,6 +11,7 @@ import AppMain from "./AppMain.jsx";
 import { PrivacyPage, TermsPage } from "./components/LegalPage.jsx";
 import ResetPasswordModal from "./components/ResetPasswordModal.jsx";
 import SharedPortfolioView from "./components/SharedPortfolioView.jsx";
+import SimulatorPage from "./pages/SimulatorPage.jsx";
 import { supabase } from "./lib/supabase";
 
 function readHash() {
@@ -28,9 +29,19 @@ function readSharedSlug() {
   return m ? m[1] : null;
 }
 
+// Path-based simulator route. Anything at /simulator (with or without a
+// trailing slash, plus optional query string) short-circuits the logged-in
+// app and mounts the public SimulatorPage. Free, no-login backtest tool —
+// designed to be the viral acquisition surface for Moat #4.
+function readIsSimulator() {
+  if (typeof window === "undefined") return false;
+  return /^\/simulator\/?$/.test(window.location.pathname);
+}
+
 export default function App() {
   const [route, setRoute] = useState(readHash);
   const [sharedSlug] = useState(readSharedSlug);
+  const [isSimulator] = useState(readIsSimulator);
   const [showReset, setShowReset] = useState(false);
 
   useEffect(() => {
@@ -61,6 +72,7 @@ export default function App() {
   // Public share viewer runs standalone — no AppMain auth flow, no hash legal
   // pages. If the URL matches /share/<slug>, that's the whole page.
   if (sharedSlug)               main = <SharedPortfolioView slug={sharedSlug} />;
+  else if (isSimulator)         main = <SimulatorPage />;
   else if (route === "privacy") main = <PrivacyPage onBack={goHome} />;
   else if (route === "terms")   main = <TermsPage   onBack={goHome} />;
   else                          main = <AppMain />;

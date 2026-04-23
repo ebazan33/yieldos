@@ -576,6 +576,7 @@ function Landing({ onEnter, onPickPlan, onDemo, onFeedback }) {
           <span style={{fontFamily:"'Fraunces',serif",fontSize:19,fontWeight:700,letterSpacing:"-0.01em"}}>YieldOS</span>
         </div>
         <div className="landing-nav-links">
+          <a className="nav-anchor" href="/simulator" style={{fontSize:12,color:C.textSub,textDecoration:"none",fontWeight:500}}>Simulator</a>
           <a className="nav-anchor" href="#differentiators" style={{fontSize:12,color:C.textSub,textDecoration:"none",fontWeight:500}}>Why YieldOS</a>
           <a className="nav-anchor" href="#pricing" style={{fontSize:12,color:C.textSub,textDecoration:"none",fontWeight:500}}>Pricing</a>
           <span className="inv-count" style={{fontSize:11,color:C.textMuted,marginLeft:4}}>{count.toLocaleString()} investors</span>
@@ -883,6 +884,7 @@ function Landing({ onEnter, onPickPlan, onDemo, onFeedback }) {
             <div style={{fontSize:11,color:C.textMuted,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:10}}>Product</div>
             <a href="#differentiators" style={{display:"block",fontSize:12,color:C.textSub,textDecoration:"none",marginBottom:6}}>Why YieldOS</a>
             <a href="#pricing" style={{display:"block",fontSize:12,color:C.textSub,textDecoration:"none",marginBottom:6}}>Pricing</a>
+            <a href="/simulator" style={{display:"block",fontSize:12,color:C.textSub,textDecoration:"none",marginBottom:6}}>Dividend Simulator →</a>
             <a href="/about.html" style={{display:"block",fontSize:12,color:C.textSub,textDecoration:"none",marginBottom:6}}>About</a>
             <a href="#" onClick={(e)=>{e.preventDefault(); onDemo && onDemo();}} style={{display:"block",fontSize:12,color:C.textSub,textDecoration:"none",marginBottom:6,cursor:"pointer"}}>Live demo →</a>
           </div>
