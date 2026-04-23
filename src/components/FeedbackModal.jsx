@@ -51,8 +51,8 @@ export default function FeedbackModal({ onClose, user, page, plan }) {
   }
 
   return (
-    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.88)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 150, backdropFilter: "blur(8px)" }} onClick={onClose}>
-      <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 16, padding: 30, maxWidth: 460, width: "90%" }} onClick={e => e.stopPropagation()}>
+    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.88)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 150, backdropFilter: "blur(8px)", padding: "16px" }} onClick={onClose}>
+      <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 16, padding: 30, maxWidth: 460, width: "100%", maxHeight: "calc(100dvh - 32px)", overflowY: "auto" }} onClick={e => e.stopPropagation()}>
 
         {/* ── Success state — shown after a successful insert. Friendly,
             personal sign-off so users feel like they're talking to a human
@@ -87,12 +87,14 @@ export default function FeedbackModal({ onClose, user, page, plan }) {
               ].map(c => (
                 <button key={c.key} onClick={() => setCategory(c.key)}
                   style={{
-                    flex: 1, minWidth: 80,
+                    flex: "1 1 calc(50% - 4px)", minWidth: 60,
                     background: category === c.key ? C.blue : C.surface,
                     border: `1px solid ${category === c.key ? C.blue : C.border}`,
                     borderRadius: 9, color: category === c.key ? "#fff" : C.textSub,
-                    fontSize: 12, fontWeight: 600, padding: "9px 10px",
+                    fontSize: 12, fontWeight: 600, padding: "10px 10px",
+                    minHeight: 44,
                     cursor: "pointer", fontFamily: "inherit", transition: "all 0.12s",
+                    WebkitTapHighlightColor: "transparent",
                   }}>
                   {c.label}
                 </button>
@@ -109,12 +111,17 @@ export default function FeedbackModal({ onClose, user, page, plan }) {
               }
               value={message}
               onChange={e => setMessage(e.target.value)}
-              autoFocus
             />
 
             <input
               style={inp}
               type="email"
+              name="email"
+              inputMode="email"
+              autoComplete="email"
+              autoCapitalize="off"
+              autoCorrect="off"
+              spellCheck={false}
               placeholder={user?.email ? "Email (so I can reply)" : "Email (optional — so I can reply)"}
               value={email}
               onChange={e => setEmail(e.target.value)}

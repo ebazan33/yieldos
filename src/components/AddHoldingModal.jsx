@@ -347,7 +347,7 @@ export default function AddHoldingModal({ onClose, onAdd, prefillTicker }) {
               </div>
               <div>
                 <div style={{fontSize:10,color:C.textMuted,fontWeight:600,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:5}}>Price (CAD)</div>
-                <input style={{...inp,padding:"8px 12px",fontSize:12}} type="number" placeholder="e.g. 72.40" value={manualPrice} onChange={e=>setManualPrice(e.target.value)} step="0.01" min="0" />
+                <input style={{...inp,padding:"8px 12px",fontSize:12}} type="number" inputMode="decimal" placeholder="e.g. 72.40" value={manualPrice} onChange={e=>setManualPrice(e.target.value)} step="0.01" min="0" />
               </div>
             </div>
           </div>
@@ -357,14 +357,14 @@ export default function AddHoldingModal({ onClose, onAdd, prefillTicker }) {
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:16}}>
           <div>
             <div style={{fontSize:11,color:C.textMuted,fontWeight:600,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:6}}>Number of Shares</div>
-            <input style={inp} type="number" placeholder="e.g. 100" value={shares} onChange={e=>setShares(e.target.value)} min="0" />
+            <input style={inp} type="number" inputMode="decimal" placeholder="e.g. 100" value={shares} onChange={e=>setShares(e.target.value)} min="0" />
           </div>
           <div>
             <div style={{fontSize:11,color:C.textMuted,fontWeight:600,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:6,display:"flex",alignItems:"center",gap:6}}>
               Annual Yield %
               {selected?.yld>0 && yld && <span style={{background:C.emeraldGlow||"rgba(52,211,153,0.1)",color:C.emerald,fontSize:9,fontWeight:700,padding:"1px 6px",borderRadius:4}}>AUTO-FILLED</span>}
             </div>
-            <input style={inp} type="number" placeholder="e.g. 3.6" value={yld} onChange={e=>setYld(e.target.value)} step="0.1" min="0" />
+            <input style={inp} type="number" inputMode="decimal" placeholder="e.g. 3.6" value={yld} onChange={e=>setYld(e.target.value)} step="0.1" min="0" />
             {selected && !selected.yld && <div style={{fontSize:10,color:C.textMuted,marginTop:4}}>Couldn't find yield automatically — please enter it manually</div>}
           </div>
         </div>
@@ -381,6 +381,7 @@ export default function AddHoldingModal({ onClose, onAdd, prefillTicker }) {
           <input
             style={inp}
             type="number"
+            inputMode="decimal"
             placeholder={manualMode ? "e.g. 65.20 (CAD)" : "e.g. 62.15 — what you paid per share"}
             value={costBasis}
             onChange={e=>setCostBasis(e.target.value)}

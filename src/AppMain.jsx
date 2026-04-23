@@ -1851,10 +1851,10 @@ export default function AppMain() {
                       </div>
                       <div style={{display:"flex",gap:6,flexWrap:"wrap",alignItems:"center"}}>
                         <label style={{fontSize:10,color:C.textMuted,fontWeight:600,textTransform:"uppercase",letterSpacing:"0.06em"}}>Add / month</label>
-                        <input type="number" min="0" step="50" value={fireContribution} onChange={e=>setFireContribution(Math.max(0, Number(e.target.value) || 0))}
+                        <input type="number" inputMode="numeric" min="0" step="50" value={fireContribution} onChange={e=>setFireContribution(Math.max(0, Number(e.target.value) || 0))}
                           style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:7,color:C.text,fontFamily:"inherit",fontSize:12,padding:"6px 10px",width:90,outline:"none"}}/>
                         <label style={{fontSize:10,color:C.textMuted,fontWeight:600,textTransform:"uppercase",letterSpacing:"0.06em",marginLeft:8}}>Div growth %</label>
-                        <input type="number" min="0" max="20" step="0.5" value={fireGrowth} onChange={e=>setFireGrowth(Math.max(0, Math.min(20, Number(e.target.value) || 0)))}
+                        <input type="number" inputMode="decimal" min="0" max="20" step="0.5" value={fireGrowth} onChange={e=>setFireGrowth(Math.max(0, Math.min(20, Number(e.target.value) || 0)))}
                           style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:7,color:C.text,fontFamily:"inherit",fontSize:12,padding:"6px 10px",width:70,outline:"none"}}/>
                       </div>
                     </div>
@@ -2156,6 +2156,7 @@ export default function AppMain() {
                             <input
                               autoFocus
                               type="number"
+                              inputMode="decimal"
                               step="0.01"
                               min="0"
                               value={editBasisVal}

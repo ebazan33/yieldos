@@ -123,6 +123,12 @@
            behavior handled in AppMain.jsx (hides anchor links, shrinks CTA). */
         nav:not(.landing-nav) { overflow-x: auto !important; -webkit-overflow-scrolling: touch; flex-wrap: nowrap !important; }
         nav:not(.landing-nav) > button, nav:not(.landing-nav) > * { flex-shrink: 0 !important; }
+        /* Tab-bar buttons — bump to Apple's 44px minimum touch target.
+           The current design uses 11-12px fonts with tight padding, which
+           means buttons are ~30-36px tall. Fat thumbs miss. This applies
+           to every button inside nav so we don't have to audit every
+           padding rule individually. */
+        nav:not(.landing-nav) > button { min-height: 40px !important; padding-left: 14px !important; padding-right: 14px !important; }
         /* Headline sizes back off */
         h1 { font-size: 34px !important; line-height: 1.12 !important; }
         h2 { font-size: 22px !important; }
@@ -131,6 +137,34 @@
         [style*="padding: 32"] { padding: 20px !important; }
         [style*="padding:22"] { padding: 16px !important; }
         table { font-size: 11px; }
+        /* Table sidescroll hint — a subtle right-edge fade on scrollable
+           containers tells users there's more content to swipe to. Without
+           this hint, users see 4 truncated columns and assume that's all
+           there is. Applies to the wrapper the table inherits from our
+           ≤900px rule above. */
+        table::after {
+          content: ""; position: sticky; right: 0; top: 0; width: 24px; height: 100%;
+          background: linear-gradient(90deg, rgba(0,0,0,0), var(--bg));
+          pointer-events: none;
+        }
+        /* Bigger-than-8px buttons hit the 44px mark. We don't want to touch
+           every button style inline, so this media-query rule bumps the
+           pad-8 pattern to a minimum height that meets iOS HIG. */
+        button { min-height: 36px; }
+        /* Holding-row chips, ticker badges, and other decorative chips
+           should stay small — they're not buttons. Undo the min-height
+           for anything explicitly styled as a span-chip. */
+        span[style] { min-height: auto; }
+      }
+
+      /* ── Touch feedback — subtle active-state on mobile so taps feel
+         responsive. CSS :active is triggered by both mouse and touch;
+         we scope with hover:none so desktop doesn't get the flash. */
+      @media (hover: none) {
+        button:active, a:active, [role="button"]:active {
+          opacity: 0.7;
+          transition: opacity 0.05s;
+        }
       }
     </style>
   </head>

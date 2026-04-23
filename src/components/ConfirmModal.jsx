@@ -33,12 +33,12 @@ export default function ConfirmModal({
   const accent = danger ? C.red : C.blue
   return (
     <div
-      style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.82)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:200,backdropFilter:"blur(8px)"}}
+      style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.82)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:200,backdropFilter:"blur(8px)",padding:"16px"}}
       onClick={onCancel}
     >
       <div
         onClick={e=>e.stopPropagation()}
-        style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:14,padding:26,maxWidth:400,width:"90%",animation:"confirmIn 0.18s ease"}}
+        style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:14,padding:26,maxWidth:400,width:"100%",maxHeight:"calc(100dvh - 32px)",overflowY:"auto",animation:"confirmIn 0.18s ease"}}
       >
         <div style={{fontFamily:"'Fraunces',serif",fontSize:18,fontWeight:700,letterSpacing:"-0.01em",marginBottom:body?8:18}}>{title}</div>
         {body && <div style={{fontSize:13,color:C.textSub,lineHeight:1.55,marginBottom:20}}>{body}</div>}

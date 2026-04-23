@@ -38,8 +38,8 @@ export default function ResetPasswordModal({ onDone }) {
   }
 
   return (
-    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.88)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 200, backdropFilter: "blur(8px)" }}>
-      <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 16, padding: 32, maxWidth: 420, width: "90%" }}>
+    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.88)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 200, backdropFilter: "blur(8px)", padding: "16px" }}>
+      <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 16, padding: 32, maxWidth: 420, width: "100%", maxHeight: "calc(100dvh - 32px)", overflowY: "auto" }}>
         <div style={{ textAlign: "center", marginBottom: 24 }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, marginBottom: 16 }}>
             <svg width="28" height="28" viewBox="0 0 28 28"><rect width="28" height="28" rx="7" fill={C.blue} /><path d="M8 20 L14 8 L20 20" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" fill="none" /><circle cx="14" cy="17" r="2" fill="#fff" /></svg>
@@ -49,8 +49,32 @@ export default function ResetPasswordModal({ onDone }) {
           <div style={{ fontSize: 12, color: C.textSub }}>Pick something you'll remember this time.</div>
         </div>
 
-        <input style={inp} type="password" placeholder="New password" value={pw1} onChange={e => setPw1(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleSubmit()} autoFocus />
-        <input style={inp} type="password" placeholder="Confirm new password" value={pw2} onChange={e => setPw2(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleSubmit()} />
+        <input
+          style={inp}
+          type="password"
+          name="new-password"
+          autoComplete="new-password"
+          autoCapitalize="off"
+          autoCorrect="off"
+          spellCheck={false}
+          placeholder="New password"
+          value={pw1}
+          onChange={e => setPw1(e.target.value)}
+          onKeyDown={e => e.key === 'Enter' && handleSubmit()}
+        />
+        <input
+          style={inp}
+          type="password"
+          name="confirm-password"
+          autoComplete="new-password"
+          autoCapitalize="off"
+          autoCorrect="off"
+          spellCheck={false}
+          placeholder="Confirm new password"
+          value={pw2}
+          onChange={e => setPw2(e.target.value)}
+          onKeyDown={e => e.key === 'Enter' && handleSubmit()}
+        />
 
         {error   && <div style={{ fontSize: 12, color: C.red, marginBottom: 12 }}>{error}</div>}
         {success && <div style={{ fontSize: 12, color: C.emerald, marginBottom: 12 }}>{success}</div>}

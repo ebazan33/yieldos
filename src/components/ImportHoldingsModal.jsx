@@ -400,13 +400,13 @@ export default function ImportHoldingsModal({ onClose, onAdd }) {
                           </div>
                         </td>
                         <td style={{padding:"8px 12px"}}>
-                          <input type="number" step="0.0001" min="0" value={r.shares} onChange={e=>updateRow(i,{shares:Number(e.target.value)||0})}
+                          <input type="number" inputMode="decimal" step="0.0001" min="0" value={r.shares} onChange={e=>updateRow(i,{shares:Number(e.target.value)||0})}
                             style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:6,color:C.text,fontFamily:"inherit",fontSize:12,padding:"5px 8px",width:110,outline:"none"}}/>
                         </td>
                         {showPriceCol && (
                           <td style={{padding:"8px 12px"}}>
                             {isCad ? (
-                              <input type="number" step="0.01" min="0"
+                              <input type="number" inputMode="decimal" step="0.01" min="0"
                                 value={r.csvPrice ?? ''}
                                 placeholder={r.needsManualPrice ? "Enter price" : ""}
                                 onChange={e=>{
@@ -420,7 +420,7 @@ export default function ImportHoldingsModal({ onClose, onAdd }) {
                           </td>
                         )}
                         <td style={{padding:"8px 12px"}}>
-                          <input type="number" step="0.01" min="0"
+                          <input type="number" inputMode="decimal" step="0.01" min="0"
                             value={r.csvCostBasis ?? ''}
                             placeholder={isCad ? "optional (CAD)" : "optional"}
                             onChange={e=>{

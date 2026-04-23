@@ -47,8 +47,8 @@ export default function AccountModal({ user, currentDisplayName, theme = 'dark',
   }
 
   return (
-    <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.88)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:100,backdropFilter:"blur(8px)"}} onClick={onClose}>
-      <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:16,padding:32,maxWidth:420,width:"90%"}} onClick={e=>e.stopPropagation()}>
+    <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.88)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:100,backdropFilter:"blur(8px)",padding:"16px"}} onClick={onClose}>
+      <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:16,padding:32,maxWidth:420,width:"100%",maxHeight:"calc(100dvh - 32px)",overflowY:"auto"}} onClick={e=>e.stopPropagation()}>
         <div style={{marginBottom:20}}>
           <div style={{fontFamily:"'Fraunces',serif",fontSize:20,fontWeight:700,letterSpacing:"-0.01em"}}>Your Account</div>
           <div style={{fontSize:12,color:C.textSub,marginTop:4}}>Customize how YieldOS greets you</div>
@@ -59,12 +59,13 @@ export default function AccountModal({ user, currentDisplayName, theme = 'dark',
           <input
             style={inp}
             type="text"
+            name="display-name"
+            autoComplete="nickname"
             placeholder={user?.email?.split("@")[0] || 'e.g. Sam'}
             value={displayName}
             onChange={e=>setDisplayName(e.target.value)}
             onKeyDown={e=>e.key==='Enter'&&handleSave()}
             maxLength={40}
-            autoFocus
           />
           <div style={{fontSize:10,color:C.textMuted,marginTop:6,lineHeight:1.5}}>
             Shown on your dashboard and in the top nav. Leave blank to use the
