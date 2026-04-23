@@ -883,7 +883,21 @@ function Landing({ onEnter, onPickPlan, onDemo, onFeedback }) {
             <div style={{fontSize:11,color:C.textMuted,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:10}}>Product</div>
             <a href="#differentiators" style={{display:"block",fontSize:12,color:C.textSub,textDecoration:"none",marginBottom:6}}>Why YieldOS</a>
             <a href="#pricing" style={{display:"block",fontSize:12,color:C.textSub,textDecoration:"none",marginBottom:6}}>Pricing</a>
+            <a href="/about.html" style={{display:"block",fontSize:12,color:C.textSub,textDecoration:"none",marginBottom:6}}>About</a>
             <a href="#" onClick={(e)=>{e.preventDefault(); onDemo && onDemo();}} style={{display:"block",fontSize:12,color:C.textSub,textDecoration:"none",marginBottom:6,cursor:"pointer"}}>Live demo →</a>
+          </div>
+          {/* Learn column — internal links to every SEO landing page
+              we've published. This gives Google at least one crawlable
+              link from the root domain into every piece of long-tail
+              content, which massively improves their chances of ranking. */}
+          <div>
+            <div style={{fontSize:11,color:C.textMuted,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:10}}>Learn</div>
+            <a href="/blog/best-monthly-dividend-stocks-2026.html" style={{display:"block",fontSize:12,color:C.textSub,textDecoration:"none",marginBottom:6}}>Best monthly dividend stocks 2026</a>
+            <a href="/blog/how-much-invested-to-live-off-dividends.html" style={{display:"block",fontSize:12,color:C.textSub,textDecoration:"none",marginBottom:6}}>How much to live off dividends</a>
+            <a href="/blog/schd-vs-vym-2026.html" style={{display:"block",fontSize:12,color:C.textSub,textDecoration:"none",marginBottom:6}}>SCHD vs VYM 2026</a>
+            <a href="/blog/path-to-fire-dividend-calculator.html" style={{display:"block",fontSize:12,color:C.textSub,textDecoration:"none",marginBottom:6}}>Path to FIRE calculator</a>
+            <a href="/blog/paycheck-calendar-for-dividends.html" style={{display:"block",fontSize:12,color:C.textSub,textDecoration:"none",marginBottom:6}}>Paycheck calendar guide</a>
+            <a href="/blog/best-dividend-trackers-2026.html" style={{display:"block",fontSize:12,color:C.textSub,textDecoration:"none",marginBottom:6}}>All blog posts →</a>
           </div>
         </div>
       </div>
@@ -892,6 +906,7 @@ function Landing({ onEnter, onPickPlan, onDemo, onFeedback }) {
       <div className="landing-footer-row" style={{borderTop:`1px solid ${C.border}`,padding:"22px 48px 14px",display:"flex",justifyContent:"space-between",alignItems:"center",flexWrap:"wrap",gap:10}}>
         <span style={{fontFamily:"'Fraunces',serif",fontWeight:700,fontSize:14}}>YieldOS</span>
         <div style={{display:"flex",alignItems:"center",gap:16,flexWrap:"wrap"}}>
+          <a href="/about.html" style={{fontSize:11,color:C.textSub,textDecoration:"none"}}>About</a>
           <a href="#privacy" style={{fontSize:11,color:C.textSub,textDecoration:"none"}}>Privacy</a>
           <a href="#terms"   style={{fontSize:11,color:C.textSub,textDecoration:"none"}}>Terms</a>
           <a href="mailto:hello@yieldos.app" style={{fontSize:11,color:C.textSub,textDecoration:"none"}}>Contact</a>

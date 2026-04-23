@@ -13,6 +13,13 @@
   </url>
 
   <url>
+    <loc>https://yieldos.app/about.html</loc>
+    <lastmod>2026-04-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
     <loc>https://yieldos.app/#pricing</loc>
     <lastmod>2026-04-23</lastmod>
     <changefreq>monthly</changefreq>
@@ -53,6 +60,49 @@
     <lastmod>2026-04-23</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://yieldos.app/blog/how-much-invested-to-live-off-dividends.html</loc>
+    <lastmod>2026-04-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://yieldos.app/blog/schd-vs-vym-2026.html</loc>
+    <lastmod>2026-04-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://yieldos.app/blog/best-monthly-dividend-stocks-2026.html</loc>
+    <lastmod>2026-04-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- Comparison stat-sheet pages — target "X vs Y" queries. -->
+  <url>
+    <loc>https://yieldos.app/compare/jepi-vs-schd.html</loc>
+    <lastmod>2026-04-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.75</priority>
+  </url>
+
+  <url>
+    <loc>https://yieldos.app/compare/vym-vs-dgro.html</loc>
+    <lastmod>2026-04-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.75</priority>
+  </url>
+
+  <url>
+    <loc>https://yieldos.app/compare/o-vs-stag.html</loc>
+    <lastmod>2026-04-23</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.75</priority>
   </url>
 
   <!-- Programmatic ticker pages. Each targets "when does <ticker> pay

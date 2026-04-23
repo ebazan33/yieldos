@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#080b10" />
+
+  <title>How Much Money Do You Need to Live Off Dividends in 2026? (Real Math) | YieldOS</title>
+  <meta name="description" content="The exact portfolio size you need to live on dividend income — broken down by yield, monthly expenses, and country. Includes a live calculator you can play with." />
+  <meta name="keywords" content="how much to live off dividends, live off dividend income, dividend income portfolio size, passive income calculator, dividend retirement number, FIRE dividend calculator" />
+  <meta name="author" content="YieldOS" />
+  <link rel="canonical" href="https://yieldos.app/blog/how-much-invested-to-live-off-dividends.html" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+  <meta property="og:type" content="article" />
+  <meta property="og:title" content="How Much Do You Need Invested to Live Off Dividends? (2026 Math)" />
+  <meta property="og:description" content="The exact portfolio size you need to live on dividend income — broken down by yield, monthly expenses, and country." />
+  <meta property="og:url" content="https://yieldos.app/blog/how-much-invested-to-live-off-dividends.html" />
+  <meta property="og:image" content="https://yieldos.app/og-image.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": "How Much Money Do You Need to Live Off Dividends in 2026?",
+    "description": "The exact portfolio size you need to live on dividend income — broken down by yield, monthly expenses, and country.",
+    "image": "https://yieldos.app/og-image.png",
+    "author": { "@type": "Organization", "name": "YieldOS", "url": "https://yieldos.app" },
+    "publisher": { "@type": "Organization", "name": "YieldOS", "logo": { "@type": "ImageObject", "url": "https://yieldos.app/favicon.svg" } },
+    "datePublished": "2026-04-23",
+    "dateModified": "2026-04-23",
+    "mainEntityOfPage": { "@type": "WebPage", "@id": "https://yieldos.app/blog/how-much-invested-to-live-off-dividends.html" }
+  }
+  </script>
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "How much do I need invested to live off dividends?",
+        "acceptedAnswer": { "@type": "Answer", "text": "At a 4% average yield, you need roughly 300 times your monthly expenses invested. If you spend $4,000/month, that's $1.2M. Lower yields push the number higher; higher-yield ETFs like JEPI can cut it to $685K but with less dividend growth." }
+      },
+      {
+        "@type": "Question",
+        "name": "What yield is realistic for a live-off-dividends portfolio?",
+        "acceptedAnswer": { "@type": "Answer", "text": "3.5% to 5% is realistic for a diversified dividend portfolio that still grows its payouts each year. Chasing 8%+ yields usually means sacrificing dividend growth or taking on capital-loss risk from covered-call ETFs and mREITs." }
+      },
+      {
+        "@type": "Question",
+        "name": "Can I live off dividends with $500,000?",
+        "acceptedAnswer": { "@type": "Answer", "text": "At a 4% yield, $500,000 generates $1,667/month before taxes — enough to live on in low-cost-of-living areas, but tight in most US coastal cities. At 6% (via covered-call ETFs) it becomes $2,500/month." }
+      }
+    ]
+  }
+  </script>
+
+  <style>
+    :root {
+      --bg:#080b10; --surface:#0f1420; --card:#131925; --border:#1c2536;
+      --text:#f1f5f9; --text-sub:#94a3b8; --text-muted:#64748b;
+      --blue:#4f8ef7; --emerald:#34d399; --gold:#f59e0b;
+    }
+    *{box-sizing:border-box;} html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:'Inter',system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased;}
+    @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,700;0,9..144,800&family=Inter:wght@400;500;600;700&display=swap');
+    a{color:var(--blue);text-decoration:none;} a:hover{text-decoration:underline;}
+    nav{position:sticky;top:0;z-index:10;background:rgba(8,11,16,0.94);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:14px 22px;display:flex;justify-content:space-between;align-items:center;}
+    nav .logo{display:flex;align-items:center;gap:10px;font-family:'Fraunces',serif;font-weight:700;font-size:17px;letter-spacing:-0.01em;color:var(--text);}
+    nav .cta{background:var(--blue);color:#fff;padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;}
+    nav .cta:hover{text-decoration:none;opacity:0.9;}
+    main{max-width:720px;margin:0 auto;padding:48px 22px 80px;}
+    .kicker{font-size:11px;color:var(--blue);font-weight:700;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:14px;}
+    h1{font-family:'Fraunces',serif;font-size:clamp(32px,5vw,44px);font-weight:800;line-height:1.12;letter-spacing:-0.02em;margin:0 0 16px;}
+    .byline{font-size:12px;color:var(--text-muted);margin-bottom:38px;}
+    h2{font-family:'Fraunces',serif;font-size:clamp(22px,3vw,28px);font-weight:700;letter-spacing:-0.015em;margin:44px 0 14px;}
+    h3{font-family:'Fraunces',serif;font-size:18px;font-weight:700;margin:28px 0 8px;}
+    p{font-size:16px;line-height:1.75;color:var(--text-sub);margin:0 0 18px;}
+    p strong,li strong,td strong{color:var(--text);}
+    ul,ol{padding-left:22px;color:var(--text-sub);font-size:16px;line-height:1.8;}
+    li{margin-bottom:8px;}
+    .takeaway{background:linear-gradient(135deg,rgba(52,211,153,0.08),rgba(79,142,247,0.06));border:1px solid rgba(52,211,153,0.28);border-radius:12px;padding:18px 22px;margin:22px 0;font-size:15px;line-height:1.7;color:var(--text);}
+    .takeaway strong{color:var(--emerald);}
+    table{width:100%;border-collapse:collapse;margin:18px 0;background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;font-size:14px;}
+    th,td{padding:10px 14px;text-align:left;border-bottom:1px solid var(--border);}
+    th{background:var(--surface);color:var(--text-muted);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;}
+    td{color:var(--text-sub);}
+    tbody tr:last-child td{border-bottom:none;}
+    .em{color:var(--emerald);font-weight:600;}
+    .gd{color:var(--gold);font-weight:600;}
+    .calc{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px 24px;margin:24px 0;}
+    .calc h3{margin:0 0 12px;color:var(--text);}
+    .calc .row{display:grid;grid-template-columns:1fr 140px;gap:12px;align-items:center;margin-bottom:10px;}
+    @media (max-width:520px){.calc .row{grid-template-columns:1fr;}}
+    .calc label{font-size:13px;color:var(--text-sub);}
+    .calc input{background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:9px 12px;font-size:15px;font-family:inherit;text-align:right;width:100%;outline:none;}
+    .calc input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(79,142,247,0.18);}
+    .calc .out{background:var(--surface);border-radius:10px;padding:14px 18px;margin-top:14px;text-align:center;}
+    .calc .out .big{font-family:'Fraunces',serif;font-size:clamp(28px,5vw,40px);font-weight:800;color:var(--emerald);letter-spacing:-0.02em;line-height:1.1;}
+    .calc .out .sub{font-size:12px;color:var(--text-muted);margin-top:4px;}
+    .cta-box{background:linear-gradient(135deg,rgba(79,142,247,0.14),rgba(52,211,153,0.08));border:1px solid rgba(79,142,247,0.3);border-radius:14px;padding:28px;margin:36px 0;text-align:center;}
+    .cta-box h3{margin:0 0 8px;font-size:20px;color:var(--text);}
+    .cta-box p{margin:0 0 16px;color:var(--text-sub);}
+    .cta-box a{display:inline-block;background:var(--blue);color:#fff;padding:11px 22px;border-radius:9px;font-size:14px;font-weight:600;}
+    .cta-box a:hover{text-decoration:none;opacity:0.92;}
+    footer{border-top:1px solid var(--border);padding:24px 22px;text-align:center;font-size:12px;color:var(--text-muted);}
+    .related{background:var(--surface);border-radius:12px;padding:20px 22px;margin:28px 0;border:1px solid var(--border);}
+    .related h4{font-family:'Fraunces',serif;font-size:14px;color:var(--text);margin:0 0 10px;}
+    .related a{display:block;padding:6px 0;font-size:14px;}
+    .faq details{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px 18px;margin-bottom:10px;}
+    .faq summary{cursor:pointer;font-weight:600;color:var(--text);font-size:15px;}
+    .faq summary::-webkit-details-marker{display:none;}
+    .faq summary::before{content:"+";color:var(--blue);margin-right:10px;font-weight:700;}
+    .faq details[open] summary::before{content:"−";}
+    .faq details p{margin-top:10px;font-size:14px;}
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="/" class="logo">
+      <svg width="26" height="26" viewBox="0 0 28 28"><rect width="28" height="28" rx="7" fill="#4f8ef7"/><path d="M8 20 L14 8 L20 20" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/><circle cx="14" cy="17" r="2" fill="#fff"/></svg>
+      YieldOS
+    </a>
+    <a href="/" class="cta">Try YieldOS free →</a>
+  </nav>
+
+  <main>
+    <div class="kicker">GUIDE · 11 MIN READ</div>
+    <h1>How much do you actually need invested to live off dividends?</h1>
+    <div class="byline">Updated April 23, 2026 · Written by the YieldOS team</div>
+
+    <p>"Live off dividends" is the holy grail of passive-income investing — and also where most people drastically underestimate how big their portfolio needs to be. The math is simple, but the assumptions underneath it matter a lot. This post walks through the real numbers for 2026, shows you the formula, and lets you plug in your own life so you know exactly where your finish line sits.</p>
+
+    <div class="takeaway">
+      <strong>Short answer:</strong> At a realistic 4% average yield, you need roughly <strong>300× your monthly expenses</strong> invested to live on dividends alone. Spending $4,000/month? You need about $1.2M. The two big levers that change this number are your average yield and whether you reinvest growth.
+    </div>
+
+    <h2>The one formula that runs this entire post</h2>
+    <p>Everything else is just commentary around this equation:</p>
+    <p style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px 18px;font-family:'Fraunces',serif;font-size:17px;color:var(--text);text-align:center;">
+      Portfolio needed  =  (Monthly expenses × 12)  ÷  Average yield
+    </p>
+    <p>If your annual expenses are $48,000 and your average yield is 4%, you need $1,200,000. That's it — that's the whole thing. The rest is figuring out what yield is actually safe, and what expenses you should plan for.</p>
+
+    <h2>The yield question: how realistic is 4%?</h2>
+    <p>Every yield assumption is a bet. Higher yields let you retire sooner but usually come with one of three costs: lower dividend growth, higher principal risk, or both. Here's how to think about the realistic range:</p>
+
+    <table>
+      <thead><tr><th>Yield</th><th>Typical vehicle</th><th>Tradeoff</th></tr></thead>
+      <tbody>
+        <tr><td class="em">3.0–4.0%</td><td>SCHD, VYM, DGRO, individual aristocrats</td><td>Strong dividend growth (8–11% CAGR), lowest principal risk</td></tr>
+        <tr><td class="em">4.0–5.5%</td><td>Realty Income (O), individual high-yielders, some REITs</td><td>Moderate growth (3–5%), reasonable safety for most</td></tr>
+        <tr><td class="gd">6.0–8.0%</td><td>JEPI, JEPQ, DIVO (covered-call ETFs)</td><td>Flat or minimal dividend growth; underperforms in strong bull markets</td></tr>
+        <tr><td style="color:#f87171;font-weight:600">9%+</td><td>mREITs, BDCs, closed-end funds, YieldMax</td><td>Dividend cuts are common; NAV often decays over time</td></tr>
+      </tbody>
+    </table>
+
+    <p>For a portfolio you actually want to live on, <strong>3.5–5% is the honest, sustainable range</strong>. You can push to 6–7% with covered-call ETFs if you accept that your payout won't grow much, which means inflation will eat into it over 20+ years.</p>
+
+    <h2>The real numbers by monthly spend</h2>
+    <p>Here's what you actually need invested at different monthly spend levels, assuming a 4% average yield (a reasonable SCHD-weighted blend). Pre-tax; we'll handle taxes in a moment.</p>
+
+    <table>
+      <thead><tr><th>Monthly spend</th><th>Annual spend</th><th>Portfolio needed at 4%</th><th>At 6%</th></tr></thead>
+      <tbody>
+        <tr><td><strong>$2,000</strong></td><td>$24,000</td><td>$600,000</td><td>$400,000</td></tr>
+        <tr><td><strong>$3,000</strong></td><td>$36,000</td><td>$900,000</td><td>$600,000</td></tr>
+        <tr><td><strong>$4,000</strong></td><td>$48,000</td><td class="em">$1,200,000</td><td>$800,000</td></tr>
+        <tr><td><strong>$5,000</strong></td><td>$60,000</td><td>$1,500,000</td><td>$1,000,000</td></tr>
+        <tr><td><strong>$7,500</strong></td><td>$90,000</td><td>$2,250,000</td><td>$1,500,000</td></tr>
+        <tr><td><strong>$10,000</strong></td><td>$120,000</td><td>$3,000,000</td><td>$2,000,000</td></tr>
+      </tbody>
+    </table>
+
+    <p>Two things to notice. First, the difference between 4% and 6% is enormous — a 6% yielder cuts the required portfolio by a third. Second, these numbers are pre-tax. A qualified dividend in the 15% bracket leaves you with about 85% of the headline. If you want $4,000/month <em>after tax</em>, multiply by 1.18 to get a rough pre-tax target.</p>
+
+    <h2>Plug in your own numbers</h2>
+    <div class="calc">
+      <h3>How big does your portfolio need to be?</h3>
+      <div class="row">
+        <label for="spend">Monthly spend you want to cover</label>
+        <input type="number" id="spend" value="4000" min="0" step="100" inputmode="decimal" />
+      </div>
+      <div class="row">
+        <label for="yld">Expected average yield (%)</label>
+        <input type="number" id="yld" value="4" min="0.1" max="15" step="0.1" inputmode="decimal" />
+      </div>
+      <div class="row">
+        <label for="tax">Effective tax rate on dividends (%)</label>
+        <input type="number" id="tax" value="15" min="0" max="50" step="1" inputmode="decimal" />
+      </div>
+      <div class="out">
+        <div class="big" id="result">$1,411,765</div>
+        <div class="sub" id="resultSub">after tax · based on $4,000/mo at 4% yield, 15% tax</div>
+      </div>
+      <script>
+        (function(){
+          const $=id=>document.getElementById(id);
+          function calc(){
+            const spend=Number($('spend').value)||0;
+            const y=Math.max(0.1,Number($('yld').value)||0)/100;
+            const tax=Math.max(0,Number($('tax').value)||0)/100;
+            const preTaxNeeded=(spend*12)/y;
+            const afterTaxNeeded=preTaxNeeded/(1-tax);
+            $('result').textContent='$'+Math.round(afterTaxNeeded).toLocaleString();
+            $('resultSub').textContent='after tax · based on $'+spend.toLocaleString()+'/mo at '+($('yld').value)+'% yield, '+($('tax').value)+'% tax';
+          }
+          ['spend','yld','tax'].forEach(id=>$(id).addEventListener('input',calc));
+          calc();
+        })();
+      </script>
+    </div>
+
+    <h2>The reinvestment shortcut (this is where the magic is)</h2>
+    <p>Here's the part most articles skip: you don't need to hit your final number with fresh contributions. If you let dividends reinvest while you keep adding money, you finish way faster than the static math suggests.</p>
+
+    <p>Take someone investing $1,500/month into a portfolio averaging 4% yield + 8% dividend growth (a roughly SCHD-flavored blend). Total return is ~12% annualized. Starting from zero, they hit the $1.2M / $4,000-per-month target in <strong>about 21 years</strong>. Without any dividend growth or reinvestment, the same monthly contribution would take over 40 years. Reinvestment isn't a nice-to-have — it's most of the answer.</p>
+
+    <div class="takeaway">
+      <strong>The real playbook:</strong> Target a 4% blended yield with dividend-growth exposure (SCHD, DGRO, aristocrats), reinvest everything until your monthly income crosses your expenses, then flip the DRIP off and start living on the cashflow.
+    </div>
+
+    <h2>What about inflation?</h2>
+    <p>Inflation is the reason "300× your expenses" isn't quite enough over a 30+ year retirement. If you want your income to keep up with rising costs, your dividends need to grow too — which means you need dividend-growth stocks, not just high-yielders. A portfolio averaging 4% yield + 6% dividend growth will double its cashflow roughly every 12 years, easily beating historical inflation.</p>
+
+    <p>This is why most "I retired on JEPI" posts are dangerous. JEPI pays ~7.5% today, but the distribution hasn't grown meaningfully since inception. Ten years in, inflation will have cut its purchasing power by 25–30%. Unless you're over 70, you probably want a growth component.</p>
+
+    <h2>Country-specific notes</h2>
+    <p><strong>US investors.</strong> Qualified dividends are taxed at 0%, 15%, or 20% depending on income. Most dividend ETFs and individual large-caps pay qualified dividends. REITs and most covered-call ETFs pay ordinary-income dividends, which can hit your marginal rate. Plan accordingly — in a taxable account, a 4% qualified-dividend ETF beats a 5.5% REIT for most investors.</p>
+    <p><strong>Canadian investors.</strong> Eligible Canadian dividends get the dividend tax credit, which dramatically lowers your effective rate (often to zero in the lowest bracket). US dividends in a non-registered account get hit with 15% US withholding plus Canadian tax. Hold US dividend stocks inside an RRSP to dodge the withholding. YieldOS supports TSX tickers natively.</p>
+    <p><strong>UK investors.</strong> First £500 of dividends is tax-free; above that, you pay 8.75%, 33.75%, or 39.35% depending on your tax band. ISAs are the cheat code — dividends inside an ISA are completely tax-free forever.</p>
+
+    <div class="cta-box">
+      <h3>Find your exact finish line</h3>
+      <p>YieldOS projects the exact month your dividend income crosses your monthly goal. Free forever plan. Supports US + Canadian tickers.</p>
+      <a href="/?utm_source=blog&utm_medium=post&utm_campaign=live-off-dividends">Open YieldOS →</a>
+    </div>
+
+    <h2 id="faq">Frequently asked questions</h2>
+    <div class="faq">
+      <details>
+        <summary>Can I live off $1M in dividends?</summary>
+        <p>At a 4% average yield, $1M generates about $3,333/month pre-tax. That's enough to live on in most of the Midwest, the South, and much of rural America — but tight in coastal cities. Push the yield to 5.5% (via a higher REIT/covered-call allocation) and you get $4,583/month from the same $1M.</p>
+      </details>
+      <details>
+        <summary>What's the safest yield to target?</summary>
+        <p>3.5% to 4.5% from a diversified dividend-growth portfolio (SCHD + DGRO + blue chips) is the sweet spot. Dividend cuts are rare at this yield band, and payouts typically grow 7–9% annually.</p>
+      </details>
+      <details>
+        <summary>Should I go all-in on high-yield ETFs like JEPI?</summary>
+        <p>Only if you're near retirement. JEPI pays big today but historically doesn't grow its distribution. In a 30-year retirement, you'd watch inflation eat 50% of your purchasing power. Younger investors benefit from dividend growth over nominal yield.</p>
+      </details>
+      <details>
+        <summary>Is the 4% rule the same as living off dividends?</summary>
+        <p>No. The 4% rule assumes you're selling 4% of your portfolio annually. Living off dividends means your yield <em>is</em> your withdrawal — you never touch principal. The dividend approach is more portfolio-size-dependent but doesn't require timing the market.</p>
+      </details>
+    </div>
+
+    <div class="related">
+      <h4>Related reading</h4>
+      <a href="/blog/path-to-fire-dividend-calculator.html">The FIRE calculator every dividend investor should run</a>
+      <a href="/blog/paycheck-calendar-for-dividends.html">Why you need a paycheck calendar for your dividends</a>
+      <a href="/blog/best-dividend-trackers-2026.html">Best dividend trackers in 2026</a>
+    </div>
+
+    <p style="font-size:12px;color:var(--text-muted);margin-top:36px;line-height:1.6;"><strong>Disclosure:</strong> This article is for educational purposes and is not investment advice. YieldOS is a third-party dividend tracker and is not affiliated with any of the funds or companies mentioned. Past performance does not guarantee future results. Consult a licensed financial advisor before making investment decisions.</p>
+  </main>
+
+  <footer>
+    © 2026 YieldOS · <a href="/">Home</a> · <a href="/#pricing">Pricing</a> · <a href="/blog/best-dividend-trackers-2026.html">More blog posts</a>
+  </footer>
+</body>
+</html>

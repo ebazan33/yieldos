@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#080b10" />
+
+  <title>About YieldOS — The Income-First Dividend Tracker | YieldOS</title>
+  <meta name="description" content="YieldOS is an independent, solo-founded dividend tracker built for income investors. Learn about our mission, data sources, security, and how we're different from Sharesight and Snowball." />
+  <meta name="keywords" content="YieldOS about, dividend tracker company, income-first investing, YieldOS founder, YieldOS data sources" />
+  <meta name="author" content="YieldOS" />
+  <link rel="canonical" href="https://yieldos.app/about.html" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="About YieldOS" />
+  <meta property="og:description" content="The independent income-first dividend tracker. Why we built it and what makes us different." />
+  <meta property="og:url" content="https://yieldos.app/about.html" />
+  <meta property="og:image" content="https://yieldos.app/og-image.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+
+  <script type="application/ld+json">
+  {
+    "@context":"https://schema.org","@type":"AboutPage",
+    "name":"About YieldOS",
+    "url":"https://yieldos.app/about.html",
+    "mainEntity":{
+      "@type":"Organization",
+      "name":"YieldOS",
+      "url":"https://yieldos.app/",
+      "logo":"https://yieldos.app/favicon.svg",
+      "description":"An income-first dividend tracker built for FIRE investors and retirees.",
+      "foundingDate":"2025",
+      "sameAs":[]
+    }
+  }
+  </script>
+
+  <style>
+    :root{--bg:#080b10;--surface:#0f1420;--card:#131925;--border:#1c2536;--text:#f1f5f9;--text-sub:#94a3b8;--text-muted:#64748b;--blue:#4f8ef7;--emerald:#34d399;--gold:#f59e0b;}
+    @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,700;0,9..144,800&family=Inter:wght@400;500;600;700&display=swap');
+    *{box-sizing:border-box;} html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:'Inter',system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased;}
+    a{color:var(--blue);text-decoration:none;} a:hover{text-decoration:underline;}
+    nav{position:sticky;top:0;z-index:10;background:rgba(8,11,16,0.94);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:14px 22px;display:flex;justify-content:space-between;align-items:center;}
+    nav .logo{display:flex;align-items:center;gap:10px;font-family:'Fraunces',serif;font-weight:700;font-size:17px;color:var(--text);}
+    nav .cta{background:var(--blue);color:#fff;padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;}
+    nav .cta:hover{text-decoration:none;opacity:0.9;}
+    main{max-width:760px;margin:0 auto;padding:44px 22px 72px;}
+    .kicker{text-transform:uppercase;letter-spacing:0.14em;font-size:11px;color:var(--blue);font-weight:700;margin-bottom:14px;}
+    h1{font-family:'Fraunces',serif;font-size:clamp(34px,6vw,52px);font-weight:800;line-height:1.06;letter-spacing:-0.02em;margin:0 0 18px;color:var(--text);}
+    .lede{font-size:17px;color:var(--text-sub);margin:0 0 32px;line-height:1.6;}
+    h2{font-family:'Fraunces',serif;font-size:clamp(22px,3vw,28px);font-weight:700;letter-spacing:-0.015em;margin:44px 0 14px;color:var(--text);}
+    h3{font-family:'Fraunces',serif;font-size:19px;font-weight:700;margin:24px 0 8px;color:var(--text);}
+    p{font-size:15px;line-height:1.75;color:var(--text-sub);margin:0 0 14px;}
+    .fact-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:16px 0 24px;}
+    @media (max-width:560px){.fact-grid{grid-template-columns:1fr 1fr;}}
+    .fact{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 18px;}
+    .fact .k{font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.08em;font-weight:600;margin-bottom:6px;}
+    .fact .v{font-family:'Fraunces',serif;font-size:22px;font-weight:800;color:var(--text);}
+    .fact .v.em{color:var(--emerald);}
+    .principles{display:grid;gap:12px;margin:18px 0 24px;}
+    .principle{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px 22px;}
+    .principle h4{margin:0 0 6px;font-family:'Fraunces',serif;font-size:17px;color:var(--text);}
+    .principle p{margin:0;font-size:14px;}
+    .sources{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px 24px;margin:20px 0;}
+    .sources ul{margin:0;padding-left:20px;color:var(--text-sub);}
+    .sources li{padding:4px 0;font-size:14px;}
+    .contact{background:linear-gradient(135deg,rgba(79,142,247,0.14),rgba(52,211,153,0.08));border:1px solid rgba(79,142,247,0.3);border-radius:14px;padding:26px;margin:36px 0;}
+    .contact h3{margin:0 0 10px;font-family:'Fraunces',serif;font-size:20px;color:var(--text);}
+    .contact p{margin:0 0 10px;color:var(--text-sub);font-size:14px;}
+    .contact a{font-weight:600;}
+    footer{border-top:1px solid var(--border);padding:24px 22px;text-align:center;font-size:12px;color:var(--text-muted);}
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="/" class="logo">
+      <svg width="26" height="26" viewBox="0 0 28 28"><rect width="28" height="28" rx="7" fill="#4f8ef7"/><path d="M8 20 L14 8 L20 20" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/><circle cx="14" cy="17" r="2" fill="#fff"/></svg>
+      YieldOS
+    </a>
+    <a href="/?utm_source=about&utm_medium=nav&utm_campaign=about" class="cta">Open YieldOS →</a>
+  </nav>
+
+  <main>
+    <div class="kicker">About · Updated April 2026</div>
+    <h1>We built the dividend tracker we wished existed.</h1>
+    <p class="lede">YieldOS exists because every other portfolio tracker is built for traders. If you care about <em>when your income lands</em> rather than <em>what your portfolio did at 3:47 PM</em>, the existing tools don't fit. We started YieldOS as a side project for income investors and it's grown into a community of dividend-focused users who check their paychecks, not their charts.</p>
+
+    <div class="fact-grid">
+      <div class="fact"><div class="k">Launched</div><div class="v">2025</div></div>
+      <div class="fact"><div class="k">Approach</div><div class="v em">Independent</div></div>
+      <div class="fact"><div class="k">Backed by</div><div class="v">Nobody · yet</div></div>
+    </div>
+
+    <h2>What makes YieldOS different</h2>
+    <p>Most portfolio trackers start with "here's what your portfolio is worth today." We start with "here's when your next paycheck arrives and how much it is." That one framing difference cascades into every part of the product.</p>
+
+    <div class="principles">
+      <div class="principle">
+        <h4>Paycheck calendar, not just charts</h4>
+        <p>Every dividend appears on a real 12-month calendar. You see the stack: rent payments, utility bills, subscription drawdowns — alongside inbound dividend income. For retirees and near-retirees this is the only view that matters.</p>
+      </div>
+      <div class="principle">
+        <h4>Path to FIRE projection, live</h4>
+        <p>We project your exact year of financial independence using your current portfolio's yield, dividend growth rate, and your stated monthly contribution. Recalculates every time you add a holding.</p>
+      </div>
+      <div class="principle">
+        <h4>Currency-aware from day one</h4>
+        <p>Canadian (TSX) tickers pay in CAD. US tickers pay in USD. European tickers in EUR. We convert every dividend at the pay-date FX rate and show you a clean home-currency total — something Sharesight charges $25/month for and Snowball doesn't offer at all.</p>
+      </div>
+      <div class="principle">
+        <h4>Free forever plan</h4>
+        <p>The core experience is free, forever. The Seed tier supports up to 20 holdings — enough for the vast majority of dividend portfolios. Paid tiers exist only for power users who want unlimited holdings, CSV import, and the Daily AI Briefing.</p>
+      </div>
+      <div class="principle">
+        <h4>Privacy-first</h4>
+        <p>We don't sell your portfolio data. We don't show ads. We don't read-only link to your brokerage (no Plaid). You paste or import a CSV. We never ask for brokerage passwords, and we never will.</p>
+      </div>
+    </div>
+
+    <h2>How we source data</h2>
+    <p>Transparency matters for a finance tool. Here's where every number comes from:</p>
+    <div class="sources">
+      <ul>
+        <li><strong>Real-time prices &amp; fundamentals</strong> — Financial Modeling Prep API (exchange-delayed quotes, licensed)</li>
+        <li><strong>Dividend history &amp; ex-dates</strong> — Financial Modeling Prep and cross-checked against each company's investor-relations feed</li>
+        <li><strong>FX rates</strong> — Daily ECB reference rates, cached and refreshed every 24 hours</li>
+        <li><strong>Estimated yield/CAGR figures</strong> — Computed by YieldOS from trailing-12-month distributions. Not broker-guaranteed.</li>
+        <li><strong>Ticker pages &amp; blog data</strong> — Educational estimates based on public historical records, clearly labeled as estimates. For live, current data use the app.</li>
+      </ul>
+    </div>
+    <p>Any number you see on a public blog or ticker page on this site is an estimate derived from public historical data. The live numbers inside the app refresh on every load.</p>
+
+    <h2>Security &amp; infrastructure</h2>
+    <p>YieldOS runs on Supabase (Postgres + authentication) hosted in AWS us-east-1, with rows encrypted at rest. Every account has Row-Level Security enforced — you can only read your own holdings, never another user's. Passwords are hashed with bcrypt; we never see them in plaintext.</p>
+    <p>We don't hold brokerage credentials. CSV imports are parsed client-side in your browser and only the structured rows (ticker, shares, cost basis) are sent to our servers. The underlying CSV never leaves your device unless you explicitly save a snapshot.</p>
+
+    <h2>Who's behind this</h2>
+    <p>YieldOS is a solo-founded indie project by a founder who got tired of paying $30/month for dividend tracking features that should be part of any decent broker. There is no VC behind us, no growth team, no paid influencers. Every feature you see was requested by users, debated in our Discord, and shipped by one person.</p>
+    <p>This matters because our incentives are aligned with yours. We don't need to sell your data to subsidize a free tier. We don't need to push you toward unnecessary upgrades to hit investor-mandated ARR targets. We need the product to be good enough that you pay $9–19/month voluntarily when you outgrow the free plan.</p>
+
+    <h2>Our editorial approach</h2>
+    <p>Every blog post, ticker page, and comparison guide on this site is written to be useful first and search-engine friendly second. We do not:</p>
+    <p>· Accept paid placements or sponsored content<br/>· Link to affiliate broker sign-up pages<br/>· Recommend specific securities<br/>· Claim to provide investment advice</p>
+    <p>We do:</p>
+    <p>· Cite historical data with a clear "as of" date<br/>· Label estimates as estimates<br/>· Flag the tradeoffs of every dividend strategy (high yield = high risk)<br/>· Update posts when the underlying data materially changes</p>
+
+    <div class="contact">
+      <h3>Questions, press, or bug reports</h3>
+      <p>Email <a href="mailto:hello@yieldos.app">hello@yieldos.app</a> — we read every message. For press inquiries, include "press" in the subject line. For bugs, include your browser and a screenshot if you can.</p>
+      <p>We're not on Twitter/X or LinkedIn yet as a company account. Our time goes into the product, not brand-building.</p>
+    </div>
+
+    <p style="font-size:12px;color:var(--text-muted);margin-top:36px;line-height:1.6;"><strong>Disclosure:</strong> YieldOS is an independent dividend tracking platform. Nothing on this site is investment, tax, or legal advice. We are not a registered investment advisor. Consult a licensed professional for decisions about your portfolio.</p>
+  </main>
+
+  <footer>© 2026 YieldOS · <a href="/">Home</a> · <a href="/#pricing">Pricing</a> · <a href="/blog/best-dividend-trackers-2026.html">Blog</a> · <a href="mailto:hello@yieldos.app">Contact</a></footer>
+</body>
+</html>

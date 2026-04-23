@@ -59,6 +59,86 @@
         ]
       }
     </script>
+
+    <!-- Organization schema — tells Google who's behind the site,
+         enabling Knowledge Panel eligibility and brand disambiguation. -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "name": "YieldOS",
+        "url": "https://yieldos.app/",
+        "logo": "https://yieldos.app/favicon.svg",
+        "description": "An income-first dividend tracker built for FIRE investors and retirees. Tracks US and Canadian (TSX) dividend stocks with paycheck calendar and Path to FIRE projection.",
+        "foundingDate": "2025",
+        "email": "hello@yieldos.app",
+        "sameAs": []
+      }
+    </script>
+
+    <!-- WebSite schema — the baseline entity Google uses to attach
+         sitelinks and a search box to the domain. -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "YieldOS",
+        "url": "https://yieldos.app/",
+        "publisher": { "@type": "Organization", "name": "YieldOS" }
+      }
+    </script>
+
+    <!-- FAQPage schema — makes the landing page eligible for the
+         rich FAQ accordion result in Google SERPs. Answers the core
+         questions a prospective user types before signing up. -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "Is YieldOS free to use?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes. YieldOS has a free-forever Seed plan that supports up to 20 holdings, paycheck calendar, Path to FIRE projection, and snapshots. Paid tiers (Grow $9/mo, Harvest $19/mo) unlock unlimited holdings, CSV import, and the Daily AI Briefing."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Does YieldOS support Canadian (TSX) dividend stocks?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "Yes. YieldOS supports Canadian TSX tickers alongside US tickers. Dividends paid in CAD are automatically converted to your home currency using daily ECB reference rates."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "How is YieldOS different from Sharesight or Snowball?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "YieldOS is income-first, not portfolio-first. The core view is a 12-month paycheck calendar showing exactly when each dividend lands. Sharesight focuses on tax reporting; Snowball focuses on community. YieldOS focuses on making your dividend income visible and projecting your Path to FIRE year."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "Does YieldOS require my brokerage login?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "No. YieldOS never asks for brokerage passwords. You add holdings manually or by uploading a CSV export from Fidelity, Schwab, Vanguard, E*TRADE, or Questrade. Your brokerage credentials never touch our servers."
+            }
+          },
+          {
+            "@type": "Question",
+            "name": "What is the Daily AI Briefing?",
+            "acceptedAnswer": {
+              "@type": "Answer",
+              "text": "The Daily AI Briefing is a one-screen summary of what moved in your portfolio overnight: dividend announcements, ex-dates this week, holdings that beat or missed earnings, and anything that materially affects your income. Available on the Grow and Harvest tiers."
+            }
+          }
+        ]
+      }
+    </script>
     <style>
       /* ── Theme tokens ──────────────────────────────────────────────
          Dark is the default. Light mode is opt-in via data-theme="light"
