@@ -70,8 +70,8 @@ export default function SharePortfolioModal({ userId, displayLabel, onClose }) {
   const btnGhost   = { background:"transparent", color:C.textSub, border:`1px solid ${C.border}`, borderRadius:9, cursor:"pointer", fontFamily:"inherit", fontSize:12, fontWeight:500, padding:"10px 16px" }
 
   return (
-    <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.88)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:100,backdropFilter:"blur(8px)"}} onClick={onClose}>
-      <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:16,padding:30,maxWidth:520,width:"92%",maxHeight:"90vh",overflowY:"auto"}} onClick={e=>e.stopPropagation()}>
+    <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.88)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:100,backdropFilter:"blur(8px)",padding:"16px"}} onClick={onClose}>
+      <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:16,padding:"clamp(20px, 5vw, 30px)",maxWidth:520,width:"100%",maxHeight:"calc(100dvh - 32px)",overflowY:"auto"}} onClick={e=>e.stopPropagation()}>
         <div style={{fontFamily:"'Fraunces',serif",fontSize:22,fontWeight:700,marginBottom:4,letterSpacing:"-0.01em"}}>Share your portfolio</div>
         <div style={{fontSize:12,color:C.textSub,marginBottom:20,lineHeight:1.6}}>
           Create a public, read-only link to your portfolio. Great for Reddit DGI posts or showing a friend where you're at on the FIRE curve. You control what's shown and can revoke any time.

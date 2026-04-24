@@ -82,7 +82,7 @@ export default function SharedPortfolioView({ slug }) {
           <div style={{ fontSize: 13, color: C.textSub, lineHeight: 1.6 }}>
             {state.error} The owner may have disabled or regenerated it.
           </div>
-          <a href="/" style={{ display: "inline-block", marginTop: 18, background: C.blue, color: "#fff", textDecoration: "none", borderRadius: 9, padding: "10px 18px", fontSize: 13, fontWeight: 600 }}>
+          <a href="/" style={{ display: "inline-block", marginTop: 18, background: C.blue, color: "#fff", textDecoration: "none", borderRadius: 9, padding: "12px 22px", fontSize: 14, fontWeight: 600 }}>
             Go to YieldOS →
           </a>
         </div>
@@ -117,10 +117,12 @@ export default function SharedPortfolioView({ slug }) {
         <Stat label="Portfolio yield" value={fmtPct(avgYld, 2)} accent={C.emerald} />
       </div>
 
-      {/* Holdings table */}
+      {/* Holdings table — 6 columns; enforces a minimum width so cells don't
+          crunch on mid-size viewports, and iOS momentum scroll so the
+          horizontal overflow feels native on phones. */}
       <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 14, overflow: "hidden", marginBottom: 24 }}>
-        <div style={{ overflowX: "auto" }}>
-          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+        <div style={{ overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
+          <table style={{ width: "100%", minWidth: 640, borderCollapse: "collapse", fontSize: 13 }}>
             <thead>
               <tr style={{ background: C.surface, borderBottom: `1px solid ${C.border}` }}>
                 <Th>Ticker</Th>
@@ -165,7 +167,7 @@ export default function SharedPortfolioView({ slug }) {
         <div style={{ fontSize: 12, color: C.textSub, lineHeight: 1.6, marginBottom: 14, maxWidth: 440, margin: "0 auto 14px" }}>
           Track dividends, paycheck calendars, and your path to financial independence. Free to start.
         </div>
-        <a href="/" style={{ display: "inline-block", background: C.blue, color: "#fff", textDecoration: "none", borderRadius: 9, padding: "10px 20px", fontSize: 13, fontWeight: 600 }}>
+        <a href="/" style={{ display: "inline-block", background: C.blue, color: "#fff", textDecoration: "none", borderRadius: 9, padding: "12px 22px", fontSize: 14, fontWeight: 600 }}>
           Start your own →
         </a>
       </div>
@@ -176,12 +178,14 @@ export default function SharedPortfolioView({ slug }) {
 function Shell({ children }) {
   return (
     <div style={{ minHeight: "100vh", background: C.bg, color: C.text, fontFamily: "'Inter', system-ui, -apple-system, sans-serif" }}>
-      <div style={{ maxWidth: 880, margin: "0 auto", padding: "40px 22px 80px" }}>
+      <div style={{ maxWidth: 880, margin: "0 auto", padding: "clamp(28px, 6vw, 40px) clamp(16px, 5vw, 22px) clamp(48px, 10vw, 80px)" }}>
+        {/* Top nav — links have vertical padding so the tap target clears the
+            44px iOS/Android minimum without making the header taller. */}
         <div style={{ marginBottom: 28, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <a href="/" style={{ fontFamily: "'Fraunces',serif", fontSize: 20, fontWeight: 700, color: C.text, textDecoration: "none", letterSpacing: "-0.01em" }}>
+          <a href="/" style={{ fontFamily: "'Fraunces',serif", fontSize: 20, fontWeight: 700, color: C.text, textDecoration: "none", letterSpacing: "-0.01em", padding: "8px 0", display: "inline-block" }}>
             YieldOS
           </a>
-          <a href="/" style={{ fontSize: 12, color: C.textSub, textDecoration: "none" }}>yieldos.app</a>
+          <a href="/" style={{ fontSize: 12, color: C.textSub, textDecoration: "none", padding: "12px 0", display: "inline-block" }}>yieldos.app</a>
         </div>
         {children}
       </div>
