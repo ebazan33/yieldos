@@ -118,10 +118,20 @@ export default function SharedPortfolioView({ slug }) {
       </div>
 
       {/* Holdings table — 6 columns; enforces a minimum width so cells don't
-          crunch on mid-size viewports, and iOS momentum scroll so the
-          horizontal overflow feels native on phones. */}
+          crunch on mid-size viewports. Scroll container uses touch-action
+          pan-x + overscroll-behavior to keep iOS from trying to interpret the
+          gesture as page scroll at the same time (the conflict was causing
+          stutter on fast horizontal swipes). translateZ promotes the
+          container to its own compositing layer so scroll repaints stay on
+          the GPU. */}
       <div style={{ background: C.card, border: `1px solid ${C.border}`, borderRadius: 14, overflow: "hidden", marginBottom: 24 }}>
-        <div style={{ overflowX: "auto", WebkitOverflowScrolling: "touch" }}>
+        <div style={{
+          overflowX: "auto",
+          WebkitOverflowScrolling: "touch",
+          touchAction: "pan-x",
+          overscrollBehaviorX: "contain",
+          transform: "translateZ(0)",
+        }}>
           <table style={{ width: "100%", minWidth: 640, borderCollapse: "collapse", fontSize: 13 }}>
             <thead>
               <tr style={{ background: C.surface, borderBottom: `1px solid ${C.border}` }}>
