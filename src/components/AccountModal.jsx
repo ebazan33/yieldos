@@ -20,6 +20,17 @@ export default function AccountModal({ user, currentDisplayName, theme = 'dark',
   const [error, setError]   = useState('')
   const [saved, setSaved]   = useState(false)
 
+  // Change-password state — kept separate from the display-name flow so saving
+  // one doesn't clobber the other. Policy matches AuthModal + ResetPasswordModal:
+  // min 8 chars + one letter + one number. Supabase's updateUser works against
+  // the active session, so we don't re-ask for the current password here —
+  // anyone with the session can already read the account's data anyway.
+  const [newPw1, setNewPw1]       = useState('')
+  const [newPw2, setNewPw2]       = useState('')
+  const [pwSaving, setPwSaving]   = useState(false)
+  const [pwError, setPwError]     = useState('')
+  const [pwSaved, setPwSaved]     = useState(false)
+
   const inp = {
     background:C.surface, border:`1px solid ${C.border}`, borderRadius:9,
     color:C.text, fontFamily:"inherit", fontSize:13, padding:"10px 14px",
@@ -44,6 +55,26 @@ export default function AccountModal({ user, currentDisplayName, theme = 'dark',
     setSaving(false)
     // Auto-close after brief success confirmation.
     setTimeout(() => { onClose() }, 700)
+  }
+
+  async function handleChangePassword() {
+    setPwError(''); setPwSaved(false)
+    if (!newPw1 || !newPw2) { setPwError('Fill in both password fields.'); return }
+    if (newPw1.length < 8) { setPwError('Password must be at least 8 characters.'); return }
+    if (!/[a-zA-Z]/.test(newPw1) || !/[0-9]/.test(newPw1)) {
+      setPwError('Password must include at least one letter and one number.')
+      return
+    }
+    if (newPw1 !== newPw2) { setPwError("Passwords don't match."); return }
+    setPwSaving(true)
+    const { error: err } = await supabase.auth.updateUser({ password: newPw1 })
+    setPwSaving(false)
+    if (err) { setPwError(err.message || 'Could not update password. Try again.'); return }
+    setPwSaved(true)
+    setNewPw1(''); setNewPw2('')
+    // Clear the success flag after a couple seconds so the modal doesn't sit
+    // with a stale "Password updated ✓" if the user lingers on the page.
+    setTimeout(() => setPwSaved(false), 2500)
   }
 
   return (
@@ -84,6 +115,60 @@ export default function AccountModal({ user, currentDisplayName, theme = 'dark',
           <div style={{fontSize:10,color:C.textMuted,marginTop:6}}>
             Can't change this here. Contact hello@yieldos.app if you need to update it.
           </div>
+        </div>
+
+        {/* Change Password — calls supabase.auth.updateUser against the active
+            session, no current-password re-prompt. Matches the policy enforced
+            on signup + reset (min 8 + letter + number). Kept as its own section
+            with its own save button so updating a password doesn't fire the
+            display-name save and vice versa. */}
+        <div style={{marginBottom:20}}>
+          <div style={{fontSize:11,color:C.textMuted,fontWeight:600,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:6}}>Change Password</div>
+          <input
+            style={{...inp,marginBottom:8}}
+            type="password"
+            name="new-password"
+            autoComplete="new-password"
+            autoCapitalize="off"
+            autoCorrect="off"
+            spellCheck={false}
+            placeholder="New password (min 8, letter + number)"
+            value={newPw1}
+            onChange={e=>setNewPw1(e.target.value)}
+          />
+          <input
+            style={{...inp,marginBottom:8}}
+            type="password"
+            name="confirm-new-password"
+            autoComplete="new-password"
+            autoCapitalize="off"
+            autoCorrect="off"
+            spellCheck={false}
+            placeholder="Confirm new password"
+            value={newPw2}
+            onChange={e=>setNewPw2(e.target.value)}
+            onKeyDown={e=>e.key==='Enter'&&handleChangePassword()}
+          />
+          {pwError && <div style={{fontSize:12,color:C.red,marginBottom:8}}>{pwError}</div>}
+          {pwSaved && <div style={{fontSize:12,color:C.emerald,marginBottom:8}}>Password updated ✓</div>}
+          <button
+            onClick={handleChangePassword}
+            disabled={pwSaving || !newPw1 || !newPw2}
+            style={{
+              background:"transparent",
+              color:C.blue,
+              border:`1px solid ${C.blue}`,
+              borderRadius:9,
+              cursor:(pwSaving||!newPw1||!newPw2)?"default":"pointer",
+              fontFamily:"inherit",
+              fontWeight:600,
+              fontSize:12,
+              padding:"8px 14px",
+              opacity:(pwSaving||!newPw1||!newPw2)?0.5:1,
+              transition:"opacity 0.2s",
+            }}>
+            {pwSaving ? 'Updating...' : 'Update password'}
+          </button>
         </div>
 
         {/* Appearance — dark (default) vs light. Flips a data-theme attribute

@@ -48,6 +48,18 @@ export default function AuthModal({ onClose, onAuth }) {
     }
 
     if (!email || !password) { setError('Please fill in all fields'); return }
+    // Password policy (signup only) — min 8 chars + at least one letter + one
+    // number. Matches ResetPasswordModal + AccountModal's in-app change flow so
+    // the rules are consistent everywhere a password is set. Sign-in isn't
+    // gated (users with legacy 6-char passwords still need to be able to log
+    // in and upgrade via the change-password flow).
+    if (mode === 'signup') {
+      if (password.length < 8) { setError('Password must be at least 8 characters.'); return }
+      if (!/[a-zA-Z]/.test(password) || !/[0-9]/.test(password)) {
+        setError('Password must include at least one letter and one number.')
+        return
+      }
+    }
     setLoading(true); setError(''); setSuccess('')
     if (mode === 'signup') {
       // Every new signup gets a 14-day full-access trial. The trial_ends_at

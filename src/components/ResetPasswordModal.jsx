@@ -26,7 +26,14 @@ export default function ResetPasswordModal({ onDone }) {
 
   async function handleSubmit() {
     setError(''); setSuccess('')
-    if (pw1.length < 6) { setError('Password must be at least 6 characters.'); return }
+    // Policy kept in sync with AuthModal (signup) + AccountModal (change
+    // password): min 8 chars + at least one letter + one number. If any of
+    // those files move, the other two need to move too.
+    if (pw1.length < 8) { setError('Password must be at least 8 characters.'); return }
+    if (!/[a-zA-Z]/.test(pw1) || !/[0-9]/.test(pw1)) {
+      setError('Password must include at least one letter and one number.')
+      return
+    }
     if (pw1 !== pw2) { setError("Passwords don't match."); return }
     setLoading(true)
     const { error } = await supabase.auth.updateUser({ password: pw1 })

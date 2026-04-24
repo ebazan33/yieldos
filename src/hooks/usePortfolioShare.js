@@ -79,22 +79,38 @@ export function usePortfolioShare(userId) {
 
 // Resolve a slug → portfolio data (anonymous readers). Returns
 // { share, holdings } or { error }.
+//
+// SECURITY NOTE: This used to do direct table SELECTs against portfolio_shares
+// and holdings, relying on permissive RLS policies (`enabled = true`). That
+// allowed anyone to dump every enabled share + every shared user_id via a
+// single query — effectively making the share catalog enumerable.
+//
+// It now calls two SECURITY DEFINER functions — get_share_by_slug and
+// get_shared_holdings — that both require the exact slug. The public SELECT
+// policies on portfolio_shares + holdings were dropped as part of the same
+// migration. No slug, no data. See the migration: db/migrations/{ts}_lock_down_share_enumeration.sql
 export async function loadSharedPortfolio(slug) {
   try {
-    const { data: shareRow, error: sErr } = await supabase
-      .from('portfolio_shares')
-      .select('*')
-      .eq('slug', slug)
-      .eq('enabled', true)
-      .maybeSingle()
-    if (sErr || !shareRow) return { error: 'Share link not found or has been disabled.' }
-    const { data: holdings, error: hErr } = await supabase
-      .from('holdings')
-      .select('*')
-      .eq('user_id', shareRow.user_id)
-      .order('created_at', { ascending: true })
+    // 1. Share metadata. RPC returns a SETOF so data is an array.
+    const { data: shareRows, error: sErr } = await supabase
+      .rpc('get_share_by_slug', { input_slug: slug })
+    if (sErr) return { error: 'Share link not found or has been disabled.' }
+    const shareRow = Array.isArray(shareRows) ? shareRows[0] : shareRows
+    if (!shareRow) return { error: 'Share link not found or has been disabled.' }
+
+    // 2. Holdings for that share. The SQL function doesn't ORDER BY, so sort
+    // client-side to match what the owner sees in their own dashboard
+    // (created_at ascending = chronological).
+    const { data: holdingsRaw, error: hErr } = await supabase
+      .rpc('get_shared_holdings', { input_slug: slug })
     if (hErr) return { error: 'Failed to load portfolio.' }
-    return { share: shareRow, holdings: holdings || [] }
+    const holdings = (holdingsRaw || []).slice().sort((a, b) => {
+      const ta = a.created_at || ''
+      const tb = b.created_at || ''
+      return ta < tb ? -1 : ta > tb ? 1 : 0
+    })
+
+    return { share: shareRow, holdings }
   } catch (e) {
     return { error: e.message || 'Failed to load portfolio.' }
   }
