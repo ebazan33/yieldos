@@ -224,6 +224,16 @@ export async function runBacktest({
     const divMap = dividendsByMonth(divs);
     const priceByMonth = new Map(prices.map(p => [p.monthKey, p]));
 
+    // Detect when Polygon returned a shorter range than the user requested.
+    // Polygon's Stocks Starter tier ($29/mo) caps history at ~5 years, so if
+    // you ask for a 10-year backtest you silently get a 5-year one. Without
+    // surfacing this, users see a "$63k final value on $70k contributed" and
+    // think the app is broken — when it actually only ran a 5-year sim with
+    // $40k contributed.
+    const requestedStartMonth = `${start.getUTCFullYear()}-${String(start.getUTCMonth() + 1).padStart(2, "0")}`;
+    const actualStartMonth = prices[0].monthKey;
+    const dataLimited = actualStartMonth > requestedStartMonth;
+
     // Build the full month list from first data point to today, so we don't
     // skip months with no price bar (e.g. a weird gap). We iterate month-by-
     // month using the priceByMonth lookup — if a month has no bar, we carry
@@ -324,6 +334,13 @@ export async function runBacktest({
         ticker: tickerUC,
         startLabel: last ? formatMonthLabel(firstMonth) : "",
         endLabel: last ? last.label : "",
+        // requestedStartLabel + dataLimited let the UI surface the truth when
+        // Polygon returned less history than the user asked for (Starter tier
+        // = 5 years max). Without this, a "$63k on $70k contributed" result
+        // for SCHD looks like a bug when it's actually a correctly-run 5-year
+        // sim of $40k contributed.
+        requestedStartLabel: formatMonthLabel(requestedStartMonth),
+        dataLimited,
         months: timeline.length,
         years,
         finalValue: last.totalValue,
