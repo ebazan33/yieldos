@@ -606,12 +606,31 @@ function Landing({ onEnter, onPickPlan, onDemo, onFeedback }) {
             <p style={{fontSize:17,color:C.textSub,lineHeight:1.7,maxWidth:520,marginBottom:32}}>
               YieldOS is the only dividend tracker that shows every payout as a paycheck and projects your exact year to financial independence — so you actually know when your investments replace your job.
             </p>
-            <div style={{display:"flex",gap:12,flexWrap:"wrap",marginBottom:18}}>
+            <div style={{display:"flex",gap:12,flexWrap:"wrap",marginBottom:12}}>
               <button style={cta} onClick={onEnter}>Start tracking for free →</button>
               {/* "See a demo" drops the visitor straight into a populated app
                   with a sample portfolio (SCHD/JEPI/O/JNJ/VYM) — no signup.
                   Huge intent-signal boost and lets them feel the product. */}
               <button style={ghost} onClick={onDemo}>See a demo →</button>
+            </div>
+            {/* Tertiary low-friction option — gives skeptics a "try the math
+                first" path that doesn't require signup. Same destination as
+                the landing-nav pill; doubles up because hero-funnel and
+                nav-funnel attract different intent windows. Styled subtle so
+                it doesn't compete with the primary CTAs above. */}
+            <div style={{marginBottom:18}}>
+              <a href="/simulator" style={{
+                fontSize:13,
+                color:C.textSub,
+                textDecoration:"none",
+                fontWeight:500,
+                display:"inline-flex",
+                alignItems:"baseline",
+                gap:5,
+              }}>
+                Or run the dividend simulator first
+                <span style={{color:C.blue,fontWeight:600}}>— no signup →</span>
+              </a>
             </div>
             <div style={{display:"flex",gap:22,fontSize:11,color:C.textMuted,fontWeight:500,flexWrap:"wrap"}}>
               <span>✓ Free forever plan</span>
