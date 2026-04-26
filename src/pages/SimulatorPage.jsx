@@ -438,28 +438,6 @@ function Results({ result, drip }) {
 
   return (
     <>
-      {/* Data-limited warning — shown when our data provider (Polygon) returned
-          a shorter range than the user asked for. Critical for honesty: a
-          backtest of "Jan 2015" that silently runs from "2021" produces a
-          number that looks wrong. We surface the actual range used. */}
-      {summary.dataLimited && (
-        <div style={{
-          background: `${C.gold}10`,
-          border: `1px solid ${C.gold}40`,
-          borderRadius: 12,
-          padding: "14px 18px",
-          marginTop: 14,
-          marginBottom: 0,
-        }}>
-          <div style={{fontSize:12, color:C.gold, fontWeight:700, marginBottom:6, textTransform:"uppercase", letterSpacing:"0.05em"}}>
-            Heads up — partial data range
-          </div>
-          <div style={{fontSize:13, color:C.textSub, lineHeight:1.55}}>
-            You requested a start date of <strong style={{color:C.text}}>{summary.requestedStartLabel}</strong>, but our data provider only has <strong style={{color:C.text}}>{summary.ticker}</strong> price history back to <strong style={{color:C.text}}>{summary.startLabel}</strong>. This backtest covers <strong style={{color:C.text}}>{summary.startLabel} → {summary.endLabel}</strong> ({summary.years.toFixed(1)} years), so the totals reflect that shorter window.
-          </div>
-        </div>
-      )}
-
       {/* Big-number stat cards */}
       <div className="sim-stat-grid">
         <Stat
