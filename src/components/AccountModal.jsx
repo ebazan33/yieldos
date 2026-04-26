@@ -162,8 +162,8 @@ export default function AccountModal({ user, currentDisplayName, theme = 'dark',
               cursor:(pwSaving||!newPw1||!newPw2)?"default":"pointer",
               fontFamily:"inherit",
               fontWeight:600,
-              fontSize:12,
-              padding:"8px 14px",
+              fontSize:13,
+              padding:"11px 18px",
               opacity:(pwSaving||!newPw1||!newPw2)?0.5:1,
               transition:"opacity 0.2s",
             }}>
@@ -216,12 +216,15 @@ export default function AccountModal({ user, currentDisplayName, theme = 'dark',
         {error && <div style={{fontSize:12,color:C.red,marginBottom:12}}>{error}</div>}
         {saved && <div style={{fontSize:12,color:C.emerald,marginBottom:12}}>Saved ✓</div>}
 
+        {/* Bottom action row — padding tuned so each button hits ~44px tap
+            target on mobile. Important because the modal is now long enough
+            (with Change Password added) that users scroll to reach these. */}
         <div style={{display:"flex",gap:8}}>
-          <button onClick={onClose} style={{flex:1,background:"transparent",color:C.textSub,border:`1px solid ${C.border}`,borderRadius:9,cursor:"pointer",fontFamily:"inherit",fontSize:12,fontWeight:500,padding:"10px",transition:"all 0.15s"}}>
+          <button onClick={onClose} style={{flex:1,background:"transparent",color:C.textSub,border:`1px solid ${C.border}`,borderRadius:9,cursor:"pointer",fontFamily:"inherit",fontSize:13,fontWeight:500,padding:"12px",transition:"all 0.15s"}}>
             Cancel
           </button>
           <button onClick={handleSave} disabled={saving}
-            style={{flex:2,background:C.blue,color:"#fff",border:"none",borderRadius:9,cursor:saving?"default":"pointer",fontFamily:"inherit",fontWeight:600,fontSize:13,padding:"10px",opacity:saving?0.6:1,transition:"opacity 0.2s"}}>
+            style={{flex:2,background:C.blue,color:"#fff",border:"none",borderRadius:9,cursor:saving?"default":"pointer",fontFamily:"inherit",fontWeight:600,fontSize:13,padding:"12px",opacity:saving?0.6:1,transition:"opacity 0.2s"}}>
             {saving ? 'Saving...' : 'Save'}
           </button>
         </div>

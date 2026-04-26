@@ -217,7 +217,7 @@ export default function SimulatorPage() {
         .sim-input { background:${C.card}; color:${C.text}; border:1px solid ${C.border}; border-radius:10px; padding:11px 13px; font-size:14px; font-family:inherit; width:100%; transition:border-color .15s; }
         .sim-input:focus { outline:none; border-color:${C.blue}; }
         .sim-label { font-size:11px; color:${C.textMuted}; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:6px; display:block; }
-        .sim-btn { background:${C.blue}; color:#fff; border:none; border-radius:10px; padding:12px 24px; font-size:14px; font-weight:600; cursor:pointer; font-family:inherit; transition:all .15s; }
+        .sim-btn { background:${C.blue}; color:#fff; border:none; border-radius:10px; padding:14px 26px; font-size:14px; font-weight:600; cursor:pointer; font-family:inherit; transition:all .15s; }
         .sim-btn:hover { background:${C.blueDim}; }
         .sim-btn:disabled { opacity:0.55; cursor:not-allowed; }
         .sim-btn-ghost { background:transparent; color:${C.textSub}; border:1px solid ${C.border}; border-radius:10px; padding:10px 18px; font-size:13px; font-weight:500; cursor:pointer; font-family:inherit; transition:all .15s; }
@@ -254,8 +254,23 @@ export default function SimulatorPage() {
           <p style={{fontSize:12,color:C.textMuted,margin:0}}>Free. No signup. Shareable link.</p>
         </header>
 
-        {/* ── Popular chip row ──────────────────────────────────────── */}
-        <div className="sim-chip-row" style={{display:"flex",flexWrap:"nowrap",gap:8,marginBottom:20,overflowX:"auto"}}>
+        {/* ── Popular chip row ──────────────────────────────────────────
+            Same iOS-scroll-stutter fix as the holdings table on the share
+            page: touch-action pan-x stops the gesture being interpreted as
+            both horizontal-chip-scroll AND vertical-page-scroll, which was
+            causing catch-and-release behavior on fast swipes. translateZ
+            promotes the row to its own GPU compositing layer. */}
+        <div className="sim-chip-row" style={{
+          display:"flex",
+          flexWrap:"nowrap",
+          gap:8,
+          marginBottom:20,
+          overflowX:"auto",
+          WebkitOverflowScrolling:"touch",
+          touchAction:"pan-x",
+          overscrollBehaviorX:"contain",
+          transform:"translateZ(0)",
+        }}>
           <span style={{fontSize:11,color:C.textMuted,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.08em",alignSelf:"center",whiteSpace:"nowrap",marginRight:4}}>Popular:</span>
           {POPULAR.map(p => (
             <button
@@ -335,18 +350,22 @@ export default function SimulatorPage() {
             </div>
             <div>
               <label className="sim-label">Reinvest dividends (DRIP)</label>
+              {/* DRIP buttons are sized larger than sim-chip because they
+                  auto-rerun the simulation now — they're the primary
+                  interactive control on this card, not a compact filter chip.
+                  Padding gives a 44px+ tap target on mobile. */}
               <div style={{display:"flex",gap:8,marginTop:2}}>
                 <button
                   className={`sim-chip ${drip ? "sim-chip-active" : ""}`}
                   onClick={() => onToggleDrip(true)}
                   disabled={loading}
-                  style={{flex:1}}
+                  style={{flex:1, padding:"11px 16px", fontSize:13}}
                 >Yes</button>
                 <button
                   className={`sim-chip ${!drip ? "sim-chip-active" : ""}`}
                   onClick={() => onToggleDrip(false)}
                   disabled={loading}
-                  style={{flex:1}}
+                  style={{flex:1, padding:"11px 16px", fontSize:13}}
                 >No</button>
               </div>
             </div>
