@@ -183,44 +183,54 @@ function dividendsByMonth(divs) {
 
 // ── Data orchestrator ───────────────────────────────────────────────────────
 //
-// Two-source strategy: Yahoo Finance first (free, decades of history, no
-// rate limit at our scale), Polygon as fallback (paid, 5-yr history cap on
-// Starter tier, but rock-solid).
+// Hybrid source strategy:
+//   - Prices: try our /api/historical proxy first (Stooq + Polygon split
+//     adjustment, full decades of history, no rate limit at our scale).
+//     Fall back to Polygon directly if the proxy fails (5-yr cap on Stocks
+//     Starter — but we don't 500 the user).
+//   - Dividends: always Polygon. Polygon's reference/dividends endpoint
+//     isn't subject to the 5-yr aggregate cap, so we get full dividend
+//     history regardless.
 //
-// Yahoo doesn't allow direct browser calls (no CORS), so we hit our own
-// /api/historical Vercel serverless function which proxies the request.
 // In local dev (vite, no serverless runtime), /api/historical 404s and we
-// fall straight through to Polygon — same behavior as before, no regression.
+// fall straight through to Polygon for prices — same behavior as before,
+// no regression.
 //
-// The proxy returns { prices, divs } in the exact shape the simulator
-// expects, so the rest of the pipeline doesn't need to know which source
-// the data came from.
+// V1 of this proxy used Yahoo Finance, but Yahoo aggressively rate-limits
+// AWS/Vercel egress IPs (every request was a 429). V2 switched to Stooq +
+// manual split adjustment via Polygon's splits endpoint.
 async function fetchHistoricalData(ticker, fromDate, toDate) {
-  // 1. Try our Yahoo proxy first.
+  let prices = null;
+
+  // 1. Try our prices proxy first.
   try {
     const ck = cacheKey("hist", ticker, `${ymd(fromDate)}_${ymd(toDate).slice(0, 7)}`);
     const cached = cacheGet(ck);
-    if (cached) return cached;
-
-    const url = `/api/historical?ticker=${encodeURIComponent(ticker)}&from=${ymd(fromDate)}&to=${ymd(toDate)}`;
-    const res = await fetch(url);
-    if (res.ok) {
-      const data = await res.json();
-      if (Array.isArray(data?.prices) && data.prices.length >= 2) {
-        const out = { prices: data.prices, divs: data.divs || [] };
-        cacheSet(ck, out);
-        return out;
+    if (cached?.prices?.length) {
+      prices = cached.prices;
+    } else {
+      const url = `/api/historical?ticker=${encodeURIComponent(ticker)}&from=${ymd(fromDate)}&to=${ymd(toDate)}`;
+      const res = await fetch(url);
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data?.prices) && data.prices.length >= 2) {
+          prices = data.prices;
+          cacheSet(ck, { prices });
+        }
       }
     }
   } catch {
-    // Fall through to Polygon
+    // Fall through to Polygon prices
   }
 
-  // 2. Fall back to Polygon (paid, reliable, but 5-yr history on Starter).
-  const [prices, divs] = await Promise.all([
-    fetchMonthlyPrices(ticker, fromDate, toDate),
-    fetchDividends(ticker),
-  ]);
+  // 2. Fall back to Polygon prices if proxy failed (or in local dev).
+  if (!prices) {
+    prices = await fetchMonthlyPrices(ticker, fromDate, toDate);
+  }
+
+  // 3. Dividends always from Polygon (no time cap on reference data).
+  const divs = await fetchDividends(ticker);
+
   return { prices, divs };
 }
 
