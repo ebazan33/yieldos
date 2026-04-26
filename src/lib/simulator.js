@@ -181,6 +181,49 @@ function dividendsByMonth(divs) {
   return map;
 }
 
+// ── Data orchestrator ───────────────────────────────────────────────────────
+//
+// Two-source strategy: Yahoo Finance first (free, decades of history, no
+// rate limit at our scale), Polygon as fallback (paid, 5-yr history cap on
+// Starter tier, but rock-solid).
+//
+// Yahoo doesn't allow direct browser calls (no CORS), so we hit our own
+// /api/historical Vercel serverless function which proxies the request.
+// In local dev (vite, no serverless runtime), /api/historical 404s and we
+// fall straight through to Polygon — same behavior as before, no regression.
+//
+// The proxy returns { prices, divs } in the exact shape the simulator
+// expects, so the rest of the pipeline doesn't need to know which source
+// the data came from.
+async function fetchHistoricalData(ticker, fromDate, toDate) {
+  // 1. Try our Yahoo proxy first.
+  try {
+    const ck = cacheKey("hist", ticker, `${ymd(fromDate)}_${ymd(toDate).slice(0, 7)}`);
+    const cached = cacheGet(ck);
+    if (cached) return cached;
+
+    const url = `/api/historical?ticker=${encodeURIComponent(ticker)}&from=${ymd(fromDate)}&to=${ymd(toDate)}`;
+    const res = await fetch(url);
+    if (res.ok) {
+      const data = await res.json();
+      if (Array.isArray(data?.prices) && data.prices.length >= 2) {
+        const out = { prices: data.prices, divs: data.divs || [] };
+        cacheSet(ck, out);
+        return out;
+      }
+    }
+  } catch {
+    // Fall through to Polygon
+  }
+
+  // 2. Fall back to Polygon (paid, reliable, but 5-yr history on Starter).
+  const [prices, divs] = await Promise.all([
+    fetchMonthlyPrices(ticker, fromDate, toDate),
+    fetchDividends(ticker),
+  ]);
+  return { prices, divs };
+}
+
 // ── The simulation ──────────────────────────────────────────────────────────
 //
 // For each month in [startDate, today]:
@@ -212,10 +255,7 @@ export async function runBacktest({
     const today = new Date();
     if (start > today) return { error: "Start date can't be in the future" };
 
-    const [prices, divs] = await Promise.all([
-      fetchMonthlyPrices(tickerUC, start, today),
-      fetchDividends(tickerUC),
-    ]);
+    const { prices, divs } = await fetchHistoricalData(tickerUC, start, today);
 
     if (prices.length < 2) {
       return { error: `Not enough price history for ${tickerUC} in this range. Try an earlier start date or a different ticker.` };
