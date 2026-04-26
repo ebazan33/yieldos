@@ -176,6 +176,57 @@ export function useHoldings(userId) {
     return { error }
   }
 
+  // Merge new shares into an existing holding instead of creating a duplicate
+  // row. Triggered from AddHoldingModal when the user adds a ticker they
+  // already own (e.g. they bought 7 more SCHD from a DRIP). Computes a proper
+  // weighted-average cost basis so YoC + total return stay accurate.
+  //
+  // Cost basis edge cases (the math is silent about which one applied — the
+  // modal's preview already shows the user what's about to happen):
+  //   - both rows have cost_basis: weighted avg by share count
+  //   - existing has cost_basis, new doesn't: keep existing avg (no change)
+  //   - existing has no cost_basis, new does: avg the new cost across the
+  //     full new total (treats existing shares as zero-cost — least bad
+  //     option without inventing a number we don't know)
+  //   - neither has cost_basis: stays null
+  //
+  // Price + yield get refreshed to whatever the new add brought in, on the
+  // theory that "more recent = more accurate." Frequency, sector, badges,
+  // streaks stay as-is on the existing row.
+  async function mergeIntoExisting(existingId, addPayload) {
+    const existing = holdings.find(h => h.id === existingId)
+    if (!existing) return { error: 'Could not find the existing holding to merge into.' }
+
+    const addedShares = Number(addPayload.shares) || 0
+    if (addedShares <= 0) return { error: 'Shares to add must be greater than 0.' }
+
+    const existingShares = Number(existing.shares) || 0
+    const newTotalShares = existingShares + addedShares
+
+    const newCostNum = Number(addPayload.cost_basis)
+    const hasNewCost = addPayload.cost_basis != null && addPayload.cost_basis !== '' && isFinite(newCostNum) && newCostNum > 0
+    const existingCostNum = Number(existing.cost_basis)
+    const hasExistingCost = existing.cost_basis != null && existing.cost_basis !== '' && isFinite(existingCostNum) && existingCostNum > 0
+
+    let newCostBasis = existing.cost_basis ?? null
+    if (hasNewCost && hasExistingCost) {
+      const weighted = ((existingCostNum * existingShares) + (newCostNum * addedShares)) / newTotalShares
+      newCostBasis = Number(weighted.toFixed(4))
+    } else if (hasNewCost && !hasExistingCost) {
+      const partial = (newCostNum * addedShares) / newTotalShares
+      newCostBasis = Number(partial.toFixed(4))
+    }
+
+    const updates = {
+      shares: newTotalShares,
+      cost_basis: newCostBasis,
+    }
+    if (addPayload.price && Number(addPayload.price) > 0) updates.price = Number(addPayload.price)
+    if (addPayload.yld != null && isFinite(Number(addPayload.yld))) updates.yld = Number(addPayload.yld)
+
+    return updateHolding(existingId, updates)
+  }
+
   // Refresh live prices + yields for every holding from Polygon.
   // Respects rate limits by spacing requests ~1.4s apart.
   async function refreshAllPrices({ force = false } = {}) {
@@ -232,5 +283,5 @@ export function useHoldings(userId) {
     }
   }
 
-  return { holdings, loading, refreshing, lastRefresh, addHolding, removeHolding, updateHolding, refetch: fetchHoldings, refreshAllPrices, getSnapshots }
+  return { holdings, loading, refreshing, lastRefresh, addHolding, removeHolding, updateHolding, mergeIntoExisting, refetch: fetchHoldings, refreshAllPrices, getSnapshots }
 }

@@ -1091,13 +1091,14 @@ export default function AppMain() {
     // Stub out mutations so demo visitors can click Add/Refresh without
     // hitting Supabase. We surface a soft-block via a banner instead of an
     // error so the vibe stays "try me out, no friction".
-    addHolding:       async () => ({ error: { message: "Sign up to save holdings." } }),
-    removeHolding:    async () => ({ error: { message: "Sign up to edit holdings." } }),
-    updateHolding:    async () => ({ error: { message: "Sign up to edit holdings." } }),
-    refreshAllPrices: async () => {},
-    getSnapshots:     () => [],
+    addHolding:        async () => ({ error: { message: "Sign up to save holdings." } }),
+    removeHolding:     async () => ({ error: { message: "Sign up to edit holdings." } }),
+    updateHolding:     async () => ({ error: { message: "Sign up to edit holdings." } }),
+    mergeIntoExisting: async () => ({ error: { message: "Sign up to edit holdings." } }),
+    refreshAllPrices:  async () => {},
+    getSnapshots:      () => [],
   };
-  const { holdings, loading: holdLoading, refreshing, lastRefresh, addHolding, removeHolding, updateHolding, refreshAllPrices, getSnapshots } = demoMode ? demoHoldingsAPI : realHoldings;
+  const { holdings, loading: holdLoading, refreshing, lastRefresh, addHolding, removeHolding, updateHolding, mergeIntoExisting, refreshAllPrices, getSnapshots } = demoMode ? demoHoldingsAPI : realHoldings;
 
   // Dividend payment log — only meaningful for real (non-demo) users. Demo
   // mode gets a stubbed API so the paycheck calendar's "mark paid" buttons
@@ -3653,7 +3654,7 @@ export default function AppMain() {
         </div>
       </footer>
 
-      {showAdd&&<AddHoldingModal onClose={()=>{setShowAdd(false);setPrefillTicker(null);}} onAdd={addHoldingGated} prefillTicker={prefillTicker}/>}
+      {showAdd&&<AddHoldingModal onClose={()=>{setShowAdd(false);setPrefillTicker(null);}} onAdd={addHoldingGated} onMerge={mergeIntoExisting} existingHoldings={holdings} prefillTicker={prefillTicker}/>}
       {showImport&&<ImportHoldingsModal onClose={()=>setShowImport(false)} onAdd={addHoldingGated}/>}
       {showShare && isPro && !demoMode && user?.id && (
         <SharePortfolioModal

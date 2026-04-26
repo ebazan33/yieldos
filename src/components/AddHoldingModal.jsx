@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
 import { searchTicker, getStockDetails } from '../lib/polygon'
 
 const C = {
@@ -19,7 +19,7 @@ function isCanadianTicker(raw) {
   return TSX_SUFFIXES.some(s => t.endsWith(s))
 }
 
-export default function AddHoldingModal({ onClose, onAdd, prefillTicker }) {
+export default function AddHoldingModal({ onClose, onAdd, onMerge, existingHoldings = [], prefillTicker }) {
   const [query, setQuery]         = useState('')
   const [results, setResults]     = useState([])
   const [selected, setSelected]   = useState(null)
@@ -29,6 +29,12 @@ export default function AddHoldingModal({ onClose, onAdd, prefillTicker }) {
   const [searching, setSearching] = useState(false)
   const [loading, setLoading]     = useState(false)
   const [error, setError]         = useState('')
+  // Merge-into-existing-position state. Default ON because most users adding
+  // a ticker they already own want to combine (e.g. they bought 7 more SCHD
+  // from a DRIP). Only matters when existingMatch is non-null. Persists
+  // across rapid-fire adds so the toggle "sticks" if they're adding multiple
+  // top-ups in one session.
+  const [mergeMode, setMergeMode] = useState(true)
   // ── Manual-entry state (TSX / Canadian stocks) ────────────────────────────
   // Polygon doesn't cover TSX, so when the user types a `.TO` / `.V` ticker we
   // jump out of the search/autofill flow and into a form where they supply
@@ -54,6 +60,15 @@ export default function AddHoldingModal({ onClose, onAdd, prefillTicker }) {
   const debounce = useRef(null)
   const searchRef = useRef(null)
   const toastTimer = useRef(null)
+
+  // Detect when the user has picked (or typed, for manual mode) a ticker
+  // they already own. Powers the merge-into-existing-position banner +
+  // toggle. Match is case-insensitive on the trimmed ticker symbol.
+  const existingMatch = useMemo(() => {
+    const target = (manualMode ? query : (selected?.ticker || '')).toUpperCase().trim()
+    if (!target) return null
+    return existingHoldings.find(h => (h.ticker || '').toUpperCase().trim() === target) || null
+  }, [selected, query, manualMode, existingHoldings])
 
   useEffect(() => {
     if (query.length < 1) { setResults([]); return }
@@ -170,7 +185,17 @@ export default function AddHoldingModal({ onClose, onAdd, prefillTicker }) {
     }
 
     const addedTicker = holding.ticker
-    const { error } = await onAdd(holding)
+    // Merge path: user has this ticker already AND has the merge toggle on.
+    // Calls into useHoldings.mergeIntoExisting which updates the existing row
+    // (shares + weighted-avg cost basis) instead of inserting a duplicate.
+    // Falls back to plain insert if onMerge isn't wired (defensive).
+    let result
+    if (existingMatch && mergeMode && onMerge) {
+      result = await onMerge(existingMatch.id, holding)
+    } else {
+      result = await onAdd(holding)
+    }
+    const { error } = result || {}
     if (error) {
       // If useHoldings returned a specific error (e.g. Seed 5-holding cap),
       // surface it directly so the user understands what went wrong.
@@ -353,6 +378,49 @@ export default function AddHoldingModal({ onClose, onAdd, prefillTicker }) {
           </div>
         )}
 
+        {/* Merge-into-existing banner — shown when the picked ticker is
+            already in the user's portfolio. Default ON so the most common
+            case (DRIP top-up, recurring buy) is one click. The "Track as
+            separate lot" branch stays available for tax-tracking use cases
+            (FIFO/LIFO, IRA vs taxable). */}
+        {existingMatch && (
+          <div style={{
+            background: `${C.blue}10`,
+            border: `1px solid ${C.blue}40`,
+            borderRadius: 10,
+            padding: "12px 14px",
+            marginBottom: 16,
+          }}>
+            <div style={{fontSize:12,fontWeight:700,color:C.text,marginBottom:4}}>
+              You already own {existingMatch.ticker}
+            </div>
+            <div style={{fontSize:11,color:C.textSub,lineHeight:1.55,marginBottom:10}}>
+              You have <strong style={{color:C.text}}>{Number(existingMatch.shares).toLocaleString()} shares</strong> in your portfolio
+              {existingMatch.cost_basis != null && existingMatch.cost_basis !== '' && Number(existingMatch.cost_basis) > 0 ? (
+                <> at an avg cost of <strong style={{color:C.text}}>{(existingMatch.currency === 'CAD' ? 'C$' : '$')}{Number(existingMatch.cost_basis).toFixed(2)}/share</strong></>
+              ) : null}.
+            </div>
+            <label style={{display:"flex",alignItems:"flex-start",gap:8,cursor:"pointer"}}>
+              <input
+                type="checkbox"
+                checked={mergeMode}
+                onChange={e => setMergeMode(e.target.checked)}
+                style={{marginTop:2,accentColor:C.blue,cursor:"pointer",flexShrink:0}}
+              />
+              <div>
+                <div style={{fontSize:12,fontWeight:600,color:C.text}}>
+                  {mergeMode ? "Add to your existing position" : "Track as a separate lot"}
+                </div>
+                <div style={{fontSize:11,color:C.textMuted,marginTop:2,lineHeight:1.5}}>
+                  {mergeMode
+                    ? "Recommended. Combines into one row; cost basis weighted-averaged."
+                    : "Useful for tax tracking (FIFO/LIFO) or different account types."}
+                </div>
+              </div>
+            </label>
+          </div>
+        )}
+
         {/* Form fields */}
         <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:16}}>
           <div>
@@ -459,7 +527,15 @@ export default function AddHoldingModal({ onClose, onAdd, prefillTicker }) {
               </button>
               <button onClick={handleAdd} disabled={!canAdd}
                 style={{flex:2,background:C.blue,color:"#fff",border:"none",borderRadius:9,cursor:!canAdd?"default":"pointer",fontFamily:"inherit",fontWeight:600,fontSize:13,padding:"10px",opacity:!canAdd?0.4:1,transition:"opacity 0.2s"}}>
-                {addedList.length === 0 ? 'Add to Portfolio' : 'Add another'}
+                {(() => {
+                  // Merge: show the math on the button so the user sees
+                  // exactly what's about to happen — "add 7 → 107 total".
+                  if (existingMatch && mergeMode && shares) {
+                    const newTotal = (Number(existingMatch.shares) || 0) + (Number(shares) || 0)
+                    return `Add ${Number(shares).toLocaleString()} → ${newTotal.toLocaleString()} total`
+                  }
+                  return addedList.length === 0 ? 'Add to Portfolio' : 'Add another'
+                })()}
               </button>
             </div>
           )
