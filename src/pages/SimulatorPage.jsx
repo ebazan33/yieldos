@@ -175,6 +175,37 @@ export default function SimulatorPage() {
     try { window.history.replaceState({}, "", `${window.location.pathname}?${qs}`); } catch {}
   }
 
+  // DRIP toggle: same pattern as popular-chip — set the new value AND re-run
+  // the backtest immediately. Without this, toggling DRIP just flipped the
+  // local state and waited for the user to click "Run backtest" again. The
+  // resulting "I clicked Yes/No and nothing changed" was reported as a bug
+  // by an external tester. Pass the new drip value directly to runBacktest
+  // so we don't hit the React setState-is-async stale-read trap.
+  async function onToggleDrip(newDrip) {
+    if (loading || newDrip === drip) return;
+    setDrip(newDrip);
+    setLoading(true);
+    setResult(null);
+    const startDate = `${startYear}-${startMonth}-01`;
+    const res = await runBacktest({
+      ticker,
+      startDate,
+      initialInvestment: Number(initialInvestment) || 0,
+      monthlyContribution: Number(monthlyContribution) || 0,
+      drip: newDrip,
+    });
+    setResult(res);
+    setLoading(false);
+    const qs = writeSimulatorParams({
+      ticker,
+      startDate,
+      initialInvestment,
+      monthlyContribution,
+      drip: newDrip,
+    });
+    try { window.history.replaceState({}, "", `${window.location.pathname}?${qs}`); } catch {}
+  }
+
   return (
     <div style={{background:C.bg,minHeight:"100vh",color:C.text,fontFamily:"'Inter',system-ui,sans-serif"}}>
       <style>{`
@@ -307,12 +338,14 @@ export default function SimulatorPage() {
               <div style={{display:"flex",gap:8,marginTop:2}}>
                 <button
                   className={`sim-chip ${drip ? "sim-chip-active" : ""}`}
-                  onClick={() => setDrip(true)}
+                  onClick={() => onToggleDrip(true)}
+                  disabled={loading}
                   style={{flex:1}}
                 >Yes</button>
                 <button
                   className={`sim-chip ${!drip ? "sim-chip-active" : ""}`}
-                  onClick={() => setDrip(false)}
+                  onClick={() => onToggleDrip(false)}
+                  disabled={loading}
                   style={{flex:1}}
                 >No</button>
               </div>
