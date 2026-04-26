@@ -553,8 +553,9 @@ function Landing({ onEnter, onPickPlan, onDemo, onFeedback }) {
              stays visible (it's the viral acquisition surface — Moat #4). */
           .landing-nav-links a.nav-anchor{display:none;}
           /* Tighten the Simulator pill so it doesn't clip the CTA on narrow
-             screens. Simulator is the only anchor link that stays visible. */
-          .landing-nav-links a.nav-simulator{padding:6px 10px!important;font-size:11px!important;}
+             screens BUT keep enough vertical padding to clear a 36px+ tap
+             target. Simulator is the only anchor link that stays visible. */
+          .landing-nav-links a.nav-simulator{padding:9px 12px!important;font-size:11px!important;}
           /* Shrink the CTA padding/text so it never clips on narrow phones */
           .landing-nav-links button{padding:8px 14px!important;font-size:11px!important;}
           /* Hide the 4-col comparison matrix on phones — it becomes unreadable
@@ -584,7 +585,7 @@ function Landing({ onEnter, onPickPlan, onDemo, onFeedback }) {
               gets a styled pill instead of a gray nav-anchor — visually
               promotes it above the other anchors AND stays visible on mobile
               (the secondary nav-anchor links get hidden under 640px). */}
-          <a className="nav-simulator" href="/simulator" style={{fontSize:12,color:C.blue,textDecoration:"none",fontWeight:600,padding:"6px 12px",border:`1px solid ${C.blue}40`,borderRadius:999,transition:"all 0.15s"}}>Simulator</a>
+          <a className="nav-simulator" href="/simulator" style={{fontSize:12,color:C.blue,textDecoration:"none",fontWeight:600,padding:"7px 14px",border:`1px solid ${C.blue}80`,background:`${C.blue}14`,borderRadius:999,transition:"all 0.15s"}}>Simulator</a>
           <a className="nav-anchor" href="#differentiators" style={{fontSize:12,color:C.textSub,textDecoration:"none",fontWeight:500}}>Why YieldOS</a>
           <a className="nav-anchor" href="#pricing" style={{fontSize:12,color:C.textSub,textDecoration:"none",fontWeight:500}}>Pricing</a>
           <span className="inv-count" style={{fontSize:11,color:C.textMuted,marginLeft:4}}>{count.toLocaleString()} investors</span>

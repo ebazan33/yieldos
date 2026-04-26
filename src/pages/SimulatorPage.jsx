@@ -232,11 +232,15 @@ export default function SimulatorPage() {
         .sim-stat-lbl { font-size:10px; color:${C.textMuted}; font-weight:700; text-transform:uppercase; letter-spacing:0.08em; margin-bottom:6px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
         .sim-stat-val { font-family:'Fraunces',serif; font-size:clamp(20px,5vw,28px); font-weight:700; color:${C.text}; letter-spacing:-0.02em; word-break:break-word; }
         .sim-stat-sub { font-size:11px; color:${C.textSub}; margin-top:4px; }
+        /* Hide horizontal-scroll bar on the popular chip row at all sizes —
+           the chips overflow on mobile + tablet; an actual scrollbar adds
+           visual noise without giving useful info. */
+        .sim-chip-row::-webkit-scrollbar { display: none; }
+        .sim-chip-row { scrollbar-width: none; }
         @media (max-width: 560px) {
           .sim-wrap { padding: 20px 14px 60px; }
           .sim-grid-inputs { grid-template-columns: 1fr 1fr; }
           .sim-chip-row { overflow-x: auto; padding-bottom: 4px; -webkit-overflow-scrolling: touch; }
-          .sim-chip-row::-webkit-scrollbar { display: none; }
         }
       `}</style>
 
