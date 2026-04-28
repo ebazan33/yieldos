@@ -201,13 +201,19 @@ function dividendsByMonth(divs) {
 // manual split adjustment via Polygon's splits endpoint.
 async function fetchHistoricalData(ticker, fromDate, toDate) {
   let prices = null;
+  let divs = null;
 
-  // 1. Try our prices proxy first.
+  // 1. Try our proxy first. As of v3 this returns BOTH prices and dividends —
+  // moving the Polygon dividends call server-side was a launch-readiness
+  // requirement (browser-side, every user fired their own Polygon request
+  // with the shared API key, instant 429s under launch traffic). Server-
+  // side it shares the 6h Vercel edge cache with the price fetch.
   try {
     const ck = cacheKey("hist", ticker, `${ymd(fromDate)}_${ymd(toDate).slice(0, 7)}`);
     const cached = cacheGet(ck);
     if (cached?.prices?.length) {
       prices = cached.prices;
+      divs = cached.divs || null;
     } else {
       const url = `/api/historical?ticker=${encodeURIComponent(ticker)}&from=${ymd(fromDate)}&to=${ymd(toDate)}`;
       const res = await fetch(url);
@@ -215,21 +221,27 @@ async function fetchHistoricalData(ticker, fromDate, toDate) {
         const data = await res.json();
         if (Array.isArray(data?.prices) && data.prices.length >= 2) {
           prices = data.prices;
-          cacheSet(ck, { prices });
+          divs = Array.isArray(data?.divs) ? data.divs : [];
+          cacheSet(ck, { prices, divs });
         }
       }
     }
   } catch {
-    // Fall through to Polygon prices
+    // Fall through to Polygon
   }
 
-  // 2. Fall back to Polygon prices if proxy failed (or in local dev).
+  // 2. Fall back to Polygon prices if proxy failed (e.g. local dev where the
+  // serverless function isn't running, or proxy outage).
   if (!prices) {
     prices = await fetchMonthlyPrices(ticker, fromDate, toDate);
   }
 
-  // 3. Dividends always from Polygon (no time cap on reference data).
-  const divs = await fetchDividends(ticker);
+  // 3. Fall back to browser-side Polygon dividends only when the proxy
+  // didn't return divs. In production the proxy always populates this — the
+  // fallback exists for local dev parity.
+  if (divs == null) {
+    divs = await fetchDividends(ticker);
+  }
 
   return { prices, divs };
 }

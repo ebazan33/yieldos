@@ -145,12 +145,47 @@ export default async function handler(req, res) {
       }
     }
 
+    // Fetch dividends from Polygon's reference endpoint. NOT subject to the
+    // 5-yr aggregate cap that affects Stocks Starter price aggregates — this
+    // is reference data and returns full history. Originally this lived in
+    // the BROWSER (every simulator user firing their own Polygon call with
+    // the shared API key) which would have torched the 5-req/min rate limit
+    // the moment a PH launch sent 50 concurrent users at us. Moving it
+    // server-side lets it share the same 6h Vercel edge cache as the prices
+    // — popular tickers like SCHD become 1 round-trip per 6h regardless of
+    // how many users are running backtests.
+    let divs = [];
+    if (polygonKey) {
+      try {
+        const divsRes = await fetch(
+          `https://api.polygon.io/v3/reference/dividends?ticker=${encodeURIComponent(
+            tickerUC
+          )}&limit=500&order=asc&apiKey=${polygonKey}`
+        );
+        if (divsRes.ok) {
+          const divsJson = await divsRes.json();
+          divs = (divsJson?.results || [])
+            .map((d) => ({
+              exDate: d.ex_dividend_date || d.pay_date,
+              payDate: d.pay_date || d.ex_dividend_date,
+              cash: Number(d.cash_amount) || 0,
+              frequency: d.frequency || null,
+            }))
+            .filter((d) => d.exDate && d.cash > 0);
+        }
+      } catch {
+        // Best-effort. If Polygon dividends fail, the simulator falls back
+        // to its browser-side fetchDividends (defensive — same code path
+        // that ran before this server-side migration).
+      }
+    }
+
     res.setHeader("Cache-Control", "s-maxage=21600, stale-while-revalidate=86400");
     res.setHeader("Access-Control-Allow-Origin", "*");
     return res.status(200).json({
       prices,
-      divs: [], // simulator fetches divs from Polygon directly
-      source: "tiingo",
+      divs,
+      source: "tiingo+polygon",
     });
   } catch (e) {
     return res.status(500).json({
