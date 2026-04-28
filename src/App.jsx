@@ -50,12 +50,39 @@ export default function App() {
     return () => window.removeEventListener("hashchange", onHash);
   }, []);
 
-  // Supabase fires PASSWORD_RECOVERY when it detects the #access_token=...&type=recovery
-  // hash from a reset-password email. We show the "set new password" modal
-  // on top of whatever's currently rendered (landing, app, legal page).
+  // Supabase auth events:
+  //   PASSWORD_RECOVERY → fires when the user lands via a reset-password
+  //     email link. We pop ResetPasswordModal over whatever's rendered.
+  //   SIGNED_IN → fires on every fresh sign-in (and on session restore on
+  //     page load). We use this to defensively set the 14-day Grow trial
+  //     on users who never got one — specifically Google OAuth signups,
+  //     which bypass AuthModal's signUp() options.data path and land in
+  //     auth.users without trial_ends_at metadata. The handler is
+  //     idempotent: if the user already has trial_ends_at, we no-op.
   useEffect(() => {
-    const { data: sub } = supabase.auth.onAuthStateChange((event) => {
+    const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === "PASSWORD_RECOVERY") setShowReset(true);
+
+      if (event === "SIGNED_IN" && session?.user) {
+        const meta = session.user.user_metadata || {};
+        if (!meta.trial_ends_at) {
+          // Fire-and-forget. If updateUser fails, AppMain handles missing
+          // trial metadata gracefully (treats user as Seed with no trial).
+          (async () => {
+            try {
+              const trialEndsAt = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString();
+              await supabase.auth.updateUser({
+                data: {
+                  plan: meta.plan || "Seed",
+                  trial_ends_at: trialEndsAt,
+                },
+              });
+            } catch {
+              // Silent — defensive logic shouldn't block sign-in.
+            }
+          })();
+        }
+      }
     });
     return () => sub?.subscription?.unsubscribe?.();
   }, []);
