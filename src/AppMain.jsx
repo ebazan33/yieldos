@@ -3706,8 +3706,8 @@ export default function AppMain() {
         />
       )}
       {showShortcuts && (
-        <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.82)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:150,backdropFilter:"blur(8px)"}} onClick={()=>setShowShortcuts(false)}>
-          <div onClick={e=>e.stopPropagation()} style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:14,padding:28,maxWidth:420,width:"90%"}}>
+        <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.82)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:150,backdropFilter:"blur(8px)",padding:"16px"}} onClick={()=>setShowShortcuts(false)}>
+          <div onClick={e=>e.stopPropagation()} style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:14,padding:"clamp(20px, 5vw, 28px)",maxWidth:420,width:"100%",maxHeight:"calc(100dvh - 32px)",overflowY:"auto"}}>
             <div style={{fontFamily:"'Fraunces',serif",fontSize:18,fontWeight:700,marginBottom:16,letterSpacing:"-0.01em"}}>Keyboard shortcuts</div>
             <div style={{display:"flex",flexDirection:"column",gap:10,fontSize:13}}>
               {[
@@ -3790,8 +3790,8 @@ export default function AppMain() {
       })()}
 
       {showUp&&(
-        <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.88)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:100,backdropFilter:"blur(8px)"}} onClick={()=>{setShowUp(false);setUpReason(null);}}>
-          <div style={{background:C.card,border:`1px solid ${C.blue}30`,borderRadius:16,padding:34,maxWidth:560,width:"90%"}} onClick={e=>e.stopPropagation()}>
+        <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.88)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:100,backdropFilter:"blur(8px)",padding:"16px"}} onClick={()=>{setShowUp(false);setUpReason(null);}}>
+          <div style={{background:C.card,border:`1px solid ${C.blue}30`,borderRadius:16,padding:"clamp(22px, 5vw, 34px)",maxWidth:560,width:"100%",maxHeight:"calc(100dvh - 32px)",overflowY:"auto"}} onClick={e=>e.stopPropagation()}>
             {/* Context-aware headline — tailored to why the modal opened, so the
                 user sees their actual pain (e.g. cap) acknowledged up top. */}
             <div style={{textAlign:"center",marginBottom:26}}>
