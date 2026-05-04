@@ -2164,7 +2164,7 @@ export default function AppMain() {
                   ? `Trial ends in ${trialDaysLeft} day${trialDaysLeft===1?"":"s"}`
                   : `Trial: ${trialDaysLeft} day${trialDaysLeft===1?"":"s"} of full access remaining`;
               const subline = urgency !== "normal"
-                ? "Upgrade to keep unlimited holdings, AI insights, paycheck calendar, and more before your trial expires."
+                ? "Upgrade to keep everything before your trial expires."
                 : "Unlimited holdings, AI insights, paycheck calendar, and more — yours while the trial is active. Upgrade to keep everything past day 14.";
               return (
                 <div style={{background:cfg.bg,border:`1px solid ${cfg.border}`,borderRadius:12,padding:"12px 16px",marginBottom:14,display:"flex",alignItems:"center",justifyContent:"space-between",gap:14,flexWrap:"wrap"}}>
@@ -2179,7 +2179,7 @@ export default function AppMain() {
                       </div>
                     </div>
                   </div>
-                  <button style={{background:cfg.btnBg,color:cfg.btnColor,border:"none",borderRadius:8,padding:"8px 16px",fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:"inherit",whiteSpace:"nowrap"}} onClick={()=>navigate("plans")}>
+                  <button style={{background:cfg.btnBg,color:cfg.btnColor,border:"none",borderRadius:8,padding:"12px 18px",fontSize:13,fontWeight:700,cursor:"pointer",fontFamily:"inherit",whiteSpace:"nowrap",minHeight:44}} onClick={()=>navigate("plans")}>
                     {cfg.btnText}
                   </button>
                 </div>
