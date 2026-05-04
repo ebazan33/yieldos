@@ -61,25 +61,33 @@ export default function AuthModal({ onClose, onAuth }) {
       }
     }
     setLoading(true); setError(''); setSuccess('')
-    if (mode === 'signup') {
-      // Every new signup gets a 14-day full-access trial. The trial_ends_at
-      // timestamp lives on user_metadata; AppMain reads it on session hydration
-      // and computes effectivePlan = "Grow" while the trial is active, reverting
-      // to Seed after. We stamp plan: "Seed" too so the plan chip + localStorage
-      // default match from the first render onward.
-      const trialEndsAt = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString()
-      const { error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: { data: { plan: 'Seed', trial_ends_at: trialEndsAt } },
-      })
-      if (error) { setError(error.message); setLoading(false); return }
-      setSuccess('Check your email to confirm your account, then sign in!')
-      setMode('signin')
-    } else {
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password })
-      if (error) { setError(error.message); setLoading(false); return }
-      onAuth(data.user)
+    try {
+      if (mode === 'signup') {
+        // Every new signup gets a 14-day full-access trial. The trial_ends_at
+        // timestamp lives on user_metadata; AppMain reads it on session hydration
+        // and computes effectivePlan = "Grow" while the trial is active, reverting
+        // to Seed after. We stamp plan: "Seed" too so the plan chip + localStorage
+        // default match from the first render onward.
+        const trialEndsAt = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString()
+        const { error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: { data: { plan: 'Seed', trial_ends_at: trialEndsAt } },
+        })
+        if (error) { setError(error.message); setLoading(false); return }
+        setSuccess('Check your email to confirm your account, then sign in!')
+        setMode('signin')
+      } else {
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password })
+        if (error) { setError(error.message); setLoading(false); return }
+        onAuth(data.user)
+      }
+    } catch (err) {
+      // Network errors, supabase client throws, etc. Render the message in-place
+      // instead of letting the unhandled rejection bubble up.
+      setError(err?.message || 'Something went wrong. Please try again.')
+      setLoading(false)
+      return
     }
     setLoading(false)
   }
@@ -122,52 +130,56 @@ export default function AuthModal({ onClose, onAuth }) {
           </>
         )}
 
-        <input
-          style={inp}
-          type="email"
-          name="email"
-          inputMode="email"
-          autoComplete="email"
-          autoCapitalize="off"
-          autoCorrect="off"
-          spellCheck={false}
-          placeholder="Email address"
-          value={email}
-          onChange={e=>setEmail(e.target.value)}
-          onKeyDown={e=>e.key==='Enter'&&mode==='forgot'&&handleSubmit()}
-        />
-        {mode !== 'forgot' && (
+        {/* Wrap fields in a <form> with onSubmit + preventDefault so wrong-password
+            errors render in-place instead of triggering a native form submission
+            (which on some mobile browsers caused a page reload back to the
+            landing screen, swallowing the error message). */}
+        <form onSubmit={e => { e.preventDefault(); handleSubmit(); }}>
           <input
-            style={{...inp,marginBottom:mode==='signin'?6:16}}
-            type="password"
-            name="password"
-            autoComplete={mode==='signup' ? "new-password" : "current-password"}
+            style={inp}
+            type="email"
+            name="email"
+            inputMode="email"
+            autoComplete="email"
             autoCapitalize="off"
             autoCorrect="off"
             spellCheck={false}
-            placeholder="Password"
-            value={password}
-            onChange={e=>setPassword(e.target.value)}
-            onKeyDown={e=>e.key==='Enter'&&handleSubmit()}
+            placeholder="Email address"
+            value={email}
+            onChange={e=>setEmail(e.target.value)}
           />
-        )}
+          {mode !== 'forgot' && (
+            <input
+              style={{...inp,marginBottom:mode==='signin'?6:16}}
+              type="password"
+              name="password"
+              autoComplete={mode==='signup' ? "new-password" : "current-password"}
+              autoCapitalize="off"
+              autoCorrect="off"
+              spellCheck={false}
+              placeholder="Password"
+              value={password}
+              onChange={e=>setPassword(e.target.value)}
+            />
+          )}
 
-        {/* Forgot-password link: only under the Sign In form. */}
-        {mode === 'signin' && (
-          <div style={{textAlign:"right",marginBottom:14}}>
-            <span onClick={()=>switchMode('forgot')} style={{fontSize:11,color:C.textSub,cursor:"pointer"}}>
-              Forgot password?
-            </span>
-          </div>
-        )}
+          {/* Forgot-password link: only under the Sign In form. */}
+          {mode === 'signin' && (
+            <div style={{textAlign:"right",marginBottom:14}}>
+              <span onClick={()=>switchMode('forgot')} style={{fontSize:11,color:C.textSub,cursor:"pointer"}}>
+                Forgot password?
+              </span>
+            </div>
+          )}
 
-        {error   && <div style={{fontSize:12,color:C.red,marginBottom:12}}>{error}</div>}
-        {success && <div style={{fontSize:12,color:C.emerald,marginBottom:12}}>{success}</div>}
+          {error   && <div style={{fontSize:12,color:C.red,marginBottom:12}}>{error}</div>}
+          {success && <div style={{fontSize:12,color:C.emerald,marginBottom:12}}>{success}</div>}
 
-        <button onClick={handleSubmit} disabled={loading}
-          style={{width:"100%",background:C.blue,color:"#fff",border:"none",borderRadius:9,padding:"11px",fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit",marginBottom:16,opacity:loading?0.6:1}}>
-          {loading ? "Loading..." : ctaLabel}
-        </button>
+          <button type="submit" disabled={loading}
+            style={{width:"100%",background:C.blue,color:"#fff",border:"none",borderRadius:9,padding:"11px",fontSize:13,fontWeight:600,cursor:"pointer",fontFamily:"inherit",marginBottom:16,opacity:loading?0.6:1}}>
+            {loading ? "Loading..." : ctaLabel}
+          </button>
+        </form>
 
         <div style={{textAlign:"center",fontSize:12,color:C.textSub}}>
           {mode === 'forgot' ? (
