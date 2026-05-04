@@ -2146,24 +2146,45 @@ export default function AppMain() {
               We render when plan==="Seed" regardless of holdings count so new
               users see the trial countdown even before they add anything. */}
           {plan==="Seed" && (trialActive || holdings.length>0) && (
-            trialActive ? (
-              <div style={{background:`linear-gradient(135deg,${C.emerald}18,${C.blue}12)`,border:`1px solid ${C.emerald}40`,borderRadius:12,padding:"12px 16px",marginBottom:14,display:"flex",alignItems:"center",justifyContent:"space-between",gap:14,flexWrap:"wrap"}}>
-                <div style={{display:"flex",alignItems:"center",gap:12}}>
-                  <div style={{fontSize:18}}>✨</div>
-                  <div>
-                    <div style={{fontSize:13,fontWeight:600,color:C.text,marginBottom:2}}>
-                      Trial: {trialDaysLeft} day{trialDaysLeft===1?"":"s"} of full access remaining
-                    </div>
-                    <div style={{fontSize:11,color:C.textSub}}>
-                      Unlimited holdings, AI insights, paycheck calendar, and more — yours while the trial is active. Upgrade to keep everything past day 14.
+            trialActive ? (() => {
+              // 3-state trial urgency:
+              //   normal  → 4+ days left  → green/blue (existing style)
+              //   warning → 2-3 days left → gold/yellow ("Trial ends in N days")
+              //   urgent  → ≤1 day left   → red ("Trial ends today/tomorrow")
+              // Shifts color, emoji, headline + CTA copy as the deadline approaches.
+              const urgency = trialDaysLeft <= 1 ? "urgent" : trialDaysLeft <= 3 ? "warning" : "normal";
+              const cfg = {
+                normal:  { bg:`linear-gradient(135deg,${C.emerald}18,${C.blue}12)`, border:`${C.emerald}40`, btnBg:C.emerald, btnColor:"#0b0b0b", emoji:"✨", btnText:"See plans →" },
+                warning: { bg:`linear-gradient(135deg,${C.gold}22,${C.gold}10)`,    border:`${C.gold}55`,    btnBg:C.gold,    btnColor:"#0b0b0b", emoji:"⚠️", btnText:"Upgrade now →" },
+                urgent:  { bg:`linear-gradient(135deg,${C.red}22,${C.gold}12)`,     border:`${C.red}55`,     btnBg:C.red,     btnColor:"#fff",   emoji:"⏰", btnText:"Upgrade now →" },
+              }[urgency];
+              const headline = urgency === "urgent"
+                ? (trialDaysLeft <= 0 ? "Trial ends today" : "Trial ends tomorrow")
+                : urgency === "warning"
+                  ? `Trial ends in ${trialDaysLeft} day${trialDaysLeft===1?"":"s"}`
+                  : `Trial: ${trialDaysLeft} day${trialDaysLeft===1?"":"s"} of full access remaining`;
+              const subline = urgency !== "normal"
+                ? "Upgrade to keep unlimited holdings, AI insights, paycheck calendar, and more before your trial expires."
+                : "Unlimited holdings, AI insights, paycheck calendar, and more — yours while the trial is active. Upgrade to keep everything past day 14.";
+              return (
+                <div style={{background:cfg.bg,border:`1px solid ${cfg.border}`,borderRadius:12,padding:"12px 16px",marginBottom:14,display:"flex",alignItems:"center",justifyContent:"space-between",gap:14,flexWrap:"wrap"}}>
+                  <div style={{display:"flex",alignItems:"center",gap:12}}>
+                    <div style={{fontSize:18}}>{cfg.emoji}</div>
+                    <div>
+                      <div style={{fontSize:13,fontWeight:600,color:C.text,marginBottom:2}}>
+                        {headline}
+                      </div>
+                      <div style={{fontSize:11,color:C.textSub}}>
+                        {subline}
+                      </div>
                     </div>
                   </div>
+                  <button style={{background:cfg.btnBg,color:cfg.btnColor,border:"none",borderRadius:8,padding:"8px 16px",fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:"inherit",whiteSpace:"nowrap"}} onClick={()=>navigate("plans")}>
+                    {cfg.btnText}
+                  </button>
                 </div>
-                <button style={{background:C.emerald,color:"#0b0b0b",border:"none",borderRadius:8,padding:"8px 16px",fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:"inherit",whiteSpace:"nowrap"}} onClick={()=>navigate("plans")}>
-                  See plans →
-                </button>
-              </div>
-            ) : (
+              );
+            })() : (
               <div style={{background:seedAtCap?`${C.gold}14`:C.card,border:`1px solid ${seedAtCap?`${C.gold}40`:C.border}`,borderRadius:12,padding:"12px 16px",marginBottom:14,display:"flex",alignItems:"center",justifyContent:"space-between",gap:14,flexWrap:"wrap"}}>
                 <div style={{display:"flex",alignItems:"center",gap:12}}>
                   <div style={{fontSize:18}}>{seedAtCap?"🔒":"🌱"}</div>
