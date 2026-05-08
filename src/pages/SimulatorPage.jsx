@@ -472,6 +472,11 @@ function Results({ result, drip }) {
           sub={drip ? "all reinvested via DRIP" : "collected as cash"}
         />
         <Stat
+          label="Current monthly income"
+          value={fmtMoney(summary.annualIncomeNow / 12)}
+          sub="averaged across 12 months"
+        />
+        <Stat
           label="Current annual income"
           value={fmtMoney(summary.annualIncomeNow)}
           sub={`${fmtPct(summary.yieldOnCost, 2)} yield on cost`}
