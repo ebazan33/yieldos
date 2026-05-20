@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from 'react'
 import { searchTicker, getStockDetails } from '../lib/polygon'
+import { currencySymbol, SUPPORTED_CURRENCIES } from '../lib/fx'
 
 const C = {
   bg:"var(--bg)", surface:"var(--surface)", card:"var(--card)",
@@ -17,6 +18,23 @@ const TSX_SUFFIXES = ['.TO', '.V', '.NE', '.CN']
 function isCanadianTicker(raw) {
   const t = String(raw || '').trim().toUpperCase()
   return TSX_SUFFIXES.some(s => t.endsWith(s))
+}
+
+// Suffix-based currency inference for the manual-entry flow. Smart defaults
+// only — user can override via the dropdown. Covers the most common
+// international exchanges that show up in dividend portfolios.
+//   .TO / .V / .NE / .CN → CAD (TSX, TSX Venture, NEO, CSE)
+//   .L                   → GBP (London Stock Exchange)
+//   .DE / .PA / .MI / .AS → EUR (Xetra, Paris, Milan, Amsterdam)
+//   .AX                  → AUD (Australian Stock Exchange)
+//   anything else        → USD (sensible default for unknowns)
+function inferCurrencyFromTicker(raw) {
+  const t = String(raw || '').trim().toUpperCase()
+  if (TSX_SUFFIXES.some(s => t.endsWith(s))) return 'CAD'
+  if (t.endsWith('.L')) return 'GBP'
+  if (t.endsWith('.DE') || t.endsWith('.PA') || t.endsWith('.MI') || t.endsWith('.AS')) return 'EUR'
+  if (t.endsWith('.AX')) return 'AUD'
+  return 'USD'
 }
 
 export default function AddHoldingModal({ onClose, onAdd, onMerge, existingHoldings = [], prefillTicker }) {
@@ -51,6 +69,11 @@ export default function AddHoldingModal({ onClose, onAdd, onMerge, existingHoldi
   const [manualMode, setManualMode] = useState(false)
   const [manualName,  setManualName]  = useState('')
   const [manualPrice, setManualPrice] = useState('')
+  // Currency for the manual-entry flow. Auto-inferred from the ticker suffix
+  // when the user enters manual mode (.TO → CAD, .L → GBP, etc.), but
+  // overridable via the dropdown so users can correct it for tickers without
+  // a clear exchange suffix (ADRs, OTC pinks, etc.).
+  const [manualCurrency, setManualCurrency] = useState('USD')
   // Cost basis (per share, native currency). Optional — if the user leaves it
   // blank we don't populate it and the dashboard will just skip gains/YoC math
   // for that row. We keep it as a string so empty stays empty (vs. 0, which
@@ -144,7 +167,10 @@ export default function AddHoldingModal({ onClose, onAdd, onMerge, existingHoldi
     setSearching(false)
     setSelected(null)
     setQuery(ticker)
-    // Canadian dividend stocks are most often quarterly — sensible default.
+    // Smart-default the currency based on the ticker suffix. User can still
+    // override via the dropdown if our guess is wrong.
+    setManualCurrency(inferCurrencyFromTicker(ticker))
+    // Dividend stocks across most exchanges default to quarterly — sensible.
     setFreq('Quarterly')
   }
 
@@ -153,15 +179,15 @@ export default function AddHoldingModal({ onClose, onAdd, onMerge, existingHoldi
     let holding
 
     if (manualMode) {
-      // Manual / TSX path. Currency defaults to CAD if the ticker looks
-      // Canadian (almost always true in this branch); otherwise USD so the
-      // manual branch still works for oddball cases like OTC tickers.
+      // Manual path — handles TSX, LSE, Xetra, ASX, and anything Polygon
+      // doesn't auto-fill. Currency comes from the dropdown the user picked
+      // (defaulted via inferCurrencyFromTicker on entry to manual mode).
       if (!query || !manualName || !manualPrice || !shares || !yld) {
         setError('Please fill in all fields')
         return
       }
       const tickerUpper = String(query).trim().toUpperCase()
-      const currency = isCanadianTicker(tickerUpper) ? 'CAD' : 'USD'
+      const currency = manualCurrency
       holding = {
         ticker:   tickerUpper,
         name:     manualName.trim(),
@@ -399,13 +425,42 @@ export default function AddHoldingModal({ onClose, onAdd, onMerge, existingHoldi
           <div style={{background:`${C.emerald}0d`,border:`1px solid ${C.emerald}40`,borderRadius:10,padding:"14px 16px",marginBottom:16}}>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
               <div style={{display:"flex",alignItems:"center",gap:8}}>
-                <span style={{background:`${C.emerald}22`,color:C.emerald,border:`1px solid ${C.emerald}50`,borderRadius:5,padding:"2px 8px",fontSize:10,fontWeight:700,letterSpacing:"0.04em"}}>{(query||'').toUpperCase() || 'CAD'}</span>
-                <span style={{background:`${C.emerald}16`,color:C.emerald,border:`1px solid ${C.emerald}30`,borderRadius:4,padding:"1px 6px",fontSize:9,fontWeight:700,letterSpacing:"0.06em"}}>CAD</span>
+                <span style={{background:`${C.emerald}22`,color:C.emerald,border:`1px solid ${C.emerald}50`,borderRadius:5,padding:"2px 8px",fontSize:10,fontWeight:700,letterSpacing:"0.04em"}}>{(query||'').toUpperCase() || 'TICKER'}</span>
+                <span style={{background:`${C.emerald}16`,color:C.emerald,border:`1px solid ${C.emerald}30`,borderRadius:4,padding:"1px 6px",fontSize:9,fontWeight:700,letterSpacing:"0.06em"}}>{manualCurrency}</span>
               </div>
-              <button onClick={()=>{setManualMode(false);setManualName('');setManualPrice('');setQuery('');setTimeout(()=>searchRef.current?.focus(),0)}}
+              <button onClick={()=>{setManualMode(false);setManualName('');setManualPrice('');setQuery('');setManualCurrency('USD');setTimeout(()=>searchRef.current?.focus(),0)}}
                 style={{background:"transparent",border:"none",color:C.textMuted,fontSize:11,cursor:"pointer",fontFamily:"inherit"}}>
                 ← back to search
               </button>
+            </div>
+            {/* Currency picker — defaults to inferred currency from the ticker
+                suffix, but lets the user override (e.g. for ADRs, ETFs traded
+                in a non-home currency, or tickers without a suffix). */}
+            <div style={{marginBottom:10}}>
+              <div style={{fontSize:10,color:C.textMuted,fontWeight:600,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:5}}>Currency</div>
+              <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
+                {SUPPORTED_CURRENCIES.map(ccy => (
+                  <button
+                    key={ccy}
+                    onClick={() => setManualCurrency(ccy)}
+                    style={{
+                      flex:"1 1 60px",
+                      background: manualCurrency === ccy ? C.emerald : C.surface,
+                      border:`1px solid ${manualCurrency === ccy ? C.emerald : C.border}`,
+                      borderRadius:7,
+                      padding:"8px 6px",
+                      fontSize:11,
+                      fontWeight: manualCurrency === ccy ? 700 : 500,
+                      color: manualCurrency === ccy ? "#0b0b0b" : C.textSub,
+                      cursor:"pointer",
+                      fontFamily:"inherit",
+                      transition:"all 0.12s",
+                      minHeight:36,
+                    }}>
+                    {currencySymbol(ccy)} {ccy}
+                  </button>
+                ))}
+              </div>
             </div>
             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:4}}>
               <div>
@@ -413,8 +468,8 @@ export default function AddHoldingModal({ onClose, onAdd, onMerge, existingHoldi
                 <input style={{...inp,padding:"8px 12px",fontSize:12}} type="text" placeholder="e.g. Bank of Nova Scotia" value={manualName} onChange={e=>setManualName(e.target.value)} />
               </div>
               <div>
-                <div style={{fontSize:10,color:C.textMuted,fontWeight:600,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:5}}>Price (CAD)</div>
-                <input style={{...inp,padding:"8px 12px",fontSize:12}} type="number" inputMode="decimal" placeholder="e.g. 72.40" value={manualPrice} onChange={e=>setManualPrice(e.target.value)} step="0.01" min="0" />
+                <div style={{fontSize:10,color:C.textMuted,fontWeight:600,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:5}}>Price ({manualCurrency})</div>
+                <input style={{...inp,padding:"8px 12px",fontSize:12}} type="number" inputMode="decimal" placeholder={`e.g. 72.40`} value={manualPrice} onChange={e=>setManualPrice(e.target.value)} step="0.01" min="0" />
               </div>
             </div>
           </div>
@@ -439,7 +494,7 @@ export default function AddHoldingModal({ onClose, onAdd, onMerge, existingHoldi
             <div style={{fontSize:11,color:C.textSub,lineHeight:1.55,marginBottom:10}}>
               You have <strong style={{color:C.text}}>{Number(existingMatch.shares).toLocaleString()} shares</strong> in your portfolio
               {existingMatch.cost_basis != null && existingMatch.cost_basis !== '' && Number(existingMatch.cost_basis) > 0 ? (
-                <> at an avg cost of <strong style={{color:C.text}}>{(existingMatch.currency === 'CAD' ? 'C$' : '$')}{Number(existingMatch.cost_basis).toFixed(2)}/share</strong></>
+                <> at an avg cost of <strong style={{color:C.text}}>{currencySymbol(existingMatch.currency)}{Number(existingMatch.cost_basis).toFixed(2)}/share</strong></>
               ) : null}.
             </div>
             <label style={{display:"flex",alignItems:"flex-start",gap:8,cursor:"pointer"}}>
@@ -492,7 +547,7 @@ export default function AddHoldingModal({ onClose, onAdd, onMerge, existingHoldi
             style={inp}
             type="number"
             inputMode="decimal"
-            placeholder={manualMode ? "e.g. 65.20 (CAD)" : "e.g. 62.15 — what you paid per share"}
+            placeholder={manualMode ? `e.g. 65.20 (${manualCurrency})` : "e.g. 62.15 — what you paid per share"}
             value={costBasis}
             onChange={e=>setCostBasis(e.target.value)}
             step="0.01"
@@ -525,8 +580,8 @@ export default function AddHoldingModal({ onClose, onAdd, onMerge, existingHoldi
             ? (manualPrice && shares && yld)
             : (selected && shares && yld)
           if (!hasCore) return null
-          const ccy = manualMode ? 'CAD' : 'USD'
-          const symbol = ccy === 'CAD' ? 'C$' : '$'
+          const ccy = manualMode ? manualCurrency : 'USD'
+          const symbol = currencySymbol(ccy)
           return (
             <div style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:10,padding:"12px 16px",marginBottom:20}}>
               <div style={{fontSize:11,color:C.textMuted,fontWeight:600,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:8,display:"flex",alignItems:"center",gap:6}}>
@@ -547,9 +602,9 @@ export default function AddHoldingModal({ onClose, onAdd, onMerge, existingHoldi
                   <div style={{fontSize:10,color:C.textMuted}}>total value</div>
                 </div>
               </div>
-              {manualMode && (
+              {manualMode && manualCurrency !== 'USD' && (
                 <div style={{fontSize:10,color:C.textMuted,marginTop:8,lineHeight:1.5}}>
-                  Shown in CAD. Your dashboard totals will convert to USD automatically using today's FX rate.
+                  Shown in {manualCurrency}. Your dashboard totals will convert to USD automatically using today's FX rate.
                 </div>
               )}
             </div>

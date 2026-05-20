@@ -394,8 +394,8 @@ export default function ImportHoldingsModal({ onClose, onAdd }) {
                               updateRow(i,{ticker:next, currency:cur, needsManualPrice: cur==='CAD' && !r.csvPrice})
                             }}
                               style={{background:C.surface,border:`1px solid ${C.border}`,borderRadius:6,color:C.blue,fontFamily:"inherit",fontSize:12,fontWeight:600,padding:"5px 8px",width:90,outline:"none"}}/>
-                            {isCad && (
-                              <span style={{background:`${C.emerald}16`,color:C.emerald,border:`1px solid ${C.emerald}30`,borderRadius:4,padding:"1px 5px",fontSize:9,fontWeight:700,letterSpacing:"0.06em"}}>CAD</span>
+                            {r.currency && r.currency !== 'USD' && (
+                              <span style={{background:`${C.emerald}16`,color:C.emerald,border:`1px solid ${C.emerald}30`,borderRadius:4,padding:"1px 5px",fontSize:9,fontWeight:700,letterSpacing:"0.06em"}}>{r.currency}</span>
                             )}
                           </div>
                         </td>

@@ -27,10 +27,35 @@
 
 const CACHE_KEY      = "yieldos_fx_rates_v1";
 const CACHE_TTL_MS   = 6 * 60 * 60 * 1000; // 6h
+// Currencies yieldos supports out of the box. Add new ones here AND extend
+// FALLBACK_RATES + the Frankfurter fetch query string.
+export const SUPPORTED_CURRENCIES = ["USD", "CAD", "GBP", "EUR", "AUD"];
 // Last-resort fallback if fetch fails AND cache is empty. Picked to be
-// reasonable-if-stale rather than zero (which would vanish all CAD holdings
-// from totals). Reviewed May 2026 — 1 CAD ≈ 0.73 USD.
-const FALLBACK_RATES = { USD: 1, CAD: 0.73 };
+// reasonable-if-stale rather than zero (which would vanish foreign holdings
+// from totals). Reviewed May 2026 — values are USD per 1 unit of currency.
+const FALLBACK_RATES = {
+  USD: 1,
+  CAD: 0.73,
+  GBP: 1.27,
+  EUR: 1.08,
+  AUD: 0.66,
+};
+
+// Currency symbol map used everywhere that displays a price/amount with a
+// prefix. Centralized so we never sprinkle `currency === 'CAD' ? 'C$' : '$'`
+// ternaries across the codebase again.
+const CURRENCY_SYMBOLS = {
+  USD: "$",
+  CAD: "C$",
+  GBP: "£",
+  EUR: "€",
+  AUD: "A$",
+};
+
+/** Returns the symbol prefix for a currency code. Defaults to "$" for unknowns. */
+export function currencySymbol(currency) {
+  return CURRENCY_SYMBOLS[currency] || "$";
+}
 
 // In-memory mirror of the cache so repeated sync reads in the same render
 // pass don't all re-parse localStorage. Primed lazily on first read.
@@ -60,13 +85,25 @@ async function fetchRates() {
   // Frankfurter returns rates expressed as "how much 1 USD buys in other
   // currencies". We flip it: we want USD-per-1-unit of each currency, so
   // divide 1 by the quoted value. Example: 1 USD = 1.37 CAD → 1 CAD = 0.73 USD.
+  // Batched request — one call covers all non-USD currencies we support.
   try {
-    const res = await fetch("https://api.frankfurter.app/latest?from=USD&to=CAD");
+    const targets = SUPPORTED_CURRENCIES.filter(c => c !== "USD").join(",");
+    const res = await fetch(`https://api.frankfurter.app/latest?from=USD&to=${targets}`);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const json = await res.json();
-    const cadPerUsd = Number(json?.rates?.CAD);
-    if (!cadPerUsd || !isFinite(cadPerUsd)) throw new Error("bad payload");
-    const rates = { USD: 1, CAD: +(1 / cadPerUsd).toFixed(6) };
+    const rates = { USD: 1 };
+    for (const ccy of SUPPORTED_CURRENCIES) {
+      if (ccy === "USD") continue;
+      const perUsd = Number(json?.rates?.[ccy]);
+      if (perUsd && isFinite(perUsd)) {
+        rates[ccy] = +(1 / perUsd).toFixed(6);
+      } else {
+        // Fall back to the constant for this specific currency rather than
+        // failing the whole batch. Lets us still get fresh CAD even if
+        // Frankfurter momentarily drops GBP, etc.
+        rates[ccy] = FALLBACK_RATES[ccy];
+      }
+    }
     writeCache(rates);
     return rates;
   } catch (e) {
@@ -110,13 +147,15 @@ export function getCachedRate(currency) {
  * mount (and optionally on an interval) so later sync reads hit a fresh
  * cache. Returns the rates object on success, null on failure.
  */
-export async function ensureFreshRates(currencies = ["CAD"]) {
+export async function ensureFreshRates(currencies = SUPPORTED_CURRENCIES) {
   const cache = readCache();
   const stale = !cache || (Date.now() - cache.fetchedAt) >= CACHE_TTL_MS;
   if (!stale) return cache.rates;
-  // Could fetch each currency separately, but right now CAD is the only
-  // non-USD we support — keep it simple.
-  if (currencies.includes("CAD")) {
+  // fetchRates is now batched — one call returns all supported non-USD rates,
+  // so the `currencies` arg is mostly informational. Kept for API stability
+  // and future "fetch only what we need" optimizations.
+  const anyNonUsd = currencies.some(c => c !== "USD");
+  if (anyNonUsd) {
     return await fetchRates();
   }
   return cache?.rates || null;

@@ -14,7 +14,7 @@ import ConfirmModal from "./components/ConfirmModal";
 import AccountModal from "./components/AccountModal";
 import TrialWelcomeModal from "./components/TrialWelcomeModal";
 import { getStockDetails } from "./lib/polygon";
-import { ensureFreshRates, getCachedRate, fxNote } from "./lib/fx";
+import { ensureFreshRates, getCachedRate, fxNote, currencySymbol, SUPPORTED_CURRENCIES } from "./lib/fx";
 import { startCheckout, readCheckoutReturn, stripeConfigured, openCustomerPortal, customerPortalConfigured } from "./lib/stripe";
 
 const C = {
@@ -1203,19 +1203,28 @@ export default function AppMain() {
     return result;
   }
 
-  // FX rate state. We keep a single scalar (CAD → USD) in React state so any
-  // change to the cached rate triggers a re-render and the dashboard math
-  // reflects today's rate. On mount we fire-and-forget refresh the cache;
-  // getCachedRate is the sync read that feeds the initial render.
-  const [cadRate, setCadRate] = useState(() => getCachedRate("CAD"));
+  // FX rate state. We keep an object keyed by currency in React state so any
+  // change to cached rates triggers a re-render and dashboard math reflects
+  // today's rate. On mount we fire-and-forget refresh the cache. Supports
+  // all currencies in SUPPORTED_CURRENCIES (USD, CAD, GBP, EUR, AUD).
+  const [rates, setRates] = useState(() => {
+    const r = {};
+    for (const c of SUPPORTED_CURRENCIES) r[c] = getCachedRate(c);
+    return r;
+  });
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      const rates = await ensureFreshRates(["CAD"]);
-      if (!cancelled && rates?.CAD != null) setCadRate(rates.CAD);
+      const fresh = await ensureFreshRates();
+      if (!cancelled && fresh) setRates(fresh);
     })();
     return () => { cancelled = true; };
   }, []);
+  // Backward-compat alias for the CAD footnote rendered below the totals
+  // block. The footnote will become more general once we surface multiple
+  // foreign currencies in the portfolio, but for now it still leans on
+  // cadRate specifically.
+  const cadRate = rates.CAD || getCachedRate("CAD");
 
   // Build the portfolio view model. Each row's raw price/yield stays in its
   // native currency for display (so a CAD holding shows "C$72.40"), but the
@@ -1224,7 +1233,10 @@ export default function AppMain() {
   // alerts, goals) reads from these USD-normalized fields — no other code
   // paths need currency awareness.
   const port = holdings.map(h => {
-    const rate = h.currency && h.currency !== "USD" ? cadRate : 1;
+    // Per-holding FX rate lookup. Uses the rates object keyed by currency
+    // (USD/CAD/GBP/EUR/AUD). A holding with unknown currency falls back to
+    // USD (rate=1) so it still renders instead of vanishing.
+    const rate = (h.currency && h.currency !== "USD") ? (rates[h.currency] || getCachedRate(h.currency) || 1) : 1;
     const value   = h.shares * h.price * rate;
     const annual  = h.shares * h.price * (h.yld / 100) * rate;
     const monthly = annual / 12;
@@ -1840,14 +1852,24 @@ export default function AppMain() {
                 </div>
               </div>
 
-              {/* FX footnote — only shown when the user actually holds CAD
-                  positions, so US-only users aren't confused by an irrelevant
-                  disclaimer. Refreshes daily via the fx helper's 6h cache. */}
-              {port.some(h => h.currency && h.currency !== "USD") && (
-                <div style={{fontSize:10,color:C.textMuted,marginBottom:12,textAlign:"right",letterSpacing:"0.01em"}}>
-                  Totals shown in USD · {fxNote("CAD", cadRate)}
-                </div>
-              )}
+              {/* FX footnote — shown when the user holds any non-USD positions.
+                  Builds a per-currency rate note for every foreign currency
+                  actually in the portfolio (CAD, GBP, EUR, AUD), so a mixed
+                  portfolio sees all relevant rates instead of just CAD.
+                  Refreshes daily via the fx helper's 6h cache. */}
+              {(() => {
+                const foreignCurrencies = [...new Set(port.map(h => h.currency).filter(c => c && c !== "USD"))];
+                if (foreignCurrencies.length === 0) return null;
+                const notes = foreignCurrencies
+                  .map(c => fxNote(c, rates[c] || getCachedRate(c)))
+                  .filter(Boolean)
+                  .join(" · ");
+                return (
+                  <div style={{fontSize:10,color:C.textMuted,marginBottom:12,textAlign:"right",letterSpacing:"0.01em"}}>
+                    Totals shown in USD · {notes}
+                  </div>
+                );
+              })()}
 
               {/* ═════════════════════ Path to FIRE hero card ═════════════════════
                   The single feature that sets Yieldos apart from every other
@@ -2257,22 +2279,22 @@ export default function AppMain() {
                             {/* CAD marker on TSX holdings so mixed portfolios
                                 stay legible. Value / income columns show USD;
                                 the chip tells you the native price is CAD. */}
-                            {h.currency === "CAD" && (
-                              <span style={{background:`${C.emerald}18`,color:C.emerald,border:`1px solid ${C.emerald}40`,borderRadius:4,padding:"1px 5px",fontSize:9,fontWeight:700,letterSpacing:"0.06em"}}>CAD</span>
+                            {h.currency && h.currency !== "USD" && (
+                              <span style={{background:`${C.emerald}18`,color:C.emerald,border:`1px solid ${C.emerald}40`,borderRadius:4,padding:"1px 5px",fontSize:9,fontWeight:700,letterSpacing:"0.06em"}}>{h.currency}</span>
                             )}
                           </div>
                         </td>
                         <td style={{padding:"13px 14px",fontSize:12,color:C.textSub}}>{h.name}</td>
                         <td style={{padding:"13px 14px",fontSize:13,fontWeight:500}}>{h.shares}</td>
-                        <td style={{padding:"13px 14px",fontSize:13}} title={h.currency==="CAD"?`≈ $${(parseFloat(h.price)*cadRate).toFixed(2)} USD at today's FX rate`:undefined}>
-                          {h.currency==="CAD" ? "C$" : "$"}{parseFloat(h.price).toFixed(2)}
+                        <td style={{padding:"13px 14px",fontSize:13}} title={h.currency && h.currency!=="USD"?`≈ $${(parseFloat(h.price)*(rates[h.currency]||getCachedRate(h.currency)||1)).toFixed(2)} USD at today's FX rate`:undefined}>
+                          {currencySymbol(h.currency)}{parseFloat(h.price).toFixed(2)}
                         </td>
                         <td style={{padding:"13px 14px",fontSize:13,fontWeight:600}}>{$(h.value)}</td>
                         {/* Cost basis — shown in native currency with a CAD tooltip
                             converting to USD. Clickable to open an inline editor
                             so existing users can backfill without re-adding. */}
                         <td style={{padding:"13px 14px",fontSize:12,color:h.hasBasis?C.textSub:C.textMuted,cursor:"pointer"}}
-                            title={h.hasBasis?`Total cost: ${h.currency==='CAD'?'C$':'$'}${(Number(h.cost_basis)*h.shares).toFixed(2)}${h.currency==='CAD'?` (≈ $${h.totalCost.toFixed(2)} USD)`:''} — click to edit`:'Click to add cost basis — unlocks gains and yield-on-cost'}
+                            title={h.hasBasis?`Total cost: ${currencySymbol(h.currency)}${(Number(h.cost_basis)*h.shares).toFixed(2)}${h.currency && h.currency!=='USD'?` (≈ $${h.totalCost.toFixed(2)} USD)`:''} — click to edit`:'Click to add cost basis — unlocks gains and yield-on-cost'}
                             onClick={()=>{
                               if (demoMode) return;
                               setEditBasisId(h.id);
@@ -2306,11 +2328,11 @@ export default function AppMain() {
                                 }
                                 setEditBasisId(null); setEditBasisVal("");
                               }}
-                              placeholder={`${h.currency==='CAD'?'C$':'$'}/share`}
+                              placeholder={`${currencySymbol(h.currency)}/share`}
                               style={{width:80,background:C.surface,border:`1px solid ${C.blue}`,borderRadius:5,color:C.text,fontSize:12,padding:"3px 6px",fontFamily:"inherit",outline:"none"}}
                             />
                           ) : h.hasBasis
-                            ? `${h.currency==='CAD'?'C$':'$'}${Number(h.cost_basis).toFixed(2)}`
+                            ? `${currencySymbol(h.currency)}${Number(h.cost_basis).toFixed(2)}`
                             : <span style={{color:C.blue,fontSize:10,fontWeight:600,borderBottom:`1px dashed ${C.blue}50`}}>+ add</span>}
                         </td>
                         {/* Gain: absolute + % in one stacked cell. Green/red depending
@@ -2678,8 +2700,9 @@ export default function AppMain() {
                               // Log the payment in the holding's native currency.
                               // The "per" amount is already FX-converted for display;
                               // we back-compute the native amount from price/yld/shares
-                              // so the ledger stores raw CAD for CAD holdings.
-                              const nativePer = h.currency === "CAD"
+                              // so the ledger stores raw native (CAD/GBP/EUR/AUD) for
+                              // foreign holdings rather than the USD-converted figure.
+                              const nativePer = (h.currency && h.currency !== "USD")
                                 ? (h.shares * h.price * h.yld / 100) / (h.freq === "Weekly" ? 52 : h.freq === "Monthly" ? 12 : h.freq === "Annual" ? 1 : 4)
                                 : per;
                               const res = await addPayment({
@@ -2733,10 +2756,10 @@ export default function AppMain() {
                     <div style={{display:"flex",alignItems:"center",gap:10,flex:1,minWidth:0}}>
                       <Chip>{p.ticker}</Chip>
                       <span style={{fontSize:11,color:C.textMuted}}>{new Date(p.pay_date).toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"})}</span>
-                      {p.currency === "CAD" && <span style={{background:`${C.emerald}14`,color:C.emerald,border:`1px solid ${C.emerald}30`,borderRadius:4,padding:"1px 5px",fontSize:9,fontWeight:700,letterSpacing:"0.06em"}}>CAD</span>}
+                      {p.currency && p.currency !== "USD" && <span style={{background:`${C.emerald}14`,color:C.emerald,border:`1px solid ${C.emerald}30`,borderRadius:4,padding:"1px 5px",fontSize:9,fontWeight:700,letterSpacing:"0.06em"}}>{p.currency}</span>}
                     </div>
                     <div style={{fontFamily:"'Fraunces',serif",fontSize:15,fontWeight:700,color:C.emerald}}>
-                      +{p.currency==="CAD"?"C$":"$"}{Number(p.amount).toFixed(2)}
+                      +{currencySymbol(p.currency)}{Number(p.amount).toFixed(2)}
                     </div>
                     <button
                       onClick={async () => {
