@@ -371,7 +371,7 @@ export default function AddHoldingModal({ onClose, onAdd, onMerge, existingHoldi
             </div>
             <button
               onClick={()=>startManual(query)}
-              style={{background:C.emerald,color:"#0b0b0b",border:"none",borderRadius:7,padding:"7px 12px",fontSize:11,fontWeight:700,cursor:"pointer",fontFamily:"inherit"}}>
+              style={{background:C.emerald,color:"#0b0b0b",border:"none",borderRadius:7,padding:"12px 16px",fontSize:12,fontWeight:700,cursor:"pointer",fontFamily:"inherit",minHeight:44}}>
               Add {query.toUpperCase()} manually →
             </button>
           </div>
