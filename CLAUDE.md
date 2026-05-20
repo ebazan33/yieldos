@@ -95,6 +95,25 @@ supabase/
 | `dividend_payments` | Manual dividend payment log | Same |
 | `portfolio_shares` | Public share link config (slug, enabled, show_values) | Owner-only via `auth.uid() = user_id`. Public read removed — see security note below. |
 | `feedback` | Anonymous feedback submissions | Insert: open. Read: denied (admin only via service role). |
+| `subscriptions` | Paid-plan state (plan, cycle, status, trial_ends_at, stripe customer/sub ids) | Read: `auth.uid() = user_id`. **Writes denied to all users.** Only the Stripe webhook (using `SUPABASE_SERVICE_ROLE_KEY`) can write. See note below. |
+
+**Security note on `subscriptions` + Stripe webhook:**
+Plan state used to live in `auth.users.user_metadata`, which any authenticated
+user could write themselves via `supabase.auth.updateUser()` — a hard paywall
+hole (anyone could promote themselves to Harvest from the browser console).
+Closed by moving plan state to `public.subscriptions`, which has RLS that
+allows users to read their own row but denies all writes. Only
+`/api/stripe-webhook.js` (server-side, using the service role key) can update
+it after verifying Stripe's signature on the event.
+
+The client (`AppMain.jsx`) hydrates plan/cycle/trial from this table on
+session start, then polls it 4 times after returning from Stripe Checkout
+(since the webhook is async — usually fires within 1–5s). `user_metadata.plan`
+is read as a backward-compat fallback for any user whose row isn't backfilled
+yet, but is no longer written. The "Seed" pricing button now opens Stripe's
+Customer Portal for real cancellation rather than flipping local state.
+
+Dashboard config + env vars: see `STRIPE_WEBHOOK_SETUP.md`.
 
 **Security note on `portfolio_shares` + `holdings` public read:**
 The previous direct-SELECT public policies allowed anon enumeration of all

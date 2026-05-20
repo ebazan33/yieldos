@@ -1058,12 +1058,8 @@ export default function AppMain() {
     return isNaN(v) || v < 0 ? 6 : v; // default 6% annual dividend growth
   });
   const [planCycle, setPlanCycle]   = useState(() => localStorage.getItem("yieldos_plan_cycle") || "annual"); // "monthly" | "annual"
-  const [checkoutBanner, setCheckoutBanner] = useState(null); // { status, plan, cycle }
+  const [checkoutBanner, setCheckoutBanner] = useState(null); // { status }
   const [pendingPlan, setPendingPlan]       = useState(null); // { plan, cycle } — queued during signup from Landing
-  // If we just came back from a Stripe success redirect, remember that for
-  // the lifetime of this page load so the Supabase session hydration doesn't
-  // race-clobber the upgrade with the old "Seed" in user_metadata.
-  const justUpgradedRef = useRef(false);
   useEffect(() => { localStorage.setItem("yieldos_plan_cycle", planCycle); }, [planCycle]);
   const chatEnd = useRef(null);
   useEffect(() => { localStorage.setItem("yieldos_fire_contribution", String(fireContribution)); }, [fireContribution]);
@@ -1293,44 +1289,39 @@ export default function AppMain() {
   };
 
   useEffect(() => {
-    // Pull any plan the user has saved on their account (user_metadata) so
-    // their Grow/Harvest tier follows them across devices, not just the
-    // browser that happened to complete Stripe checkout.
-    const hydrateFromUser = (u) => {
-      // Skip hydration if we just returned from a Stripe checkout success —
-      // the URL told us the latest plan; the stale user_metadata would undo
-      // it. The sync-to-Supabase effect below will push the fresh plan up.
-      if (justUpgradedRef.current) return;
+    // Hydrate per-user preferences on session start.
+    //
+    // Plan + plan_cycle + trial_ends_at: source of truth is now the
+    // `subscriptions` table, written ONLY by /api/stripe-webhook.js via the
+    // service role. Previously these lived in user_metadata, which the user
+    // could write themselves via supabase.auth.updateUser() — a paywall hole.
+    //
+    // Display name + theme: still in user_metadata. These ARE user-writable
+    // and need to be so the AccountModal can update them without a webhook.
+    const hydrateFromUser = async (u) => {
       const meta = u?.user_metadata || {};
-      if (meta.plan === "Seed" || meta.plan === "Grow" || meta.plan === "Harvest") {
-        setPlan(meta.plan);
-      }
-      if (meta.plan_cycle === "monthly" || meta.plan_cycle === "annual") {
-        setPlanCycle(meta.plan_cycle);
-      }
-      // Trial expiry — ISO string set at signup or via a one-time SQL backfill.
-      // We keep a localStorage copy so the very first render after a reload
-      // already knows trialActive before Supabase has responded with the
-      // session; otherwise UI would flash "cap reached" for a frame on slow
-      // connections.
-      if (typeof meta.trial_ends_at === "string") {
-        setTrialEndsAt(meta.trial_ends_at);
-        try { localStorage.setItem("yieldos_trial_ends_at", meta.trial_ends_at); } catch {}
-      }
-      // Display name — hydrate from metadata, cache locally for instant reload.
+
+      // Display name — user-writable, hydrate from metadata, cache locally.
       if (typeof meta.display_name === "string") {
         setDisplayName(meta.display_name);
         try { localStorage.setItem("yieldos_display_name", meta.display_name); } catch {}
       } else if (meta.display_name === null) {
-        // User explicitly cleared their name; drop the cache so fallback kicks in.
         setDisplayName("");
         try { localStorage.removeItem("yieldos_display_name"); } catch {}
       }
-      // Theme — hydrate from metadata so the user's preference follows them
-      // across devices. Only override if we've stored an explicit value.
+      // Theme — user-writable, also in metadata.
       if (meta.theme === "light" || meta.theme === "dark") {
         setTheme(meta.theme);
       }
+
+      // Plan + cycle + trial — read from the subscriptions table, which is
+      // writable only by the webhook. The one-time SQL backfill (see
+      // supabase/migrations/20260519_subscriptions.sql) ensures every existing
+      // paying user has a row, so this works for both new and grandfathered
+      // users. If the row doesn't exist yet (brand new signup pre-webhook),
+      // fall back to user_metadata so trial banners still render correctly
+      // before the first webhook write lands.
+      await refreshPlanFromSubscriptions(u, /* fallbackMeta */ meta);
     };
 
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -1343,6 +1334,68 @@ export default function AppMain() {
     });
     return () => subscription.unsubscribe();
   }, []);
+
+  // Reads the user's row from the subscriptions table. Called on auth hydrate
+  // and again after returning from Stripe checkout (with a few retries since
+  // the webhook is async — Stripe may take 1–5 seconds to fire it after the
+  // user is already redirected back). Defined outside the useEffect so the
+  // return-from-checkout effect below can call it too.
+  async function refreshPlanFromSubscriptions(u, fallbackMeta = null) {
+    if (!u?.id) return;
+    try {
+      const { data, error } = await supabase
+        .from("subscriptions")
+        .select("plan, plan_cycle, status, trial_ends_at")
+        .eq("user_id", u.id)
+        .maybeSingle();
+      if (error) {
+        // Network blip or RLS misconfig. Fall back to user_metadata so the
+        // user isn't silently downgraded — but log so we notice if it persists.
+        if (import.meta.env.DEV) console.warn("[plan] subscriptions read failed:", error.message);
+        if (fallbackMeta) applyPlanMeta(fallbackMeta);
+        return;
+      }
+      if (!data) {
+        // Row doesn't exist yet (race: webhook hasn't fired, OR user is
+        // pre-backfill). Fall back to metadata to avoid a flash of "Seed"
+        // for someone who's actually on Grow.
+        if (fallbackMeta) applyPlanMeta(fallbackMeta);
+        return;
+      }
+      if (data.plan === "Seed" || data.plan === "Grow" || data.plan === "Harvest") {
+        setPlan(data.plan);
+      }
+      if (data.plan_cycle === "monthly" || data.plan_cycle === "annual") {
+        setPlanCycle(data.plan_cycle);
+      }
+      if (typeof data.trial_ends_at === "string") {
+        setTrialEndsAt(data.trial_ends_at);
+        try { localStorage.setItem("yieldos_trial_ends_at", data.trial_ends_at); } catch {}
+      } else if (data.trial_ends_at === null) {
+        setTrialEndsAt(null);
+        try { localStorage.removeItem("yieldos_trial_ends_at"); } catch {}
+      }
+    } catch (e) {
+      if (import.meta.env.DEV) console.warn("[plan] subscriptions read threw:", e.message);
+      if (fallbackMeta) applyPlanMeta(fallbackMeta);
+    }
+  }
+
+  // Fallback: pull plan/cycle/trial from user_metadata. Used only when the
+  // subscriptions table can't be reached or has no row yet. Inlined helper so
+  // both the hydrate path and a future "supabase down" fallback can share it.
+  function applyPlanMeta(meta) {
+    if (meta.plan === "Seed" || meta.plan === "Grow" || meta.plan === "Harvest") {
+      setPlan(meta.plan);
+    }
+    if (meta.plan_cycle === "monthly" || meta.plan_cycle === "annual") {
+      setPlanCycle(meta.plan_cycle);
+    }
+    if (typeof meta.trial_ends_at === "string") {
+      setTrialEndsAt(meta.trial_ends_at);
+      try { localStorage.setItem("yieldos_trial_ends_at", meta.trial_ends_at); } catch {}
+    }
+  }
 
   // Global keyboard shortcuts. Cmd/Ctrl+K opens Add Holding from anywhere in
   // the app; `?` opens the shortcut cheatsheet; Esc dismisses the cheatsheet.
@@ -1374,53 +1427,88 @@ export default function AppMain() {
     return () => window.removeEventListener('keydown', handleKey);
   }, [page, showShortcuts, confirmState]);
 
-  // Write plan/cycle/trial back to Supabase whenever any of them change, so
-  // the change persists across devices. Guarded to avoid a no-op update loop.
-  useEffect(() => {
-    if (!user) return;
-    const meta = user.user_metadata || {};
-    const metaTrial = meta.trial_ends_at || null;
-    if (meta.plan === plan && meta.plan_cycle === planCycle && metaTrial === trialEndsAt) return;
-    supabase.auth.updateUser({ data: { plan, plan_cycle: planCycle, trial_ends_at: trialEndsAt } })
-      .then(({ data, error }) => {
-        if (!error && data?.user) setUser(data.user); // keep local user in sync
-      });
-  }, [plan, planCycle, trialEndsAt, user]);
+  // Plan/cycle/trial are NO LONGER written back to user_metadata. Source of
+  // truth is the `subscriptions` table, written only by /api/stripe-webhook.js
+  // (server, signature-verified). user_metadata kept plan/cycle/trial fields
+  // for backward compatibility during the migration, but they're stale data
+  // now — the migration's backfill copied them into the subscriptions table
+  // and the client reads only from there going forward.
+  //
+  // If we ever need to write trial extensions or comp upgrades, do it from
+  // a service-role-protected admin endpoint, not from the client.
 
-  // Handle the redirect back from Stripe Checkout. If the URL says
-  // ?checkout=success&plan=Grow, we upgrade the plan and pop a banner
-  // that auto-dismisses after a few seconds.
+  // Handle the redirect back from Stripe Checkout.
+  //
+  // The webhook is the source of truth for the plan upgrade, but it's
+  // asynchronous — Stripe may take 1–5s to fire it after redirecting the
+  // user back. We poll the subscriptions table a few times so the UI shows
+  // the new plan as soon as the webhook has written. If polling exhausts,
+  // the user's next session/refresh will pick up the change automatically.
+  //
+  // We intentionally do NOT setPlan from the URL anymore. Previously the
+  // URL carried &plan=Grow&cycle=annual, which let anyone self-promote by
+  // crafting a URL. That trust is gone — the server tells us the plan, not
+  // the URL.
   useEffect(() => {
     const ret = readCheckoutReturn();
     if (!ret) return;
-    if (ret.status === "success" && (ret.plan === "Grow" || ret.plan === "Harvest")) {
-      // Set the guard BEFORE setPlan so the hydration pass (which runs via
-      // getSession's promise) sees it as true and bails out.
-      justUpgradedRef.current = true;
-      setPlan(ret.plan);
-      if (ret.cycle === "monthly" || ret.cycle === "annual") setPlanCycle(ret.cycle);
-      // Consume the trial — they're now on a paid plan, no need for it. If
-      // they later cancel and revert to Seed, they'll go straight to the cap
-      // instead of getting a second 14-day freebie. The sync effect writes
-      // this null back to Supabase on the next render.
-      setTrialEndsAt(null);
-      try { localStorage.removeItem("yieldos_trial_ends_at"); } catch {}
+    if (ret.status === "success") {
+      // Poll subscriptions table 4 times over ~10 seconds. The webhook usually
+      // fires within 1–2s of checkout success, so the first or second retry
+      // typically catches it. If all four miss, the user can refresh — the
+      // upgrade is real on Stripe's side, the row just hasn't propagated yet.
+      const tryRefresh = () => {
+        supabase.auth.getUser().then(({ data: { user: u } }) => {
+          if (u) refreshPlanFromSubscriptions(u, u.user_metadata || null);
+        });
+      };
+      tryRefresh();
+      const t1 = setTimeout(tryRefresh,  2000);
+      const t2 = setTimeout(tryRefresh,  5000);
+      const t3 = setTimeout(tryRefresh, 10000);
+      setCheckoutBanner(ret);
+      const tb = setTimeout(() => setCheckoutBanner(null), 8000);
+      return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); clearTimeout(tb); };
     }
     setCheckoutBanner(ret);
     const t = setTimeout(() => setCheckoutBanner(null), 8000);
     return () => clearTimeout(t);
   }, []);
 
-  // Route pricing CTA clicks to Stripe if configured, otherwise fall back
-  // to the demo "instant upgrade". Seed is always an instant downgrade.
-  function goToCheckout(plan, cycle = planCycle) {
-    if (plan === "Seed") { setPlan("Seed"); setShowUp(false); return; }
+  // Route pricing CTA clicks. Real upgrades go through Stripe Checkout, which
+  // fires the webhook that writes to the subscriptions table. We no longer
+  // flip plan state client-side for paid tiers — the server is the source of
+  // truth, full stop.
+  //
+  // Seed click: previously was an "instant downgrade" that flipped local
+  // state. That doesn't actually cancel anything on Stripe's side, so the
+  // server would just rewrite the user back to Grow/Harvest on the next
+  // refresh. New behavior:
+  //   - if you're already on Seed → just close the modal (no-op)
+  //   - if you're on a paid plan → open the Stripe Customer Portal, where
+  //     you cancel for real. Stripe fires customer.subscription.deleted,
+  //     the webhook flips the subscriptions row to Seed, and the next
+  //     refresh (or our 4-retry poll above) reflects it.
+  function goToCheckout(targetPlan, cycle = planCycle) {
+    if (targetPlan === "Seed") {
+      // Already free? Just dismiss the upsell modal.
+      if (plan === "Seed") { setShowUp(false); return; }
+      // Otherwise we need a real cancel. Customer Portal handles all the
+      // billing-flow UX (prorations, "until end of period", etc.) for us.
+      if (customerPortalConfigured()) {
+        openCustomerPortal(user);
+      }
+      setShowUp(false);
+      return;
+    }
     if (stripeConfigured()) {
-      const ok = startCheckout({ plan, cycle, user });
+      const ok = startCheckout({ plan: targetPlan, cycle, user });
       if (ok) return;
     }
-    // Demo fallback: unlock locally so you can try features before Stripe is live.
-    setPlan(plan);
+    // Demo fallback (Stripe not configured at all). Unlocks local state for
+    // dev/testing only — does NOT persist to the subscriptions table, so a
+    // reload reverts you to whatever the server thinks. Intentional.
+    setPlan(targetPlan);
     setPlanCycle(cycle);
     setShowUp(false);
   }

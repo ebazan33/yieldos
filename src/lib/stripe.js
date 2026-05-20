@@ -64,20 +64,34 @@ export function openCustomerPortal(user) {
 }
 
 // On the return redirect, Stripe sends us back to the URL we configured.
-// We parse ?checkout=success&plan=Grow&cycle=annual, apply the upgrade,
-// then strip those params so a page refresh doesn't re-trigger the flow.
+// IMPORTANT: this used to read &plan=Grow&cycle=annual from the URL and trust
+// it as the source of truth for the user's tier. That was a paywall hole —
+// anyone could hit /?checkout=success&plan=Harvest and self-promote with zero
+// payment. The fix moves plan state into a server-side `subscriptions` table
+// written ONLY by /api/stripe-webhook.js after Stripe signature verification.
+//
+// So now this function does two things:
+//   1) clean the checkout/plan/cycle/session_id params out of the URL so a
+//      reload doesn't keep popping the "thanks for upgrading" banner
+//   2) tell the caller "you just came back from Stripe, refresh plan from DB"
+// The plan/cycle params, if present, are intentionally ignored — they're
+// untrusted user input now.
 export function readCheckoutReturn() {
   try {
     const q = new URLSearchParams(window.location.search);
     const status = q.get("checkout");
     if (!status) return null;
-    const plan  = q.get("plan");
-    const cycle = q.get("cycle") || "monthly";
-    // Clean the URL so the banner only shows once.
-    q.delete("checkout"); q.delete("plan"); q.delete("cycle");
+    // Strip all checkout-related params from the URL so a page refresh
+    // doesn't re-fire the banner or look like a stale return-from-Stripe.
+    q.delete("checkout");
+    q.delete("plan");
+    q.delete("cycle");
+    q.delete("session_id");
     const qs = q.toString();
     const clean = window.location.pathname + (qs ? "?" + qs : "") + window.location.hash;
     window.history.replaceState({}, document.title, clean);
-    return { status, plan, cycle };
+    // Return just the status. Plan/cycle no longer come from the URL — the
+    // caller should query the subscriptions table to learn the new plan.
+    return { status };
   } catch { return null; }
 }
