@@ -2275,9 +2275,10 @@ export default function AppMain() {
                         <td style={{padding:"13px 14px"}}>
                           <div style={{display:"inline-flex",alignItems:"center",gap:5}}>
                             <Chip>{h.ticker}</Chip>
-                            {/* CAD marker on TSX holdings so mixed portfolios
-                                stay legible. Value / income columns show USD;
-                                the chip tells you the native price is CAD. */}
+                            {/* Foreign-currency marker (CAD/GBP/EUR/AUD) so
+                                mixed portfolios stay legible. Value / income
+                                columns are normalized to USD; the chip tells
+                                you the native price is in a foreign ccy. */}
                             {h.currency && h.currency !== "USD" && (
                               <span style={{background:`${C.emerald}18`,color:C.emerald,border:`1px solid ${C.emerald}40`,borderRadius:4,padding:"1px 5px",fontSize:9,fontWeight:700,letterSpacing:"0.06em"}}>{h.currency}</span>
                             )}
@@ -2289,9 +2290,10 @@ export default function AppMain() {
                           {currencySymbol(h.currency)}{parseFloat(h.price).toFixed(2)}
                         </td>
                         <td style={{padding:"13px 14px",fontSize:13,fontWeight:600}}>{$(h.value)}</td>
-                        {/* Cost basis — shown in native currency with a CAD tooltip
-                            converting to USD. Clickable to open an inline editor
-                            so existing users can backfill without re-adding. */}
+                        {/* Cost basis — shown in native currency with a
+                            tooltip converting to USD for foreign-ccy rows.
+                            Clickable to open an inline editor so existing
+                            users can backfill without re-adding. */}
                         <td style={{padding:"13px 14px",fontSize:12,color:h.hasBasis?C.textSub:C.textMuted,cursor:"pointer"}}
                             title={h.hasBasis?`Total cost: ${currencySymbol(h.currency)}${(Number(h.cost_basis)*h.shares).toFixed(2)}${h.currency && h.currency!=='USD'?` (≈ $${h.totalCost.toFixed(2)} USD)`:''} — click to edit`:'Click to add cost basis — unlocks gains and yield-on-cost'}
                             onClick={()=>{
