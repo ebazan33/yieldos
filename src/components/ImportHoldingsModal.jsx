@@ -363,8 +363,24 @@ export default function ImportHoldingsModal({ onClose, onAdd }) {
               From <span style={{color:C.text}}>{fileName}</span>. Review, edit, or remove rows — then click Import. Cash and money-market funds are skipped automatically.
             </div>
 
-            <div style={{border:`1px solid ${C.border}`,borderRadius:10,overflow:"hidden",marginBottom:16,maxHeight:340,overflowY:"auto"}}>
-              <table style={{width:"100%",borderCollapse:"collapse"}}>
+            {/* Two-layer wrapper: outer clips the rounded corners; inner
+                scrolls horizontally on narrow viewports so the 6-column
+                table (ticker / shares / Price (CAD) / cost / remove) stays
+                usable on mobile when a foreign holding is in the CSV.
+                touchAction + overscrollBehavior + translateZ match the
+                pattern in SharedPortfolioView so iOS doesn't fight the
+                pan-x gesture with page scroll. */}
+            <div style={{border:`1px solid ${C.border}`,borderRadius:10,overflow:"hidden",marginBottom:16}}>
+              <div style={{
+                maxHeight:340,
+                overflowX:"auto",
+                overflowY:"auto",
+                WebkitOverflowScrolling:"touch",
+                touchAction:"pan-x",
+                overscrollBehaviorX:"contain",
+                transform:"translateZ(0)",
+              }}>
+              <table style={{width:"100%",borderCollapse:"collapse",minWidth:560}}>
                 <thead>
                   <tr style={{background:C.surface,borderBottom:`1px solid ${C.border}`}}>
                     <th style={{padding:"10px 12px",textAlign:"left",fontSize:9,color:C.textMuted,textTransform:"uppercase",letterSpacing:"0.08em",fontWeight:700,width:34}}></th>
@@ -445,6 +461,7 @@ export default function ImportHoldingsModal({ onClose, onAdd }) {
                   })}
                 </tbody>
               </table>
+              </div>
             </div>
 
             {/* Warning chip if any selected row still needs a price — blocks
