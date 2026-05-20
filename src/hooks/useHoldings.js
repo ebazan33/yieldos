@@ -208,7 +208,7 @@ export function useHoldings(userId) {
     const existingCcy = (existing.currency || 'USD').toUpperCase()
     const addCcy      = (addPayload.currency || 'USD').toUpperCase()
     if (existingCcy !== addCcy) {
-      return { error: `That ticker is already in your portfolio as ${existingCcy}. Uncheck "Add to existing position" to track this ${addCcy} lot separately.` }
+      return { error: `That ticker is already in your portfolio as ${existingCcy}. Switch to "Track as a separate lot" to add this ${addCcy} position.` }
     }
 
     const existingShares = Number(existing.shares) || 0
