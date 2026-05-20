@@ -34,10 +34,11 @@ export default function SharedPortfolioView({ slug }) {
   const [state, setState] = useState({ loading: true, error: null, share: null, holdings: [] });
 
   useEffect(() => {
-    // Warm the FX cache so mixed USD/CAD shares convert correctly. Fire and
-    // forget; getCachedRate falls back to a conservative constant if the
-    // fetch is still in flight when we render.
-    ensureFreshRates(["CAD"]).catch(() => {});
+    // Warm the FX cache so foreign-currency shares (CAD/GBP/EUR/AUD)
+    // convert correctly. Fire-and-forget; getCachedRate falls back to a
+    // conservative constant if the fetch is still in flight when we render.
+    // Default arg covers every SUPPORTED_CURRENCIES entry in one batched call.
+    ensureFreshRates().catch(() => {});
     let cancelled = false;
     (async () => {
       const result = await loadSharedPortfolio(slug);

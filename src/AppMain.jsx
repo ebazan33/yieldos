@@ -14,7 +14,7 @@ import ConfirmModal from "./components/ConfirmModal";
 import AccountModal from "./components/AccountModal";
 import TrialWelcomeModal from "./components/TrialWelcomeModal";
 import { getStockDetails } from "./lib/polygon";
-import { ensureFreshRates, getCachedRate, fxNote, currencySymbol, SUPPORTED_CURRENCIES } from "./lib/fx";
+import { ensureFreshRates, getCachedRate, currencySymbol, SUPPORTED_CURRENCIES } from "./lib/fx";
 import { startCheckout, readCheckoutReturn, stripeConfigured, openCustomerPortal, customerPortalConfigured } from "./lib/stripe";
 
 const C = {
@@ -1220,12 +1220,6 @@ export default function AppMain() {
     })();
     return () => { cancelled = true; };
   }, []);
-  // Backward-compat alias for the CAD footnote rendered below the totals
-  // block. The footnote will become more general once we surface multiple
-  // foreign currencies in the portfolio, but for now it still leans on
-  // cadRate specifically.
-  const cadRate = rates.CAD || getCachedRate("CAD");
-
   // Build the portfolio view model. Each row's raw price/yield stays in its
   // native currency for display (so a CAD holding shows "C$72.40"), but the
   // `value`/`annual`/`monthly` derived fields are normalized to USD using the
@@ -1856,17 +1850,22 @@ export default function AppMain() {
                   Builds a per-currency rate note for every foreign currency
                   actually in the portfolio (CAD, GBP, EUR, AUD), so a mixed
                   portfolio sees all relevant rates instead of just CAD.
-                  Refreshes daily via the fx helper's 6h cache. */}
+                  Compact format (`CAD 0.73 · GBP 1.27`) keeps the line from
+                  wrapping awkwardly on mobile when a user holds 3+ foreign
+                  currencies. Refreshes daily via the fx helper's 6h cache. */}
               {(() => {
                 const foreignCurrencies = [...new Set(port.map(h => h.currency).filter(c => c && c !== "USD"))];
                 if (foreignCurrencies.length === 0) return null;
                 const notes = foreignCurrencies
-                  .map(c => fxNote(c, rates[c] || getCachedRate(c)))
+                  .map(c => {
+                    const r = rates[c] || getCachedRate(c);
+                    return r ? `${c} ${r.toFixed(2)}` : null;
+                  })
                   .filter(Boolean)
                   .join(" · ");
                 return (
                   <div style={{fontSize:10,color:C.textMuted,marginBottom:12,textAlign:"right",letterSpacing:"0.01em"}}>
-                    Totals shown in USD · {notes}
+                    USD · {notes}
                   </div>
                 );
               })()}

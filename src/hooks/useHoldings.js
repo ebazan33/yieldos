@@ -200,6 +200,17 @@ export function useHoldings(userId) {
     const addedShares = Number(addPayload.shares) || 0
     if (addedShares <= 0) return { error: 'Shares to add must be greater than 0.' }
 
+    // Currency-mismatch guard. We don't want to silently weighted-average a
+    // USD cost basis with a CAD cost basis — that's mathematically wrong and
+    // would only happen via an oddly-typed ticker conflict (e.g. user has
+    // USD SCHD, then re-enters `SCHD` while in CAD manual mode). Force them
+    // to track it as a separate lot instead.
+    const existingCcy = (existing.currency || 'USD').toUpperCase()
+    const addCcy      = (addPayload.currency || 'USD').toUpperCase()
+    if (existingCcy !== addCcy) {
+      return { error: `That ticker is already in your portfolio as ${existingCcy}. Uncheck "Add to existing position" to track this ${addCcy} lot separately.` }
+    }
+
     const existingShares = Number(existing.shares) || 0
     const newTotalShares = existingShares + addedShares
 

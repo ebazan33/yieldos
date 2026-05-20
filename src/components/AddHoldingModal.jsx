@@ -256,6 +256,7 @@ export default function AddHoldingModal({ onClose, onAdd, onMerge, existingHoldi
     setManualMode(false)
     setManualName('')
     setManualPrice('')
+    setManualCurrency('USD')
     setCostBasis('')
     // Frequency intentionally persists — if someone's loading up a monthly-div
     // portfolio (JEPI, O, MAIN), they don't want to re-pick "Monthly" every time.
@@ -435,27 +436,32 @@ export default function AddHoldingModal({ onClose, onAdd, onMerge, existingHoldi
             </div>
             {/* Currency picker — defaults to inferred currency from the ticker
                 suffix, but lets the user override (e.g. for ADRs, ETFs traded
-                in a non-home currency, or tickers without a suffix). */}
+                in a non-home currency, or tickers without a suffix).
+                Layout note: flex basis of 50px + 5px gaps keeps all 5 chips
+                on one row down to ~290px content width (covers iPhone SE
+                @ 320px after backdrop + card padding). Buttons are 44px tall
+                to meet iOS HIG tap-target guidance. */}
             <div style={{marginBottom:10}}>
               <div style={{fontSize:10,color:C.textMuted,fontWeight:600,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:5}}>Currency</div>
-              <div style={{display:"flex",gap:6,flexWrap:"wrap"}}>
+              <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
                 {SUPPORTED_CURRENCIES.map(ccy => (
                   <button
                     key={ccy}
                     onClick={() => setManualCurrency(ccy)}
                     style={{
-                      flex:"1 1 60px",
+                      flex:"1 1 50px",
                       background: manualCurrency === ccy ? C.emerald : C.surface,
                       border:`1px solid ${manualCurrency === ccy ? C.emerald : C.border}`,
                       borderRadius:7,
-                      padding:"8px 6px",
+                      padding:"10px 4px",
                       fontSize:11,
                       fontWeight: manualCurrency === ccy ? 700 : 500,
                       color: manualCurrency === ccy ? "#0b0b0b" : C.textSub,
                       cursor:"pointer",
                       fontFamily:"inherit",
                       transition:"all 0.12s",
-                      minHeight:36,
+                      minHeight:44,
+                      WebkitTapHighlightColor:"transparent",
                     }}>
                     {currencySymbol(ccy)} {ccy}
                   </button>

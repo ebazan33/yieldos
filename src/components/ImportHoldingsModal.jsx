@@ -9,6 +9,13 @@ function isCanadianTicker(raw) {
   const t = String(raw || '').trim().toUpperCase()
   return TSX_SUFFIXES.some(s => t.endsWith(s))
 }
+// TODO(multi-ccy v2): CSV import currently only auto-detects USD vs CAD.
+// A user importing a Hargreaves Lansdown (GBP), comdirect (EUR), or CommSec
+// (AUD) CSV will see their rows silently tagged USD unless the file has a
+// `currency` column. AddHoldingModal already supports GBP/EUR/AUD via the
+// manual flow, so the workaround is "add manually for now" — but the next
+// pass on CSV import should mirror inferCurrencyFromTicker() to cover
+// .L / .DE / .PA / .MI / .AS / .AX suffixes too.
 
 const C = {
   bg:"var(--bg)", surface:"var(--surface)", card:"var(--card)",
