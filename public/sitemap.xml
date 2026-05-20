@@ -29,26 +29,11 @@
     <priority>0.9</priority>
   </url>
 
-  <url>
-    <loc>https://yieldos.app/#pricing</loc>
-    <lastmod>2026-04-23</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.9</priority>
-  </url>
-
-  <url>
-    <loc>https://yieldos.app/#privacy</loc>
-    <lastmod>2026-04-19</lastmod>
-    <changefreq>yearly</changefreq>
-    <priority>0.3</priority>
-  </url>
-
-  <url>
-    <loc>https://yieldos.app/#terms</loc>
-    <lastmod>2026-04-19</lastmod>
-    <changefreq>yearly</changefreq>
-    <priority>0.3</priority>
-  </url>
+  <!-- NOTE: We do NOT submit hash-fragment URLs (#pricing, #privacy, #terms).
+       Google treats those as the same page as / and listing them as separate
+       URLs wastes crawl budget AND creates "Discovered – currently not indexed"
+       noise in Search Console. The pricing/privacy/terms sections are reachable
+       via internal links from the homepage; that's enough. -->
 
   <!-- Blog posts — long-tail SEO. Add new posts here as you publish. -->
   <url>
