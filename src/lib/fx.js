@@ -22,8 +22,9 @@
 //
 // For sync call sites that can't await (render-time math) we also expose
 // `getCachedRate(currency)` which reads whatever is in the cache right now
-// and returns a number immediately. A parallel `ensureFreshRates(["CAD"])`
-// fire-and-forget from the app root keeps the cache warm.
+// and returns a number immediately. A parallel `ensureFreshRates()`
+// fire-and-forget from the app root keeps the cache warm for every entry
+// in SUPPORTED_CURRENCIES via one batched fetch.
 
 const CACHE_KEY      = "yieldos_fx_rates_v1";
 const CACHE_TTL_MS   = 6 * 60 * 60 * 1000; // 6h
