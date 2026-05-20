@@ -3685,6 +3685,43 @@ export default function AppMain() {
         />
       )}
       {showAuth&&<AuthModal onClose={()=>setShowAuth(false)} onAuth={(u)=>{setUser(u);setPage("app");setShowAuth(false);setDemoMode(false);}}/>}
+      {/* Floating feedback button — always visible in the bottom-right when a
+          user is signed into the app. Existing footer/landing triggers stay,
+          this just adds a non-intrusive surface for active users to drop a
+          note without hunting for it. Hidden on landing so it doesn't fight
+          the marketing CTAs. */}
+      {user && page !== "landing" && !showFeedback && (
+        <button
+          onClick={() => setShowFeedback(true)}
+          aria-label="Send feedback"
+          title="Send feedback"
+          style={{
+            position: "fixed",
+            bottom: "20px",
+            right: "20px",
+            width: "52px",
+            height: "52px",
+            borderRadius: "50%",
+            background: C.blue,
+            border: "none",
+            color: "#fff",
+            fontSize: "22px",
+            cursor: "pointer",
+            zIndex: 90,
+            boxShadow: "0 4px 16px rgba(0,0,0,0.25)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontFamily: "inherit",
+            transition: "transform 0.15s, box-shadow 0.15s",
+            WebkitTapHighlightColor: "transparent",
+          }}
+          onMouseEnter={(e) => { e.currentTarget.style.transform = "scale(1.05)"; e.currentTarget.style.boxShadow = "0 6px 20px rgba(0,0,0,0.35)"; }}
+          onMouseLeave={(e) => { e.currentTarget.style.transform = "scale(1)";    e.currentTarget.style.boxShadow = "0 4px 16px rgba(0,0,0,0.25)"; }}
+        >
+          💬
+        </button>
+      )}
       {showFeedback&&<FeedbackModal onClose={()=>setShowFeedback(false)} user={user} page={page} plan={plan}/>}
       {confirmState && <ConfirmModal {...confirmState}/>}
       {showAccount && user && (
