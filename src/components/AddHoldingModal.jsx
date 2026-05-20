@@ -27,6 +27,11 @@ export default function AddHoldingModal({ onClose, onAdd, onMerge, existingHoldi
   const [yld, setYld]             = useState('')
   const [freq, setFreq]           = useState('Quarterly')
   const [searching, setSearching] = useState(false)
+  // Tracks whether the most recent search call threw / errored (rate limit,
+  // network, Polygon down, etc.) vs simply returned no matches. The render
+  // path branches on this so we can show a different message for "couldn't
+  // find" vs "search is having trouble right now."
+  const [searchError, setSearchError] = useState(false)
   const [loading, setLoading]     = useState(false)
   const [error, setError]         = useState('')
   // Merge-into-existing-position state. Default ON because most users adding
@@ -71,7 +76,7 @@ export default function AddHoldingModal({ onClose, onAdd, onMerge, existingHoldi
   }, [selected, query, manualMode, existingHoldings])
 
   useEffect(() => {
-    if (query.length < 1) { setResults([]); return }
+    if (query.length < 1) { setResults([]); setSearchError(false); return }
     // Canadian tickers bypass Polygon entirely — it would either return
     // nothing or (worse) match the US ticker of the same root, clobbering
     // what the user actually wanted. Skip the search, drop a hint banner
@@ -80,13 +85,23 @@ export default function AddHoldingModal({ onClose, onAdd, onMerge, existingHoldi
       clearTimeout(debounce.current)
       setResults([])
       setSearching(false)
+      setSearchError(false)
       return
     }
     clearTimeout(debounce.current)
     debounce.current = setTimeout(async () => {
       setSearching(true)
-      const res = await searchTicker(query)
-      setResults(res.slice(0, 6))
+      setSearchError(false)
+      try {
+        const res = await searchTicker(query)
+        setResults(res.slice(0, 6))
+      } catch (err) {
+        // Polygon threw (rate limit, network blip, API down, etc.).
+        // Surface a fallback banner so users can still add their holding
+        // via the manual flow instead of seeing a silent empty dropdown.
+        setResults([])
+        setSearchError(true)
+      }
       setSearching(false)
     }, 400)
   }, [query])
@@ -313,6 +328,33 @@ export default function AddHoldingModal({ onClose, onAdd, onMerge, existingHoldi
             </div>
           )}
         </div>
+
+        {/* No-results / search-error fallback banner — shows when the user
+            has typed something, the search finished, came back empty (or
+            errored), and they haven't already picked a result. Gives them a
+            manual-entry escape hatch instead of a silently empty dropdown.
+            Triggered for both: (1) Polygon couldn't match the ticker, or
+            (2) the search call threw (rate limit / network / API down). */}
+        {!manualMode && !selected && !searching && query.length >= 2 && !isCanadianTicker(query) && results.length === 0 && (
+          <div style={{background:`${C.gold}14`,border:`1px solid ${C.gold}40`,borderRadius:10,padding:"12px 14px",marginBottom:16}}>
+            <div style={{display:"flex",alignItems:"center",gap:6,marginBottom:4}}>
+              <span style={{fontSize:13}}>{searchError ? "⚠️" : "🔍"}</span>
+              <span style={{fontSize:12,fontWeight:700,color:C.text}}>
+                {searchError ? "Search is having trouble right now" : `Couldn't find "${query.toUpperCase()}"`}
+              </span>
+            </div>
+            <div style={{fontSize:11,color:C.textSub,lineHeight:1.55,marginBottom:10}}>
+              {searchError
+                ? "Could be a rate limit or a brief outage. You can try again in a moment, or add this holding manually below."
+                : "If you're sure that's the ticker, you can add it manually. Use this for tickers outside the US/Canada too (UK, EU, Australia)."}
+            </div>
+            <button
+              onClick={()=>startManual(query)}
+              style={{background:C.gold,color:"#0b0b0b",border:"none",borderRadius:7,padding:"7px 12px",fontSize:11,fontWeight:700,cursor:"pointer",fontFamily:"inherit",minHeight:36}}>
+              Add {query.toUpperCase()} manually →
+            </button>
+          </div>
+        )}
 
         {/* TSX hint — only shown when the user has typed a `.TO`/`.V` ticker
             but hasn't entered manual mode yet. We don't auto-flip to manual
