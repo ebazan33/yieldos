@@ -3497,6 +3497,10 @@ export default function AppMain() {
           /* Give the main content breathing room so the fixed bottom bar
              (height ~62 + safe-area inset) doesn't cover the last row. */
           .app-content-wrap{padding-bottom:calc(78px + env(safe-area-inset-bottom))!important;}
+          /* Hide the floating feedback FAB on mobile — it would conflict with
+             the bottom tab bar. Mobile users access feedback via the More
+             sheet (More → Feedback), so they're already covered. */
+          .feedback-fab{display:none!important;}
           .mobile-bottom-bar{
             display:flex;
             position:fixed;
@@ -3692,6 +3696,7 @@ export default function AppMain() {
           the marketing CTAs. */}
       {user && page !== "landing" && !showFeedback && (
         <button
+          className="feedback-fab"
           onClick={() => setShowFeedback(true)}
           aria-label="Send feedback"
           title="Send feedback"
