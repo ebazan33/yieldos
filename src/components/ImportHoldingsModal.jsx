@@ -100,7 +100,25 @@ function detectCols(header) {
     x === 'book value' || x === 'total cost basis' ||
     (x.includes('cost basis') && !x.includes('per'))
   )
-  return { symbolIdx: symbolIdxLoose, qtyIdx: qtyIdxLoose, priceIdx: priceIdxLoose, curIdx, costPerShareIdx, costTotalIdx }
+  // Market value column — the brokerage's own "shares × price" number for each
+  // row. Most major brokerages export this as "Market Value", "Current Value",
+  // or "Position Value". We use it for round-trip validation: if our parsed
+  // shares × price drifts more than 1% from this column, something got
+  // mis-mapped (wrong column for shares, weird number formatting, etc.) and
+  // we badge the row for user review rather than silently importing wrong
+  // numbers. Carefully exclude "market cap" (that's the company's, not the
+  // position's) and "account value" (account-level, not per-row).
+  const marketValueIdx = h.findIndex(x =>
+    x === 'market value' || x === 'current value' || x === 'position value' ||
+    x === 'value' || x === 'total value' || x === 'equity'
+  )
+  const marketValueIdxLoose = marketValueIdx >= 0 ? marketValueIdx
+    : h.findIndex(x =>
+        (x.includes('market value') || x.includes('current value') || x.includes('position value'))
+        && !x.includes('cap')   // avoid "market cap"
+        && !x.includes('cost')  // avoid "cost value" if it exists
+      )
+  return { symbolIdx: symbolIdxLoose, qtyIdx: qtyIdxLoose, priceIdx: priceIdxLoose, curIdx, costPerShareIdx, costTotalIdx, marketValueIdx: marketValueIdxLoose }
 }
 
 // Filter out cash, money-market funds, and junk rows. Accepts both US-style
@@ -134,6 +152,13 @@ export default function ImportHoldingsModal({ onClose, onAdd }) {
   const [progress, setProg]   = useState({ done: 0, total: 0, current: '' })
   const [results, setResults] = useState({ ok: 0, failed: 0, failedList: [] })
   const [drag, setDrag]       = useState(false)
+  // "I've verified these match my brokerage" checkbox. Gates the Import
+  // button — disabled until the user actively ticks it. The point isn't to
+  // make import harder; it's to put the user's attention on the totals at
+  // the moment of commit, which is both a UX improvement and meaningful
+  // liability mitigation (disclaimer-at-decision-point is much stronger than
+  // disclaimer-in-footer in any later dispute about wrong displayed values).
+  const [confirmedTotals, setConfirmedTotals] = useState(false)
   const fileInput             = useRef(null)
 
   function handleFile(file) {
@@ -149,7 +174,7 @@ export default function ImportHoldingsModal({ onClose, onAdd }) {
         if (parsed.length < 2) { setError("This file doesn't look like a holdings CSV — we couldn't find any data rows."); return }
         const headerIdx = findHeaderRow(parsed)
         const header = parsed[headerIdx]
-        const { symbolIdx, qtyIdx, priceIdx, curIdx, costPerShareIdx, costTotalIdx } = detectCols(header)
+        const { symbolIdx, qtyIdx, priceIdx, curIdx, costPerShareIdx, costTotalIdx, marketValueIdx } = detectCols(header)
         if (symbolIdx < 0 || qtyIdx < 0) {
           setError(`We couldn't find a "Symbol" and "Shares" column in this CSV. Headers we saw: ${header.slice(0, 8).join(', ')}…`)
           return
@@ -198,6 +223,26 @@ export default function ImportHoldingsModal({ onClose, onAdd }) {
             }
             existing.shares = newTotalShares
           } else {
+            // Round-trip validation: if the CSV has a market-value column,
+            // compare our parsed (shares × price) against the brokerage's own
+            // total for this row. A mismatch > 1% means we likely picked the
+            // wrong column for shares or price (Schwab CSVs in particular have
+            // similar-looking columns that are easy to confuse). We surface a
+            // warning in the preview rather than blocking — the user can still
+            // import after eyeballing, or fix the row first.
+            const csvMarketValue = marketValueIdx >= 0 ? parseNumber(r[marketValueIdx]) : NaN
+            let valueMismatch = null
+            if (isFinite(csvMarketValue) && csvMarketValue > 0 && isFinite(csvPrice) && csvPrice > 0 && q > 0) {
+              const computed = csvPrice * q
+              const diffPct = Math.abs(computed - csvMarketValue) / csvMarketValue
+              if (diffPct > 0.01) {
+                valueMismatch = {
+                  computed: Number(computed.toFixed(2)),
+                  expected: Number(csvMarketValue.toFixed(2)),
+                  diffPct: Number((diffPct * 100).toFixed(1)),
+                }
+              }
+            }
             detected.push({
               ticker: t,
               shares: q,
@@ -208,6 +253,9 @@ export default function ImportHoldingsModal({ onClose, onAdd }) {
               // Flag CAD rows with no usable price — they need manual entry
               // before import can proceed, otherwise we'd silently insert $0.
               needsManualPrice: currency === 'CAD' && (!isFinite(csvPrice) || csvPrice <= 0),
+              // Parsing-bug guard: see comment above. null when the CSV has
+              // no market-value column (most US brokerages do include it).
+              valueMismatch,
             })
           }
         }
@@ -226,9 +274,14 @@ export default function ImportHoldingsModal({ onClose, onAdd }) {
 
   function updateRow(idx, patch) {
     setRows(prev => prev.map((r, i) => i === idx ? { ...r, ...patch } : r))
+    // Any change to the parsed rows invalidates the user's "I verified totals"
+    // check — they may have changed shares, ticker, or price, so the total they
+    // signed off on is no longer the total we're about to import.
+    setConfirmedTotals(false)
   }
   function removeRow(idx) {
     setRows(prev => prev.filter((_, i) => i !== idx))
+    setConfirmedTotals(false)
   }
 
   async function runImport() {
@@ -420,6 +473,18 @@ export default function ImportHoldingsModal({ onClose, onAdd }) {
                             {r.currency && r.currency !== 'USD' && (
                               <span style={{background:`${C.emerald}16`,color:C.emerald,border:`1px solid ${C.emerald}30`,borderRadius:4,padding:"1px 5px",fontSize:9,fontWeight:700,letterSpacing:"0.06em"}}>{r.currency}</span>
                             )}
+                            {/* Round-trip warning: surfaces when our parsed
+                                shares × price diverges > 1% from the CSV's
+                                own market-value column. Almost always means
+                                a column got mis-mapped at parse time. Hover
+                                tooltip shows exactly what we got vs expected. */}
+                            {r.valueMismatch && (
+                              <span
+                                title={`We parsed this as ${r.shares} × ${r.csvPrice} = ${r.valueMismatch.computed}, but your CSV's market value column says ${r.valueMismatch.expected} (${r.valueMismatch.diffPct}% off). Verify shares + price before importing.`}
+                                style={{background:`${C.gold}1a`,color:C.gold,border:`1px solid ${C.gold}50`,borderRadius:4,padding:"1px 5px",fontSize:9,fontWeight:700,letterSpacing:"0.06em",cursor:"help"}}>
+                                CHECK
+                              </span>
+                            )}
                           </div>
                         </td>
                         <td style={{padding:"8px 12px"}}>
@@ -472,9 +537,60 @@ export default function ImportHoldingsModal({ onClose, onAdd }) {
               </div>
             )}
 
-            <div style={{fontSize:11,color:C.textMuted,marginBottom:14,lineHeight:1.5,background:C.surface,border:`1px solid ${C.border}`,borderRadius:8,padding:"10px 14px"}}>
+            {/* Round-trip mismatch summary. Fires when one or more rows had
+                shares × price drift > 1% from the CSV's own market-value
+                column. Per-row "CHECK" badges show which ones in the table
+                above; this summary nudges the user to actually look at them. */}
+            {rows.some(r => r.selected && r.valueMismatch) && (() => {
+              const flagged = rows.filter(r => r.selected && r.valueMismatch).length
+              return (
+                <div style={{fontSize:11,color:C.gold,marginBottom:12,padding:"8px 12px",background:`${C.gold}10`,border:`1px solid ${C.gold}40`,borderRadius:8,lineHeight:1.5}}>
+                  <strong>Values look off:</strong> {flagged} row{flagged===1?"":"s"} {flagged===1?"has":"have"} a shares × price total that doesn't match the value column in your CSV. Hover the "CHECK" badge on each row to see the numbers, and edit shares/price if needed before importing.
+                </div>
+              )
+            })()}
+
+            <div style={{fontSize:11,color:C.textMuted,marginBottom:12,lineHeight:1.5,background:C.surface,border:`1px solid ${C.border}`,borderRadius:8,padding:"10px 14px"}}>
               <strong style={{color:C.textSub}}>Heads up:</strong> importing {rows.filter(r=>r.selected).length} holdings takes about {Math.max(1, Math.ceil(rows.filter(r=>r.selected && r.currency!=='CAD').length * 1.4))} seconds — we fetch live price, yield, and safety for each US ticker from Polygon. Canadian (TSX) rows skip that step and use the price from your CSV. Don't close this window.
             </div>
+
+            {/* Confirm-totals gate. Computes the importable total from the
+                rows that have a CSV price (most US brokerage exports include
+                one; rows without get "+ N pricing later" appended). USD and
+                CAD totals stay separate so the user can compare each against
+                the right brokerage statement. The checkbox is required to
+                enable the Import button — this puts the user's attention on
+                the totals at the moment of commit, which is both a UX win
+                and meaningful liability reduction. */}
+            {(() => {
+              const sel        = rows.filter(r => r.selected)
+              const priced     = sel.filter(r => r.csvPrice && r.csvPrice > 0)
+              const noPrice    = sel.length - priced.length
+              const usdTotal   = priced.filter(r => r.currency !== 'CAD').reduce((s, r) => s + (r.csvPrice * r.shares), 0)
+              const cadTotal   = priced.filter(r => r.currency === 'CAD').reduce((s, r) => s + (r.csvPrice * r.shares), 0)
+              const fmtUsd = n => '$' + n.toLocaleString(undefined, { maximumFractionDigits: 0 })
+              const fmtCad = n => 'C$' + n.toLocaleString(undefined, { maximumFractionDigits: 0 })
+              const totals = []
+              if (usdTotal > 0) totals.push(fmtUsd(usdTotal))
+              if (cadTotal > 0) totals.push(fmtCad(cadTotal))
+              const totalsLabel = totals.length > 0 ? totals.join(' + ') : '—'
+              return (
+                <div style={{marginBottom:14,padding:"12px 14px",background:`${C.blue}0d`,border:`1px solid ${C.blue}40`,borderRadius:8,lineHeight:1.5}}>
+                  <div style={{fontSize:12,color:C.text,marginBottom:8}}>
+                    You're about to import <strong>{sel.length}</strong> holding{sel.length===1?"":"s"} worth approximately <strong>{totalsLabel}</strong>{noPrice > 0 ? <span style={{color:C.textMuted,fontSize:11}}> (+{noPrice} row{noPrice===1?"":"s"} requiring live pricing)</span> : null}.
+                  </div>
+                  <label style={{display:"flex",alignItems:"flex-start",gap:8,cursor:"pointer",fontSize:12,color:C.textSub,lineHeight:1.5}}>
+                    <input
+                      type="checkbox"
+                      checked={confirmedTotals}
+                      onChange={e => setConfirmedTotals(e.target.checked)}
+                      style={{marginTop:2,accentColor:C.blue,cursor:"pointer",flexShrink:0}}
+                    />
+                    <span>I've verified these values roughly match my brokerage statement. Imported figures are estimates from this CSV and aren't investment advice — for real decisions, check the source.</span>
+                  </label>
+                </div>
+              )
+            })()}
 
             {error && <div style={{fontSize:12,color:C.red,marginBottom:12}}>{error}</div>}
 
@@ -485,11 +601,16 @@ export default function ImportHoldingsModal({ onClose, onAdd }) {
                 {(() => {
                   const selectedCount = rows.filter(r=>r.selected).length
                   const blocked = rows.some(r => r.selected && r.needsManualPrice)
+                  // Import is gated on three things: at least one row selected,
+                  // no Canadian rows missing a price, AND the user has ticked
+                  // the totals-verified box. The disabled-button color cue
+                  // covers all three failure modes uniformly.
+                  const disabled = selectedCount === 0 || blocked || !confirmedTotals
                   return (
                     <button
-                      style={{...btnPrimary, opacity: (selectedCount===0 || blocked) ? 0.45 : 1, cursor: (selectedCount===0 || blocked) ? "default" : "pointer"}}
+                      style={{...btnPrimary, opacity: disabled ? 0.45 : 1, cursor: disabled ? "default" : "pointer"}}
                       onClick={runImport}
-                      disabled={selectedCount===0 || blocked}>
+                      disabled={disabled}>
                       Import {selectedCount} holding{selectedCount!==1?"s":""}
                     </button>
                   )
