@@ -264,6 +264,10 @@ export default function ImportHoldingsModal({ onClose, onAdd }) {
           return
         }
         setRows(detected)
+        // Reset the verification gate for every new parse. Otherwise a user
+        // who ticked "I verified" for CSV A, clicked Back, and uploaded CSV B
+        // would land on the preview with the new totals already auto-confirmed.
+        setConfirmedTotals(false)
         setStep('preview')
       } catch (e) {
         setError(`Parse error: ${e.message}`)
@@ -273,7 +277,18 @@ export default function ImportHoldingsModal({ onClose, onAdd }) {
   }
 
   function updateRow(idx, patch) {
-    setRows(prev => prev.map((r, i) => i === idx ? { ...r, ...patch } : r))
+    setRows(prev => prev.map((r, i) => {
+      if (i !== idx) return r
+      const merged = { ...r, ...patch }
+      // If shares, price, or ticker changed, the parse-time round-trip warning
+      // no longer reflects the current values — clear it. The user has actively
+      // engaged with the row and the original "we got X but CSV said Y" math
+      // would now be misleading in the tooltip.
+      if ('shares' in patch || 'csvPrice' in patch || 'ticker' in patch) {
+        merged.valueMismatch = null
+      }
+      return merged
+    }))
     // Any change to the parsed rows invalidates the user's "I verified totals"
     // check — they may have changed shares, ticker, or price, so the total they
     // signed off on is no longer the total we're about to import.
@@ -586,7 +601,7 @@ export default function ImportHoldingsModal({ onClose, onAdd }) {
                       onChange={e => setConfirmedTotals(e.target.checked)}
                       style={{marginTop:2,accentColor:C.blue,cursor:"pointer",flexShrink:0}}
                     />
-                    <span>I've verified these values roughly match my brokerage statement. Imported figures are estimates from this CSV and aren't investment advice — for real decisions, check the source.</span>
+                    <span>I've verified these values roughly match my brokerage statement. Imported figures are estimates from this CSV and aren't investment advice. For real decisions, check the source.</span>
                   </label>
                 </div>
               )
