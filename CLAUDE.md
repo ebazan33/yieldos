@@ -96,6 +96,7 @@ supabase/
 | `portfolio_shares` | Public share link config (slug, enabled, show_values) | Owner-only via `auth.uid() = user_id`. Public read removed — see security note below. |
 | `feedback` | Anonymous feedback submissions | Insert: open. Read: denied (admin only via service role). |
 | `subscriptions` | Paid-plan state (plan, cycle, status, trial_ends_at, stripe customer/sub ids) | Read: `auth.uid() = user_id`. **Writes denied to all users.** Only the Stripe webhook (using `SUPABASE_SERVICE_ROLE_KEY`) can write. See note below. |
+| `import_log` | Audit trail of CSV import attempts (counts, USD total, filename, error message). Append-only. No per-row holdings data is stored. | Read + Insert: `auth.uid() = user_id`. No update/delete. |
 
 **Security note on `subscriptions` + Stripe webhook:**
 Plan state used to live in `auth.users.user_metadata`, which any authenticated

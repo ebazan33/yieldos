@@ -1,14 +1,11 @@
 import { useState, useRef } from 'react'
 import { getStockDetails } from '../lib/polygon'
-
-// TSX / TSX Venture / NEO / CSE suffixes. Mirrored from AddHoldingModal — keep
-// in sync if we ever add more exchanges. These need special handling at CSV
-// import time because Polygon can't price them.
-const TSX_SUFFIXES = ['.TO', '.V', '.NE', '.CN']
-function isCanadianTicker(raw) {
-  const t = String(raw || '').trim().toUpperCase()
-  return TSX_SUFFIXES.some(s => t.endsWith(s))
-}
+import { supabase } from '../lib/supabase'
+import {
+  parseHoldingsCsv,
+  isCanadianTicker,
+  sanityCheckNumbers,
+} from '../lib/csv-import'
 // TODO(multi-ccy v2): CSV import currently only auto-detects USD vs CAD.
 // A user importing a Hargreaves Lansdown (GBP), comdirect (EUR), or CommSec
 // (AUD) CSV will see their rows silently tagged USD unless the file has a
@@ -26,123 +23,10 @@ const C = {
   emeraldGlow:"rgba(52,211,153,0.1)",
 }
 
-// ─────────────────────── CSV parser (handles quoted fields) ──────────────────────
-function parseCsv(text) {
-  const rows = []
-  const lines = text.split(/\r?\n/)
-  for (const line of lines) {
-    if (!line.trim()) continue
-    const row = []
-    let cur = '', inQuote = false
-    for (let i = 0; i < line.length; i++) {
-      const ch = line[i]
-      if (ch === '"') {
-        if (inQuote && line[i+1] === '"') { cur += '"'; i++ }
-        else inQuote = !inQuote
-      } else if (ch === ',' && !inQuote) {
-        row.push(cur); cur = ''
-      } else {
-        cur += ch
-      }
-    }
-    row.push(cur)
-    rows.push(row.map(c => c.trim()))
-  }
-  return rows
-}
-
-// Some brokerages (Schwab, E*TRADE) prefix their CSVs with a few junk rows like
-// "Positions for Account X" before the real header. Find the row that looks
-// like a header by scanning for one with both a ticker-ish word and a shares-ish word.
-function findHeaderRow(rows) {
-  for (let i = 0; i < Math.min(rows.length, 8); i++) {
-    const low = rows[i].map(c => c.toLowerCase())
-    const hasSym  = low.some(c => /\b(symbol|ticker|sym|security)\b/.test(c))
-    const hasQty  = low.some(c => /\b(quantity|shares|qty|units)\b/.test(c))
-    if (hasSym && hasQty) return i
-  }
-  return 0 // fall back to first row
-}
-
-// Find the column indexes for symbol + shares + (optional) price + currency,
-// given the header row. Price/currency are best-effort — many US brokerage
-// CSVs include them, and Canadian brokerages (Questrade, Wealthsimple)
-// almost always do. If we can read price straight from the CSV we don't
-// need Polygon at all, which is how TSX tickers stay importable.
-function detectCols(header) {
-  const h = header.map(s => (s || '').toLowerCase().trim())
-  const symbolIdx = h.findIndex(x => x === 'symbol' || x === 'ticker' || x === 'sym')
-  const symbolIdxLoose = symbolIdx >= 0 ? symbolIdx
-    : h.findIndex(x => x.includes('symbol') || x.includes('ticker'))
-  const qtyIdx = h.findIndex(x => x === 'quantity' || x === 'shares' || x === 'qty' || x === 'units')
-  const qtyIdxLoose = qtyIdx >= 0 ? qtyIdx
-    : h.findIndex(x => x.includes('quantity') || x.includes('shares') || x.includes('qty') || x.includes('units'))
-  // Price column: prefer exact matches, then loose. Schwab uses "Price",
-  // Questrade uses "Last Price", Fidelity uses "Last Price" or "Current Price".
-  const priceIdx = h.findIndex(x => x === 'price' || x === 'last price' || x === 'last_price' || x === 'current price' || x === 'market price')
-  const priceIdxLoose = priceIdx >= 0 ? priceIdx
-    : h.findIndex(x => x.includes('last price') || x.includes('market price') || x.includes('current price') || (x.includes('price') && !x.includes('cost') && !x.includes('change')))
-  // Currency column: common on Canadian brokerage CSVs where the account
-  // holds both USD and CAD positions.
-  const curIdx = h.findIndex(x => x === 'currency' || x === 'ccy')
-  // Cost basis — almost every major brokerage exports this, but column names
-  // vary wildly. We prefer per-share "average cost" when available; if only
-  // total cost is present (Vanguard, Schwab's "Cost Basis" is total for some
-  // exports), we divide by shares at parse time.
-  // Per-share candidates: "average cost", "avg cost", "purchase price"
-  // Total candidates:     "cost basis", "cost basis total", "book value"
-  const costPerShareIdx = h.findIndex(x =>
-    x === 'average cost' || x === 'avg cost' || x === 'avg. cost' ||
-    x === 'purchase price' || x === 'cost per share' || x.includes('avg cost') || x.includes('average cost')
-  )
-  const costTotalIdx = h.findIndex(x =>
-    x === 'cost basis' || x === 'cost basis total' || x === 'total cost' ||
-    x === 'book value' || x === 'total cost basis' ||
-    (x.includes('cost basis') && !x.includes('per'))
-  )
-  // Market value column — the brokerage's own "shares × price" number for each
-  // row. Most major brokerages export this as "Market Value", "Current Value",
-  // or "Position Value". We use it for round-trip validation: if our parsed
-  // shares × price drifts more than 1% from this column, something got
-  // mis-mapped (wrong column for shares, weird number formatting, etc.) and
-  // we badge the row for user review rather than silently importing wrong
-  // numbers. Carefully exclude "market cap" (that's the company's, not the
-  // position's) and "account value" (account-level, not per-row).
-  const marketValueIdx = h.findIndex(x =>
-    x === 'market value' || x === 'current value' || x === 'position value' ||
-    x === 'value' || x === 'total value' || x === 'equity'
-  )
-  const marketValueIdxLoose = marketValueIdx >= 0 ? marketValueIdx
-    : h.findIndex(x =>
-        (x.includes('market value') || x.includes('current value') || x.includes('position value'))
-        && !x.includes('cap')   // avoid "market cap"
-        && !x.includes('cost')  // avoid "cost value" if it exists
-      )
-  return { symbolIdx: symbolIdxLoose, qtyIdx: qtyIdxLoose, priceIdx: priceIdxLoose, curIdx, costPerShareIdx, costTotalIdx, marketValueIdx: marketValueIdxLoose }
-}
-
-// Filter out cash, money-market funds, and junk rows. Accepts both US-style
-// tickers and TSX-style suffixes (BNS.TO, REI-UN.TO, etc.).
-function isValidHolding(ticker, shares) {
-  if (!ticker || shares == null || !isFinite(shares) || shares <= 0) return false
-  const t = String(ticker).toUpperCase().trim()
-  if (!t) return false
-  if (['CASH', '--', 'N/A', 'PENDING', 'TOTAL', 'ACCOUNT TOTAL'].includes(t)) return false
-  // Common money-market / settlement funds
-  if (/^(SPAXX|FDRXX|SWVXX|VMFXX|VMRXX|FZDXX|FDLXX)/.test(t)) return false
-  if (/MONEY\s*MARKET/i.test(t)) return false
-  // Tickers: 1–10 chars, may include . or -. Accepts US (BRK.B, BF-B) and
-  // TSX (BNS.TO, REI-UN.TO). Length cap of 10 covers `ABCD-UN.TO` = 10 chars.
-  if (!/^[A-Z][A-Z0-9.\-]{0,9}$/.test(t)) return false
-  return true
-}
-
-function parseNumber(s) {
-  if (s == null) return NaN
-  const clean = String(s).replace(/[$,\s]/g, '')
-  if (clean === '' || clean === '-') return NaN
-  return Number(clean)
-}
+// CSV parser, column detection, and validators live in `src/lib/csv-import.js`
+// so they can be unit-tested against broker fixtures (see scripts/test-csv-
+// parser.mjs). Anything imported below is the same code path that the test
+// script exercises — no chance of preview-vs-import drift.
 
 export default function ImportHoldingsModal({ onClose, onAdd }) {
   const [step, setStep]       = useState('upload') // upload | preview | importing | done
@@ -170,99 +54,8 @@ export default function ImportHoldingsModal({ onClose, onAdd }) {
     reader.onload = () => {
       try {
         const text = String(reader.result || '')
-        const parsed = parseCsv(text)
-        if (parsed.length < 2) { setError("This file doesn't look like a holdings CSV — we couldn't find any data rows."); return }
-        const headerIdx = findHeaderRow(parsed)
-        const header = parsed[headerIdx]
-        const { symbolIdx, qtyIdx, priceIdx, curIdx, costPerShareIdx, costTotalIdx, marketValueIdx } = detectCols(header)
-        if (symbolIdx < 0 || qtyIdx < 0) {
-          setError(`We couldn't find a "Symbol" and "Shares" column in this CSV. Headers we saw: ${header.slice(0, 8).join(', ')}…`)
-          return
-        }
-        const data = parsed.slice(headerIdx + 1)
-        const detected = []
-        for (const r of data) {
-          const t = (r[symbolIdx] || '').toUpperCase().trim()
-          const qRaw = r[qtyIdx]
-          const q = parseNumber(qRaw)
-          if (!isValidHolding(t, q)) continue
-          // Pull price + currency if the CSV has them. For TSX tickers these
-          // are the only way we get a sensible price, since Polygon can't
-          // resolve .TO symbols. For US tickers we still prefer Polygon's
-          // live price, so CSV price is kept as a fallback only.
-          const csvPrice = priceIdx >= 0 ? parseNumber(r[priceIdx]) : NaN
-          const csvCurRaw = curIdx >= 0 ? String(r[curIdx] || '').toUpperCase().trim() : ''
-          const isTsx = isCanadianTicker(t)
-          // Cost basis. Prefer per-share, else derive from total / shares.
-          let csvCostBasis = null
-          if (costPerShareIdx >= 0) {
-            const v = parseNumber(r[costPerShareIdx])
-            if (isFinite(v) && v > 0) csvCostBasis = v
-          }
-          if (csvCostBasis == null && costTotalIdx >= 0 && q > 0) {
-            const v = parseNumber(r[costTotalIdx])
-            if (isFinite(v) && v > 0) csvCostBasis = v / q
-          }
-          // Currency resolution: explicit column wins; otherwise TSX suffix
-          // implies CAD, everything else defaults USD.
-          let currency = 'USD'
-          if (csvCurRaw === 'CAD' || csvCurRaw === 'USD') currency = csvCurRaw
-          else if (isTsx)                                  currency = 'CAD'
-          // Deduplicate — some brokerages have the same ticker across accounts.
-          // When merging, blend the cost basis weighted by shares so total cost
-          // stays right across the combined position.
-          const existing = detected.find(d => d.ticker === t)
-          if (existing) {
-            const prevShares = existing.shares
-            const prevBasis  = existing.csvCostBasis
-            const newTotalShares = prevShares + q
-            if (prevBasis != null && csvCostBasis != null) {
-              existing.csvCostBasis = ((prevBasis * prevShares) + (csvCostBasis * q)) / newTotalShares
-            } else if (csvCostBasis != null) {
-              existing.csvCostBasis = csvCostBasis
-            }
-            existing.shares = newTotalShares
-          } else {
-            // Round-trip validation: if the CSV has a market-value column,
-            // compare our parsed (shares × price) against the brokerage's own
-            // total for this row. A mismatch > 1% means we likely picked the
-            // wrong column for shares or price (Schwab CSVs in particular have
-            // similar-looking columns that are easy to confuse). We surface a
-            // warning in the preview rather than blocking — the user can still
-            // import after eyeballing, or fix the row first.
-            const csvMarketValue = marketValueIdx >= 0 ? parseNumber(r[marketValueIdx]) : NaN
-            let valueMismatch = null
-            if (isFinite(csvMarketValue) && csvMarketValue > 0 && isFinite(csvPrice) && csvPrice > 0 && q > 0) {
-              const computed = csvPrice * q
-              const diffPct = Math.abs(computed - csvMarketValue) / csvMarketValue
-              if (diffPct > 0.01) {
-                valueMismatch = {
-                  computed: Number(computed.toFixed(2)),
-                  expected: Number(csvMarketValue.toFixed(2)),
-                  diffPct: Number((diffPct * 100).toFixed(1)),
-                }
-              }
-            }
-            detected.push({
-              ticker: t,
-              shares: q,
-              selected: true,
-              currency,
-              csvPrice: isFinite(csvPrice) && csvPrice > 0 ? csvPrice : null,
-              csvCostBasis,
-              // Flag CAD rows with no usable price — they need manual entry
-              // before import can proceed, otherwise we'd silently insert $0.
-              needsManualPrice: currency === 'CAD' && (!isFinite(csvPrice) || csvPrice <= 0),
-              // Parsing-bug guard: see comment above. null when the CSV has
-              // no market-value column (most US brokerages do include it).
-              valueMismatch,
-            })
-          }
-        }
-        if (detected.length === 0) {
-          setError(`We parsed your file but didn't find any valid stock tickers. Cash, money-market, and bond funds are skipped automatically. Try a different export file.`)
-          return
-        }
+        const { rows: detected, error: parseErr } = parseHoldingsCsv(text)
+        if (parseErr) { setError(parseErr); return }
         setRows(detected)
         // Reset the verification gate for every new parse. Otherwise a user
         // who ticked "I verified" for CSV A, clicked Back, and uploaded CSV B
@@ -286,6 +79,16 @@ export default function ImportHoldingsModal({ onClose, onAdd }) {
       // would now be misleading in the tooltip.
       if ('shares' in patch || 'csvPrice' in patch || 'ticker' in patch) {
         merged.valueMismatch = null
+      }
+      // Recompute sanity caps against the new values. The user may have
+      // corrected a parser misread (1,000,000 → 100), and we want the
+      // warning to clear when that happens. Or vice versa — they may have
+      // typed something implausible, in which case the warning re-fires.
+      if ('shares' in patch || 'csvPrice' in patch) {
+        merged.sanityWarning = sanityCheckNumbers(
+          Number(merged.shares),
+          Number(merged.csvPrice),
+        )
       }
       return merged
     }))
@@ -375,6 +178,37 @@ export default function ImportHoldingsModal({ onClose, onAdd }) {
     setProg({ done: toImport.length, total: toImport.length, current: '' })
     setResults({ ok, failed, failedList })
     setStep('done')
+
+    // Audit log — fire-and-forget so a logging failure can't block the user's
+    // success state. We log counts + USD total + filename only; no per-row
+    // tickers, no per-row shares, no per-row prices. See migration comment
+    // in supabase/migrations/20260525_import_log.sql for the privacy posture.
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user?.id) {
+        // Sum USD-side imported value. CAD rows aren't FX'd here; they'd
+        // require ensureFreshRates() and we want this write to be cheap
+        // and synchronous-feeling. Acceptable limitation for an audit row.
+        const totalValueUsd = toImport
+          .filter(r => r.currency !== 'CAD' && r.csvPrice && r.csvPrice > 0)
+          .reduce((sum, r) => sum + (r.csvPrice * r.shares), 0)
+        await supabase.from('import_log').insert({
+          user_id:         user.id,
+          success_count:   ok,
+          failed_count:    failed,
+          total_rows:      toImport.length,
+          total_value_usd: Number(totalValueUsd.toFixed(2)) || null,
+          source_filename: fileName ? String(fileName).slice(0, 255) : null,
+          error_message:   null,
+        })
+      }
+    } catch (e) {
+      // Audit failure is non-fatal. The user's import still succeeded;
+      // we just don't have a row to investigate later if something turns
+      // up wrong. Worth logging to console in dev so we notice if RLS
+      // misconfig is silently dropping every audit row.
+      if (import.meta.env.DEV) console.warn('[import] audit log failed:', e.message)
+    }
   }
 
   const btnPrimary = { background:C.blue, color:"#fff", border:"none", borderRadius:9, cursor:"pointer", fontFamily:"inherit", fontWeight:600, fontSize:13, padding:"10px 16px", transition:"opacity 0.2s" }
@@ -477,7 +311,7 @@ export default function ImportHoldingsModal({ onClose, onAdd }) {
                             style={{cursor:"pointer",accentColor:C.blue}}/>
                         </td>
                         <td style={{padding:"8px 12px"}}>
-                          <div style={{display:"flex",alignItems:"center",gap:6}}>
+                          <div style={{display:"flex",alignItems:"center",gap:6,flexWrap:"wrap"}}>
                             <input value={r.ticker} onChange={e=>{
                               const next = e.target.value.toUpperCase()
                               // Re-detect currency if the user edits ticker into/out of TSX territory.
@@ -488,19 +322,36 @@ export default function ImportHoldingsModal({ onClose, onAdd }) {
                             {r.currency && r.currency !== 'USD' && (
                               <span style={{background:`${C.emerald}16`,color:C.emerald,border:`1px solid ${C.emerald}30`,borderRadius:4,padding:"1px 5px",fontSize:9,fontWeight:700,letterSpacing:"0.06em"}}>{r.currency}</span>
                             )}
-                            {/* Round-trip warning: surfaces when our parsed
-                                shares × price diverges > 1% from the CSV's
-                                own market-value column. Almost always means
-                                a column got mis-mapped at parse time. Hover
-                                tooltip shows exactly what we got vs expected. */}
+                            {/* At-a-glance scan chips. The actual mismatch detail
+                                renders inline below this row (next sibling div)
+                                because the hover-only tooltip pattern is
+                                invisible on touch devices. */}
                             {r.valueMismatch && (
-                              <span
-                                title={`We parsed this as ${r.shares} × ${r.csvPrice} = ${r.valueMismatch.computed}, but your CSV's market value column says ${r.valueMismatch.expected} (${r.valueMismatch.diffPct}% off). Verify shares + price before importing.`}
-                                style={{background:`${C.gold}1a`,color:C.gold,border:`1px solid ${C.gold}50`,borderRadius:4,padding:"1px 5px",fontSize:9,fontWeight:700,letterSpacing:"0.06em",cursor:"help"}}>
+                              <span style={{background:`${C.gold}1a`,color:C.gold,border:`1px solid ${C.gold}50`,borderRadius:4,padding:"1px 5px",fontSize:9,fontWeight:700,letterSpacing:"0.06em"}}>
                                 CHECK
                               </span>
                             )}
+                            {r.sanityWarning && (
+                              <span style={{background:`${C.gold}1a`,color:C.gold,border:`1px solid ${C.gold}50`,borderRadius:4,padding:"1px 5px",fontSize:9,fontWeight:700,letterSpacing:"0.06em"}}>
+                                REVIEW
+                              </span>
+                            )}
                           </div>
+                          {/* Inline mismatch detail — visible on every device,
+                              wraps inside the cell so it doesn't break the
+                              table layout. Both warning types stack here. */}
+                          {(r.valueMismatch || r.sanityWarning) && (
+                            <div style={{fontSize:10,color:C.gold,marginTop:5,lineHeight:1.45,maxWidth:280}}>
+                              {r.valueMismatch && (
+                                <div>
+                                  Parsed as {r.shares} × ${r.csvPrice} = ${r.valueMismatch.computed}, but CSV says ${r.valueMismatch.expected} ({r.valueMismatch.diffPct}% off).
+                                </div>
+                              )}
+                              {r.sanityWarning && (
+                                <div>{r.sanityWarning}.</div>
+                              )}
+                            </div>
+                          )}
                         </td>
                         <td style={{padding:"8px 12px"}}>
                           <input type="number" inputMode="decimal" step="0.0001" min="0" value={r.shares} onChange={e=>updateRow(i,{shares:Number(e.target.value)||0})}
@@ -552,15 +403,16 @@ export default function ImportHoldingsModal({ onClose, onAdd }) {
               </div>
             )}
 
-            {/* Round-trip mismatch summary. Fires when one or more rows had
-                shares × price drift > 1% from the CSV's own market-value
-                column. Per-row "CHECK" badges show which ones in the table
-                above; this summary nudges the user to actually look at them. */}
-            {rows.some(r => r.selected && r.valueMismatch) && (() => {
-              const flagged = rows.filter(r => r.selected && r.valueMismatch).length
+            {/* Parsing-quality summary. Two failure modes get folded together:
+                  CHECK rows — shares × price disagrees with CSV's value column
+                  REVIEW rows — shares or price hits an implausibility threshold
+                Per-row badges + inline detail show the specifics on each row;
+                this banner just counts and nudges. */}
+            {rows.some(r => r.selected && (r.valueMismatch || r.sanityWarning)) && (() => {
+              const flagged = rows.filter(r => r.selected && (r.valueMismatch || r.sanityWarning)).length
               return (
                 <div style={{fontSize:11,color:C.gold,marginBottom:12,padding:"8px 12px",background:`${C.gold}10`,border:`1px solid ${C.gold}40`,borderRadius:8,lineHeight:1.5}}>
-                  <strong>Values look off:</strong> {flagged} row{flagged===1?"":"s"} {flagged===1?"has":"have"} a shares × price total that doesn't match the value column in your CSV. Hover the "CHECK" badge on each row to see the numbers, and edit shares/price if needed before importing.
+                  <strong>Review needed:</strong> {flagged} row{flagged===1?"":"s"} look off (either shares × price doesn't match your CSV's value column, or the numbers look implausible). Scan the badges in the rows above and edit before importing.
                 </div>
               )
             })()}
