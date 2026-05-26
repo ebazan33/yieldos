@@ -1,6 +1,15 @@
 {
   "rewrites": [
     { "source": "/((?!api|assets|blog/|dividend/|share/|.*\\..*).*)", "destination": "/" }
+  ],
+  "crons": [
+    {
+      "path": "/api/refresh-dividend-calendar",
+      "schedule": "0 9 * * *"
+    },
+    {
+      "path": "/api/weekly-digest",
+      "schedule": "0 13 * * 1"
+    }
   ]
 }
-
