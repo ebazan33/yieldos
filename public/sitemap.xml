@@ -29,6 +29,15 @@
     <priority>0.9</priority>
   </url>
 
+  <!-- Dedicated landing page for directory referrers (topdividendtools.com,
+       toolify.ai listings, etc). Also targets "dividend tracker" head term. -->
+  <url>
+    <loc>https://yieldos.app/dividend-tracker.html</loc>
+    <lastmod>2026-05-26</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
   <!-- NOTE: We do NOT submit hash-fragment URLs (#pricing, #privacy, #terms).
        Google treats those as the same page as / and listing them as separate
        URLs wastes crawl budget AND creates "Discovered – currently not indexed"
