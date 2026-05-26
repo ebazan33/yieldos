@@ -4,13 +4,25 @@
 // No auth required: this is safe to call publicly because it only leaks
 // 4 characters total (2 prefix + 2 suffix) plus the length.
 
-export default function handler(req, res) {
-  const v = process.env.CRON_SECRET || '';
-  res.status(200).json({
+function probe(name) {
+  const v = process.env[name] || '';
+  return {
     is_set: v.length > 0,
     length: v.length,
-    prefix: v.slice(0, 4),
+    prefix: v.slice(0, 8),
     suffix: v.slice(-4),
-    ends_with_equals: v.endsWith('='),
+    starts_with_https: v.startsWith('https://'),
+    has_trailing_slash: v.endsWith('/'),
+    has_whitespace: /\s/.test(v),
+  };
+}
+
+export default function handler(req, res) {
+  res.status(200).json({
+    CRON_SECRET: probe('CRON_SECRET'),
+    SUPABASE_URL: probe('SUPABASE_URL'),
+    SUPABASE_SERVICE_ROLE_KEY: probe('SUPABASE_SERVICE_ROLE_KEY'),
+    POLYGON_API_KEY_set: !!process.env.POLYGON_API_KEY,
+    VITE_POLYGON_KEY_set: !!process.env.VITE_POLYGON_KEY,
   });
 }
