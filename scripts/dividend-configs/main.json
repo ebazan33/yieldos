@@ -1,0 +1,192 @@
+{
+  "ticker": "MAIN",
+  "name": "Main Street Capital Corporation",
+  "exchange": "NYSE",
+  "type": "bdc",
+  "frequency": "Monthly",
+  "subhead": "Main Street Capital is the gold-standard monthly-paying BDC. Never cut its dividend since going public in 2007 and pays semi-annual supplemental dividends on top of the regular monthly distribution. This page covers MAIN's 2026 pay schedule, current 5.9% yield, recent payment history, and how MAIN compares to other monthly income vehicles like O, ARCC, and PSEC.",
+  "byline": "Updated by Elian Bazan · May 2026",
+  "badges": [
+    {
+      "label": "Never cut since 2007 IPO",
+      "color": "gold"
+    },
+    {
+      "label": "Monthly + supplementals",
+      "color": "emerald"
+    },
+    {
+      "label": "Business Development Company",
+      "color": "blue"
+    }
+  ],
+  "stats": [
+    {
+      "label": "Next Ex-Date",
+      "value": "Jun 18, 2026",
+      "sub": "estimated"
+    },
+    {
+      "label": "Last Payment",
+      "value": "$0.255",
+      "sub": "May 15, 2026",
+      "highlight": true
+    },
+    {
+      "label": "TTM Yield",
+      "value": "5.91%",
+      "sub": "regular + supplemental"
+    },
+    {
+      "label": "5-yr Div CAGR",
+      "value": "+5.5%",
+      "sub": "compound annual"
+    }
+  ],
+  "statsAsOf": "May 2026",
+  "editorial": "Main Street Capital is a Business Development Company (BDC), which is a special tax structure created by Congress in 1980 to encourage private credit to middle-market US businesses. BDCs are required to distribute 90%+ of taxable income to shareholders, which is how they avoid corporate tax. MAIN specifically focuses on lower-middle-market companies, businesses with $10M-$150M in revenue, too small for big private equity funds but too big for community banks.\n\nFor dividend investors, MAIN's track record is uniquely clean. The company has never cut its monthly dividend since its 2007 IPO, including through 2008's financial crisis and 2020's pandemic. It's one of only a handful of BDCs that can credibly claim that. On top of the regular monthly dividend (currently $0.255/month, or about $3.06 annually), MAIN pays semi-annual supplemental dividends from excess earnings, typically adding another $1.20-$1.80 per year. The combined yield runs around 5.9%, with the supplementals providing the upside in good earnings years.\n\nThe trade-offs are specific to BDCs. First, distributions are mostly taxed as ordinary income, not qualified dividends. MAIN is best held inside a Roth IRA or 401(k). Second, BDC balance sheets are levered (typically 0.7-1.0x debt-to-equity), so a recession that hits middle-market businesses hits BDC NAVs hard. Third, MAIN's premium to NAV is consistently above 1.5x, meaning you're paying a meaningful premium for the company's track record. For income investors who want monthly cash flow from a BDC and value the never-cut history above maximum yield, MAIN is the textbook choice. For investors prioritizing yield over track record, names like ARCC (4-5%) or PSEC (11%) are alternatives at very different risk profiles.",
+  "schedule": {
+    "heading": "When does MAIN pay dividends?",
+    "paragraph": "MAIN pays monthly. The regular dividend hits your brokerage account on the 15th of each month, with ex-dividend dates falling roughly two weeks earlier. The semi-annual supplemental dividends arrive in March and September, paid alongside the regular monthly distribution. MAIN announces the regular monthly amount and supplemental size in its quarterly earnings releases."
+  },
+  "history": [
+    {
+      "exDate": "May 1, 2026",
+      "payDate": "May 15, 2026",
+      "amount": "$0.255",
+      "notes": "regular monthly"
+    },
+    {
+      "exDate": "Mar 6, 2026",
+      "payDate": "Mar 14, 2026",
+      "amount": "$0.255",
+      "notes": "+ $0.30 supplemental"
+    },
+    {
+      "exDate": "Feb 3, 2026",
+      "payDate": "Feb 14, 2026",
+      "amount": "$0.255",
+      "notes": ""
+    },
+    {
+      "exDate": "Jan 2, 2026",
+      "payDate": "Jan 15, 2026",
+      "amount": "$0.255",
+      "notes": ""
+    },
+    {
+      "exDate": "Dec 1, 2025",
+      "payDate": "Dec 15, 2025",
+      "amount": "$0.250",
+      "notes": ""
+    },
+    {
+      "exDate": "Nov 3, 2025",
+      "payDate": "Nov 14, 2025",
+      "amount": "$0.250",
+      "notes": ""
+    },
+    {
+      "exDate": "Oct 1, 2025",
+      "payDate": "Oct 15, 2025",
+      "amount": "$0.250",
+      "notes": ""
+    },
+    {
+      "exDate": "Sep 5, 2025",
+      "payDate": "Sep 15, 2025",
+      "amount": "$0.250",
+      "notes": "+ $0.30 supplemental"
+    }
+  ],
+  "peers": {
+    "heading": "How MAIN compares to other monthly income vehicles",
+    "intro": "For dividend investors evaluating MAIN against other monthly-paying income vehicles:",
+    "columns": [
+      "Ticker",
+      "Yield",
+      "5-yr CAGR",
+      "Track record"
+    ],
+    "rows": [
+      {
+        "ticker": "MAIN",
+        "self": true,
+        "cells": [
+          "5.91%",
+          "+5.5%",
+          "Never cut since 2007"
+        ]
+      },
+      {
+        "ticker": "O",
+        "link": "/dividend/o.html",
+        "cells": [
+          "5.61%",
+          "+3.8%",
+          "30 yrs · Aristocrat (REIT)"
+        ]
+      },
+      {
+        "ticker": "ARCC",
+        "link": "/dividend/arcc.html",
+        "cells": [
+          "8.50%",
+          "+1.5%",
+          "Special divs + cuts in 2017"
+        ]
+      },
+      {
+        "ticker": "PSEC",
+        "link": "/dividend/psec.html",
+        "cells": [
+          "11.0%",
+          "−3%",
+          "Multiple cuts since 2014"
+        ]
+      }
+    ]
+  },
+  "primer": {
+    "heading": "What 'BDC dividends' actually mean for income investors",
+    "body": "A Business Development Company is essentially a publicly-traded private credit fund. BDCs lend money to middle-market US businesses (typically $10M-$500M revenue) that are too small for the public bond market but too big for community banks. The yield comes from the interest on those loans, passed through to shareholders.\n\nThe BDC structure has three implications dividend investors should know. First, distributions are mostly ordinary income (not qualified), so BDCs are tax-inefficient in taxable accounts. Second, BDCs use moderate leverage (typically 0.7-1.0x debt-to-equity), which amplifies both returns and credit losses. Third, BDC NAV per share is sensitive to credit cycles, in a recession, the value of the underlying loan book drops, and the stock often drops with it. MAIN's premium-to-NAV multiple has historically been the highest in the sector because of its track record; in a downturn that premium can compress quickly. None of this changes the fact that MAIN has paid every monthly dividend on time since 2007."
+  },
+  "faq": [
+    {
+      "q": "When does MAIN pay dividends in 2026?",
+      "a": "MAIN pays monthly. 2026 regular monthly payments arrive on the 15th of each month. Semi-annual supplemental dividends are typically paid alongside the March and September monthly payments."
+    },
+    {
+      "q": "What is MAIN's current dividend yield?",
+      "a": "MAIN's trailing 12-month yield was approximately 5.91% as of May 2026, combining the regular monthly dividend (~$3.06/year) and the semi-annual supplemental dividends (~$0.60/year). The supplemental portion varies with quarterly earnings."
+    },
+    {
+      "q": "Has MAIN ever cut its dividend?",
+      "a": "No. Main Street Capital has never cut its regular monthly dividend since going public in 2007. This is a notable record for a BDC, most peers cut at least once during the 2008 financial crisis or the 2020 pandemic. MAIN held the line through both."
+    },
+    {
+      "q": "How are MAIN dividends taxed?",
+      "a": "BDC distributions are mostly ordinary income at your marginal rate. A small portion may be qualified dividends or return of capital, but most of the payment is taxed at ordinary rates. MAIN is most efficient inside a Roth IRA, traditional IRA, or 401(k). In a taxable account, the after-tax yield is meaningfully lower."
+    },
+    {
+      "q": "How is MAIN different from a monthly REIT like O?",
+      "a": "Different sectors with different risks. O owns real estate and collects rent; MAIN owns middle-market private debt and collects interest. O has 30 years of dividend increases as an S&P 500 Aristocrat; MAIN has 18 years of never-cutting. O is interest-rate sensitive (drops when bond yields rise); MAIN is credit-cycle sensitive (drops when recession threatens middle-market borrowers). Many monthly-income portfolios hold both for diversification."
+    },
+    {
+      "q": "What's the biggest risk in holding MAIN?",
+      "a": "Two real ones. First, recession credit risk: a deep US recession would hurt MAIN's borrowers, which would compress NAV and possibly force a dividend cut. Second, premium-to-NAV compression: MAIN trades at 1.5-2x book value, which is unusually high. In a stress scenario, that multiple could halve quickly, hurting total return even if the dividend holds. Neither has materialized in 18 years, but neither has been tested by a true recession either."
+    }
+  ],
+  "disclosure": "YieldOS is a third-party dividend tracking platform and is not affiliated with Main Street Capital Corporation. Dividend schedules, yields, and figures on this page are estimates derived from public historical data as of May 2026 and may not reflect current market conditions. Nothing on this page is investment advice. Consult a licensed financial advisor before making investment decisions.",
+  "seo": {
+    "title": "MAIN Dividend 2026: Monthly Pay Schedule, 5.91% Yield, Never-Cut BDC | YieldOS",
+    "description": "Main Street Capital (MAIN) has never cut its monthly dividend since its 2007 IPO. See MAIN's 2026 pay schedule, current 5.91% yield (regular + supplemental), 8-month payment history, and how MAIN compares to O, ARCC, and PSEC.",
+    "keywords": "MAIN dividend, when does MAIN pay dividends, MAIN ex-dividend date 2026, Main Street Capital dividend, MAIN monthly dividend, MAIN supplemental dividend, MAIN BDC, MAIN vs O, MAIN vs ARCC, monthly dividend BDC",
+    "ogTitle": "MAIN Dividend 2026. Monthly + Supplemental, 5.91% Yield",
+    "ogDescription": "Main Street Capital. Never cut since 2007. Monthly + semi-annual supplemental dividends. 5.91% yield. 2026 schedule + peer comparison.",
+    "jsonLdName": "Main Street Capital Corporation",
+    "jsonLdAlternate": "MAIN",
+    "jsonLdDescription": "Monthly dividend payer. Business Development Company (BDC) that has never cut its dividend since its 2007 IPO. Pays semi-annual supplemental dividends on top of the regular monthly distribution. Listed on NYSE.",
+    "jsonLdCategory": "Business Development Company"
+  }
+}

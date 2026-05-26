@@ -1,0 +1,192 @@
+{
+  "ticker": "VYM",
+  "name": "Vanguard High Dividend Yield ETF",
+  "exchange": "NYSE Arca",
+  "type": "etf",
+  "frequency": "Quarterly",
+  "subhead": "VYM is Vanguard's flagship dividend ETF, with $70B+ in assets and 550+ underlying holdings. The broadest, cheapest large-cap US dividend index you can buy. This page covers VYM's quarterly distribution schedule, current 2.95% yield, recent payment history, and how VYM compares to SCHD, DGRO, and HDV.",
+  "byline": "Updated by Elian Bazan · May 2026",
+  "badges": [
+    {
+      "label": "$70B+ AUM",
+      "color": "gold"
+    },
+    {
+      "label": "Quarterly Distributions",
+      "color": "emerald"
+    },
+    {
+      "label": "550+ holdings",
+      "color": "blue"
+    }
+  ],
+  "stats": [
+    {
+      "label": "Next Ex-Date",
+      "value": "Jun 23, 2026",
+      "sub": "estimated"
+    },
+    {
+      "label": "Last Distribution",
+      "value": "$0.870",
+      "sub": "Mar 27, 2026",
+      "highlight": true
+    },
+    {
+      "label": "TTM Yield",
+      "value": "2.95%",
+      "sub": "trailing 12 months"
+    },
+    {
+      "label": "Expense Ratio",
+      "value": "0.06%",
+      "sub": "near rock-bottom"
+    }
+  ],
+  "statsAsOf": "May 2026",
+  "editorial": "VYM tracks the FTSE High Dividend Yield Index, which is essentially every US large-cap and mid-cap stock paying an above-average dividend, weighted by market cap. The result is a 550+ name basket dominated by financials (JPMorgan, ExxonMobil, JNJ, P&G, Home Depot, Broadcom). The strategy is deliberately uncomplicated: own everything that pays a meaningful dividend, weight by size, rebalance once a year. Vanguard charges 0.06% to do it.\n\nFor dividend investors, VYM is the conservative diversified core. The 550-holding basket means no single dividend cut can move the needle. The 2.95% yield is lower than yield-maximizing ETFs (HDV, SPYD) but the quality bias and diversification mean the dividend has grown reliably for 14 years running. The 5-year dividend CAGR is around 6%, slower than SCHD's 11% but still keeping ahead of inflation.\n\nThe main trade-off vs. SCHD: VYM owns nearly 5x more holdings, which dilutes the upside. SCHD's tighter 100-name basket with explicit quality screens has delivered higher total return and faster dividend growth over the last decade. VYM is the conservative choice. SCHD is the conviction choice. Many dividend portfolios hold both, though the 50%+ holdings overlap means the diversification benefit of pairing them is smaller than most investors think.",
+  "schedule": {
+    "heading": "When does VYM pay distributions?",
+    "paragraph": "VYM distributes quarterly, with payments typically arriving in late March, late June, late September, and late December. Ex-dividend dates fall a few days before pay date, and Vanguard announces the distribution amount about a week ahead. VYM has never skipped a distribution since its 2006 inception."
+  },
+  "history": [
+    {
+      "exDate": "Mar 25, 2026",
+      "payDate": "Mar 27, 2026",
+      "amount": "$0.870",
+      "notes": ""
+    },
+    {
+      "exDate": "Dec 24, 2025",
+      "payDate": "Dec 26, 2025",
+      "amount": "$1.050",
+      "notes": "year-end larger"
+    },
+    {
+      "exDate": "Sep 24, 2025",
+      "payDate": "Sep 26, 2025",
+      "amount": "$0.820",
+      "notes": ""
+    },
+    {
+      "exDate": "Jun 25, 2025",
+      "payDate": "Jun 27, 2025",
+      "amount": "$0.795",
+      "notes": ""
+    },
+    {
+      "exDate": "Mar 26, 2025",
+      "payDate": "Mar 28, 2025",
+      "amount": "$0.810",
+      "notes": ""
+    },
+    {
+      "exDate": "Dec 23, 2024",
+      "payDate": "Dec 26, 2024",
+      "amount": "$0.995",
+      "notes": "year-end larger"
+    },
+    {
+      "exDate": "Sep 25, 2024",
+      "payDate": "Sep 27, 2024",
+      "amount": "$0.780",
+      "notes": ""
+    },
+    {
+      "exDate": "Jun 26, 2024",
+      "payDate": "Jun 28, 2024",
+      "amount": "$0.755",
+      "notes": ""
+    }
+  ],
+  "peers": {
+    "heading": "How VYM compares to other broad dividend ETFs",
+    "intro": "For dividend investors evaluating VYM against alternative diversified dividend ETF options:",
+    "columns": [
+      "Ticker",
+      "Yield",
+      "5-yr CAGR",
+      "Holdings"
+    ],
+    "rows": [
+      {
+        "ticker": "VYM",
+        "self": true,
+        "cells": [
+          "2.95%",
+          "+6.2%",
+          "550+"
+        ]
+      },
+      {
+        "ticker": "SCHD",
+        "link": "/dividend/schd.html",
+        "cells": [
+          "3.82%",
+          "+11.1%",
+          "~100, quality screen"
+        ]
+      },
+      {
+        "ticker": "DGRO",
+        "link": "/dividend/dgro.html",
+        "cells": [
+          "2.35%",
+          "+9.5%",
+          "~430, growth focus"
+        ]
+      },
+      {
+        "ticker": "HDV",
+        "link": "/dividend/hdv.html",
+        "cells": [
+          "3.60%",
+          "+5.5%",
+          "75, high-yield screen"
+        ]
+      }
+    ]
+  },
+  "primer": {
+    "heading": "Why broad dividend ETFs sit at the core of most income portfolios",
+    "body": "Broad dividend ETFs solve a problem that picking individual dividend stocks creates: concentration risk. Even a 20-stock dividend portfolio has roughly 5% per name. If one cuts, your income drops noticeably. With VYM, no single holding is more than ~3.5%, and a cut in any one stock barely registers at the portfolio level.\n\nThe trade-off, which experienced dividend investors know, is that diversification within the dividend universe also dilutes the strategy. SCHD's tighter, screened basket has outperformed VYM by ~2% annualized over the last decade. For a conservative income investor, especially one already in retirement. VYM's 'own everything' approach is the lower-anxiety choice. For an accumulator with a 10+ year horizon, SCHD or DGRO is the higher-return choice."
+  },
+  "faq": [
+    {
+      "q": "When does VYM pay dividends in 2026?",
+      "a": "VYM distributes quarterly. 2026 payments are scheduled around late March, late June, late September, and late December. Ex-dividend dates fall a few business days before the pay date."
+    },
+    {
+      "q": "What is VYM's current dividend yield?",
+      "a": "VYM's trailing 12-month yield was approximately 2.95% as of May 2026, based on the most recent four quarterly distributions totaling about $3.55 per share over the year. Yield moves inversely with share price."
+    },
+    {
+      "q": "Is VYM a better choice than SCHD?",
+      "a": "Different jobs. VYM owns 550+ stocks; SCHD owns ~100 with a quality screen. SCHD has delivered higher yield (3.82% vs 2.95%) and faster dividend growth (~11% vs ~6% 5-year CAGR) over the last decade. VYM is the more diversified, lower-conviction choice. Many dividend investors hold both, though the ~50% holdings overlap dilutes the diversification benefit."
+    },
+    {
+      "q": "How are VYM distributions taxed?",
+      "a": "VYM's distributions are predominantly qualified dividends, taxed at the 0%/15%/20% qualified-dividend rate for US investors. This makes VYM tax-efficient in a taxable account, in contrast to REIT ETFs or covered-call ETFs whose distributions are taxed as ordinary income."
+    },
+    {
+      "q": "What sectors dominate VYM?",
+      "a": "VYM's largest sector weights are Financials (~22%), Healthcare (~15%), Consumer Staples (~13%), and Industrials (~11%). It is notably light on Technology (Apple is a major holding but Microsoft, Nvidia, and the rest are excluded for not paying meaningful dividends)."
+    },
+    {
+      "q": "Is VYM safe for retirement?",
+      "a": "VYM has one of the cleanest dividend-growth records of any large dividend ETF, with 14 consecutive years of growing distributions and a portfolio that survived 2008, 2020, and 2022 without a cut. Combined with its 0.06% expense ratio, VYM is widely held as a core dividend position in retirement portfolios. As always, this is not investment advice."
+    }
+  ],
+  "disclosure": "YieldOS is a third-party dividend tracking platform and is not affiliated with The Vanguard Group or the Vanguard High Dividend Yield ETF. Distribution figures and yields on this page are estimates derived from public historical data as of May 2026 and may not reflect current market conditions. Nothing on this page is investment advice. Consult a licensed financial advisor before making investment decisions.",
+  "seo": {
+    "title": "VYM Dividend 2026: Quarterly Pay Schedule, 2.95% Yield, $70B Vanguard ETF | YieldOS",
+    "description": "Vanguard High Dividend Yield ETF (VYM) pays quarterly distributions yielding ~2.95%. See the 2026 pay schedule, 8-quarter history, and how VYM compares to SCHD, DGRO, and HDV.",
+    "keywords": "VYM dividend, VYM distribution schedule, VYM ex-dividend date 2026, Vanguard High Dividend Yield ETF, VYM vs SCHD, VYM vs DGRO, VYM yield, VYM dividend history",
+    "ogTitle": "VYM Dividend 2026. Quarterly Schedule, 2.95% Yield",
+    "ogDescription": "Vanguard's $70B dividend ETF. 550+ holdings, quarterly payouts, 0.06% expense. 2026 schedule + peer comparison.",
+    "jsonLdName": "Vanguard High Dividend Yield ETF",
+    "jsonLdAlternate": "VYM",
+    "jsonLdDescription": "Broad-market dividend ETF tracking the FTSE High Dividend Yield Index. ~2.95% yield. 550+ holdings. Listed on NYSE Arca.",
+    "jsonLdCategory": "Broad-Market Dividend ETF"
+  }
+}

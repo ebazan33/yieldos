@@ -1,0 +1,192 @@
+{
+  "ticker": "PG",
+  "name": "The Procter & Gamble Company",
+  "exchange": "NYSE",
+  "type": "stock",
+  "frequency": "Quarterly",
+  "subhead": "Procter & Gamble is a Dividend King with 68 consecutive years of dividend increases, the longest active streak of any major US company. This page covers PG's 2026 quarterly pay schedule, current 2.42% yield, recent payment history, and how PG compares to peers like KO, JNJ, and CL.",
+  "byline": "Updated by Elian Bazan · May 2026",
+  "badges": [
+    {
+      "label": "👑 Dividend King · 68 years",
+      "color": "gold"
+    },
+    {
+      "label": "Longest US streak (since 1957)",
+      "color": "emerald"
+    },
+    {
+      "label": "Consumer Staples",
+      "color": "blue"
+    }
+  ],
+  "stats": [
+    {
+      "label": "Next Ex-Date",
+      "value": "Jul 22, 2026",
+      "sub": "estimated"
+    },
+    {
+      "label": "Last Payment",
+      "value": "$1.06",
+      "sub": "May 15, 2026",
+      "highlight": true
+    },
+    {
+      "label": "TTM Yield",
+      "value": "2.42%",
+      "sub": "trailing 12 months"
+    },
+    {
+      "label": "5-yr Div CAGR",
+      "value": "+5.7%",
+      "sub": "compound annual"
+    }
+  ],
+  "statsAsOf": "May 2026",
+  "editorial": "Procter & Gamble sells the products in your kitchen, bathroom, and laundry room: Tide, Crest, Pampers, Gillette, Bounty, Charmin, Olay, Pantene, Dawn, Febreze. The company touches more households globally than almost any other consumer business. Revenue is around $85B per year with operating margins in the high 20s. PG has the financial profile of a utility wrapped in the brand portfolio of a marketing company.\n\nFor dividend investors, PG holds the most prestigious title in income investing: 68 consecutive years of dividend increases, the longest active streak of any major US company. The company has raised its dividend every year since 1957, surviving every recession, oil shock, inflation spike, and financial crisis. The dividend has been paid quarterly without interruption for over 130 years. There is no other consumer staples name with a comparable track record.\n\nThe trade-off is yield. PG yields around 2.4%, lower than KO (~3%) and significantly lower than yield-chasing alternatives like Altria (~7%) or AT&T. The reason is the multiple: PG trades at a premium because the market prices in the dividend safety. For income investors who prioritize the certainty of the payment over absolute yield, PG is the textbook anchor. For investors maximizing current income, PG is too expensive relative to peers. PG's 5-year dividend CAGR of 5.7% keeps it well ahead of inflation, and recent quarters have seen the company defending margins effectively against the post-pandemic input-cost spike.",
+  "schedule": {
+    "heading": "When does PG pay dividends?",
+    "paragraph": "PG pays quarterly. Payments typically arrive in mid-February, mid-May, mid-August, and mid-November. Ex-dividend dates fall roughly two to three weeks earlier, usually in late January, late April, late July, and late October. PG's board announces each year's raise at the April meeting, with the new amount taking effect on the May payment."
+  },
+  "history": [
+    {
+      "exDate": "Apr 24, 2026",
+      "payDate": "May 15, 2026",
+      "amount": "$1.06",
+      "notes": "68th consecutive annual raise"
+    },
+    {
+      "exDate": "Jan 24, 2026",
+      "payDate": "Feb 16, 2026",
+      "amount": "$1.04",
+      "notes": ""
+    },
+    {
+      "exDate": "Oct 25, 2025",
+      "payDate": "Nov 15, 2025",
+      "amount": "$1.04",
+      "notes": ""
+    },
+    {
+      "exDate": "Jul 26, 2025",
+      "payDate": "Aug 15, 2025",
+      "amount": "$1.04",
+      "notes": ""
+    },
+    {
+      "exDate": "Apr 25, 2025",
+      "payDate": "May 15, 2025",
+      "amount": "$1.04",
+      "notes": "67th consecutive annual raise"
+    },
+    {
+      "exDate": "Jan 24, 2025",
+      "payDate": "Feb 17, 2025",
+      "amount": "$1.0065",
+      "notes": ""
+    },
+    {
+      "exDate": "Oct 25, 2024",
+      "payDate": "Nov 15, 2024",
+      "amount": "$1.0065",
+      "notes": ""
+    },
+    {
+      "exDate": "Jul 26, 2024",
+      "payDate": "Aug 15, 2024",
+      "amount": "$1.0065",
+      "notes": ""
+    }
+  ],
+  "peers": {
+    "heading": "How PG compares to peers",
+    "intro": "For dividend investors evaluating PG against other Consumer Staples Dividend Kings and high-streak alternatives:",
+    "columns": [
+      "Ticker",
+      "Yield",
+      "5-yr CAGR",
+      "Streak"
+    ],
+    "rows": [
+      {
+        "ticker": "PG",
+        "self": true,
+        "cells": [
+          "2.42%",
+          "+5.7%",
+          "68 yrs · King (longest active)"
+        ]
+      },
+      {
+        "ticker": "KO",
+        "link": "/dividend/ko.html",
+        "cells": [
+          "2.96%",
+          "+4.8%",
+          "62 yrs · King"
+        ]
+      },
+      {
+        "ticker": "JNJ",
+        "link": "/dividend/jnj.html",
+        "cells": [
+          "3.18%",
+          "+5.9%",
+          "62 yrs · King"
+        ]
+      },
+      {
+        "ticker": "CL",
+        "link": "/dividend/cl.html",
+        "cells": [
+          "2.20%",
+          "+3.5%",
+          "61 yrs · King"
+        ]
+      }
+    ]
+  },
+  "primer": {
+    "heading": "Why the 68-year streak matters more than the 2.42% yield",
+    "body": "Dividend investors looking purely at yield will pass on PG. There are plenty of staples names yielding 3-4%, and dozens of REITs and BDCs yielding 5-8%. The case for PG isn't the headline yield; it's the predictability of every future payment.\n\nThe 68-year streak is a track record no other major US public company can claim. To have raised the dividend every year since 1957 means surviving the Vietnam-era inflation, the 1973 oil shock, stagflation, the 1987 crash, the 2000 dot-com bust, 2008, 2020, and the 2022 inflation spike. Each of those events permanently retired the dividend track records of competitors. PG kept paying and raising through all of them. For a retiree planning around dividend income, that's worth a 50-100 basis point yield haircut on day one."
+  },
+  "faq": [
+    {
+      "q": "When does PG pay dividends in 2026?",
+      "a": "PG pays quarterly. 2026 payments are scheduled for mid-February (already paid), mid-May (already paid), mid-August, and mid-November. Ex-dividend dates fall roughly two to three weeks earlier."
+    },
+    {
+      "q": "What is PG's current dividend yield?",
+      "a": "PG's trailing 12-month yield was approximately 2.42% as of May 2026, based on a quarterly payment of $1.06. Yield is on the lower side of staples Kings because the stock trades at a premium multiple."
+    },
+    {
+      "q": "Is PG the longest-running Dividend King?",
+      "a": "Yes. Procter & Gamble has raised its dividend for 68 consecutive years (since 1957), the longest active streak of any major US company. The dividend itself has been paid quarterly without interruption since 1891, making it one of the longest-running dividend records in market history."
+    },
+    {
+      "q": "How does PG's dividend growth compare to KO and JNJ?",
+      "a": "PG's 5-year CAGR is approximately 5.7%, compared to KO at ~4.8% and JNJ at ~5.9%. All three are in the same low-to-mid single-digit range. The differences are smaller than the headline yield gap suggests."
+    },
+    {
+      "q": "Why is PG's yield lower than KO's?",
+      "a": "Two reasons. First, PG trades at a higher P/E multiple than KO, which mechanically lowers the yield. Second, the market prices PG's longer track record into the stock, investors pay a premium for the 68-year streak that KO's 62 years doesn't quite match."
+    },
+    {
+      "q": "Should I hold PG, KO, or both?",
+      "a": "Many income portfolios hold both for sector diversification within consumer staples. PG dominates household products; KO dominates beverages. Their revenue streams have very low correlation despite both being staples Kings. Holding both is a more conservative play than overweighting either one."
+    }
+  ],
+  "disclosure": "YieldOS is a third-party dividend tracking platform and is not affiliated with The Procter & Gamble Company. Dividend schedules, yields, and figures on this page are estimates derived from public historical data as of May 2026 and may not reflect current market conditions. Nothing on this page is investment advice. Consult a licensed financial advisor before making investment decisions.",
+  "seo": {
+    "title": "PG Dividend 2026: Pay Schedule, Yield, 68-Year Dividend King (Longest US Streak) | YieldOS",
+    "description": "Procter & Gamble (PG) is the longest-streak Dividend King with 68 consecutive years of dividend increases. See PG's 2026 pay schedule, 2.42% yield, 8-quarter payment history, and how PG compares to KO, JNJ, and CL.",
+    "keywords": "PG dividend, when does PG pay dividends, PG ex-dividend date 2026, PG dividend history, PG dividend yield, Procter Gamble Dividend King, longest dividend streak, PG vs KO, consumer staples dividend stocks",
+    "ogTitle": "PG Dividend 2026. Pay Schedule, 68-Year Dividend King",
+    "ogDescription": "Procter & Gamble has raised the dividend every year since 1957. Longest active streak of any US company. 2026 schedule + peer comparison.",
+    "jsonLdName": "The Procter & Gamble Company",
+    "jsonLdAlternate": "PG",
+    "jsonLdDescription": "Quarterly dividend payer. Dividend King with 68 consecutive years of dividend increases (longest active US streak). Listed on NYSE.",
+    "jsonLdCategory": "Consumer Staples"
+  }
+}
