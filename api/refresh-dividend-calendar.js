@@ -95,6 +95,33 @@ function freqLabelFromDays(days) {
   return 'Annual';
 }
 
+// Pick a representative amount from recent dividends. Just using "most recent"
+// gets fooled by year-end specials and small adjustments (e.g. VXUS had a
+// $0.08 distribution mixed in among ~$0.50-$1.50 quarterly payments).
+//
+// Strategy: take the median of the last several REGULAR dividends. Regular
+// is defined as cash_amount that is not absurdly small relative to the
+// other recent payments (we cluster around the median and discard outliers
+// below 50% of it).
+function representativeAmount(pastDivs) {
+  const amounts = pastDivs
+    .slice(0, 8)
+    .map(d => Number(d.cash_amount))
+    .filter(a => Number.isFinite(a) && a > 0);
+  if (amounts.length === 0) return null;
+  if (amounts.length === 1) return amounts[0];
+
+  // First pass: median of all positive amounts.
+  const sorted = amounts.slice().sort((a, b) => a - b);
+  const median = sorted[Math.floor(sorted.length / 2)];
+
+  // Second pass: filter out amounts < 50% of median (outliers / specials),
+  // recompute median on the surviving "regular" payments.
+  const regular = amounts.filter(a => a >= median * 0.5);
+  const regSorted = regular.slice().sort((a, b) => a - b);
+  return regSorted[Math.floor(regSorted.length / 2)];
+}
+
 // Fetch the best-available next dividend for one ticker.
 //
 // Strategy:
@@ -157,11 +184,15 @@ async function fetchNextDividend(ticker) {
     : 7; // safe default: pay date 1 week after ex-date
   const projectedPayDate = addDaysIso(projectedExDate, payOffset);
 
+  // Use median of recent REGULAR dividends instead of the most-recent single
+  // payment. Avoids letting one small/large special distribution skew the
+  // projection. Falls back to the most-recent amount only if median fails.
+  const repAmount = representativeAmount(past);
   return {
     ticker,
     next_ex_date: projectedExDate,
     next_pay_date: projectedPayDate,
-    next_amount: recent.cash_amount, // assume same amount as most recent payment
+    next_amount: repAmount != null ? repAmount : recent.cash_amount,
     frequency: freqLabelFromDays(freqDays),
     last_refreshed_at: new Date().toISOString(),
     source: 'polygon_estimated',
