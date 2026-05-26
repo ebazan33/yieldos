@@ -51,15 +51,65 @@ function freqLabel(n) {
   return ({ 1: 'Annual', 2: 'Semi-Annual', 4: 'Quarterly', 12: 'Monthly' })[n] || null;
 }
 
-// Fetch upcoming dividend records for one ticker. We ask Polygon for the
-// next ~5 dividends sorted by ex-date ascending, then filter to ones with
-// ex-date >= today. We take the FIRST upcoming one as "next".
+// Add N days to a YYYY-MM-DD string. Pure date math, no timezone shenanigans.
+function addDaysIso(yyyyMmDd, days) {
+  const [y, m, d] = yyyyMmDd.split('-').map(Number);
+  const dt = new Date(Date.UTC(y, m - 1, d));
+  dt.setUTCDate(dt.getUTCDate() + days);
+  return dt.toISOString().slice(0, 10);
+}
+
+// Infer frequency interval in days from a series of past ex-dates.
+// Returns 30 for monthly, 90 for quarterly, 180 for semi-annual, 365 for annual.
+function inferFrequencyDays(pastDivs) {
+  if (pastDivs.length < 2) return 90; // safe default: quarterly
+  // Sort newest first, take recent 12 to be robust.
+  const sorted = pastDivs.slice().sort((a, b) =>
+    (b.ex_dividend_date || '').localeCompare(a.ex_dividend_date || '')
+  ).slice(0, 12);
+  // Compute average gap between consecutive ex-dates.
+  let totalDays = 0;
+  let count = 0;
+  for (let i = 1; i < sorted.length; i++) {
+    const a = new Date(sorted[i - 1].ex_dividend_date);
+    const b = new Date(sorted[i].ex_dividend_date);
+    const days = Math.round((a - b) / (1000 * 60 * 60 * 24));
+    if (days > 5 && days < 400) { // sanity-bound
+      totalDays += days;
+      count++;
+    }
+  }
+  if (count === 0) return 90;
+  const avg = totalDays / count;
+  // Snap to standard cadences.
+  if (avg < 45) return 30;
+  if (avg < 135) return 90;
+  if (avg < 270) return 180;
+  return 365;
+}
+
+function freqLabelFromDays(days) {
+  if (days <= 30) return 'Monthly';
+  if (days <= 90) return 'Quarterly';
+  if (days <= 180) return 'Semi-Annual';
+  return 'Annual';
+}
+
+// Fetch the best-available next dividend for one ticker.
+//
+// Strategy:
+//   1. Pull recent history (~12 dividends), sorted by ex-date desc.
+//   2. If any record has ex_dividend_date >= today → return it as declared.
+//   3. Else, take the most-recent past dividend and PROJECT the next one by
+//      adding the inferred frequency interval. Mark source as 'estimated'.
+//   4. If no history at all → return null.
 async function fetchNextDividend(ticker) {
   const today = new Date().toISOString().slice(0, 10);
+  // Pull a window of recent + upcoming so we can both detect declarations
+  // and infer cadence in a single call.
   const url = `https://api.polygon.io/v3/reference/dividends`
     + `?ticker=${encodeURIComponent(ticker)}`
-    + `&ex_dividend_date.gte=${today}`
-    + `&order=asc&sort=ex_dividend_date&limit=5`
+    + `&order=desc&sort=ex_dividend_date&limit=12`
     + `&apiKey=${POLYGON_KEY}`;
 
   const res = await fetch(url);
@@ -67,27 +117,54 @@ async function fetchNextDividend(ticker) {
     throw new Error(`Polygon ${res.status} for ${ticker}`);
   }
   const json = await res.json();
-  const upcoming = (json.results || []).filter(d => d.ex_dividend_date >= today);
-  if (upcoming.length === 0) return null;
+  const all = json.results || [];
+  if (all.length === 0) return null;
 
-  const next = upcoming[0];
-  // Polygon may return frequency as either a number (legacy) or a string label.
-  // We coerce numbers to labels; pass strings through.
-  let frequency = null;
-  if (typeof next.frequency === 'number') {
-    frequency = freqLabel(next.frequency);
-  } else if (typeof next.frequency === 'string') {
-    frequency = next.frequency;
+  // 1. Did Polygon declare a future dividend?
+  const upcoming = all
+    .filter(d => d.ex_dividend_date && d.ex_dividend_date >= today)
+    .sort((a, b) => a.ex_dividend_date.localeCompare(b.ex_dividend_date));
+
+  if (upcoming.length > 0) {
+    const next = upcoming[0];
+    let frequency = null;
+    if (typeof next.frequency === 'number') frequency = freqLabel(next.frequency);
+    else if (typeof next.frequency === 'string') frequency = next.frequency;
+    return {
+      ticker,
+      next_ex_date: next.ex_dividend_date,
+      next_pay_date: next.pay_date || null,
+      next_amount: next.cash_amount,
+      frequency,
+      last_refreshed_at: new Date().toISOString(),
+      source: 'polygon',
+    };
   }
+
+  // 2. No upcoming declared. Extrapolate from the most-recent past dividend.
+  const past = all
+    .filter(d => d.ex_dividend_date && d.ex_dividend_date < today)
+    .sort((a, b) => b.ex_dividend_date.localeCompare(a.ex_dividend_date));
+  if (past.length === 0) return null;
+
+  const recent = past[0];
+  const freqDays = inferFrequencyDays(all);
+  const projectedExDate = addDaysIso(recent.ex_dividend_date, freqDays);
+  const payOffset = recent.pay_date && recent.ex_dividend_date
+    ? Math.max(0, Math.round(
+        (new Date(recent.pay_date) - new Date(recent.ex_dividend_date)) / (1000 * 60 * 60 * 24)
+      ))
+    : 7; // safe default: pay date 1 week after ex-date
+  const projectedPayDate = addDaysIso(projectedExDate, payOffset);
 
   return {
     ticker,
-    next_ex_date: next.ex_dividend_date,
-    next_pay_date: next.pay_date || null,
-    next_amount: next.cash_amount,
-    frequency,
+    next_ex_date: projectedExDate,
+    next_pay_date: projectedPayDate,
+    next_amount: recent.cash_amount, // assume same amount as most recent payment
+    frequency: freqLabelFromDays(freqDays),
     last_refreshed_at: new Date().toISOString(),
-    source: 'polygon',
+    source: 'polygon_estimated',
   };
 }
 
