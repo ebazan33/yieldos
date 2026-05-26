@@ -1,0 +1,192 @@
+{
+  "ticker": "O",
+  "name": "Realty Income Corporation",
+  "exchange": "NYSE",
+  "type": "reit",
+  "frequency": "Monthly",
+  "subhead": "Realty Income (ticker: O) calls itself \"The Monthly Dividend Company\" and the brand is earned. 650+ consecutive monthly dividends paid since 1969, 30+ consecutive annual raises, S&P 500 member, and 15,000+ properties across retail, industrial, and gaming real estate. This page covers O's 2026 monthly pay schedule, current 5.6% yield, recent payment history, and how O compares to other monthly-paying REITs like STAG, MAIN, and EPR.",
+  "byline": "Updated by Elian Bazan · May 2026",
+  "badges": [
+    {
+      "label": "Monthly Dividend Aristocrat · 30 years",
+      "color": "gold"
+    },
+    {
+      "label": "650+ consecutive monthly payments",
+      "color": "emerald"
+    },
+    {
+      "label": "Triple-Net Lease REIT",
+      "color": "blue"
+    }
+  ],
+  "stats": [
+    {
+      "label": "Next Ex-Date",
+      "value": "Jun 1, 2026",
+      "sub": "estimated"
+    },
+    {
+      "label": "Last Payment",
+      "value": "$0.2680",
+      "sub": "May 15, 2026",
+      "highlight": true
+    },
+    {
+      "label": "TTM Yield",
+      "value": "5.61%",
+      "sub": "trailing 12 months"
+    },
+    {
+      "label": "5-yr Div CAGR",
+      "value": "+3.8%",
+      "sub": "compound annual"
+    }
+  ],
+  "statsAsOf": "May 2026",
+  "editorial": "Realty Income is a triple-net lease REIT, meaning the tenants pay the property taxes, insurance, and maintenance in addition to rent. The result is unusually predictable cash flow with very little operational overhead on Realty Income's side. The portfolio is enormous and unusually diversified: 15,000+ properties leased to 1,500+ tenants across 85+ industries. Top tenants include 7-Eleven, Dollar General, Walgreens, FedEx, and a growing slate of European and gaming clients. The top 10 tenants combined represent less than 20% of total rent, institutional-grade concentration risk management.\n\nFor income investors, O has earned its reputation. Monthly distributions since 1969 (the original Realty Income Trust predated the 1994 NYSE IPO). 30 consecutive years of dividend increases qualifies O as a Dividend Aristocrat. The increases happen multiple times per year, small bumps, but enough to keep up with inflation. The dividend has survived every recession in the past 30 years including 2008's financial crisis (when most other REITs cut) and 2020's pandemic.\n\nThe trade-offs: growth is genuinely slow. O's 5-year dividend CAGR is around 3.8%, lower than most non-REIT dividend names. The stock is heavily interest-rate sensitive, when bond yields spike, O's share price drops because dividend investors can get similar yield from Treasurys. And REIT dividends are taxed as ordinary income (not qualified), so O is most efficient inside a Roth IRA. For dividend investors looking for the closest thing to a 'monthly paycheck' the public market offers, O is the standard. For investors prioritizing total return or growth, it's an anchor position, not the engine.",
+  "schedule": {
+    "heading": "When does Realty Income (O) pay dividends?",
+    "paragraph": "O pays monthly. Ex-dividend dates fall on the first business day of each month, with the actual payment hitting your brokerage account on the 15th. The schedule has been remarkably consistent for over 50 years. O typically announces dividend increases multiple times per year, small bumps of a few tenths of a cent at a time, rather than one annual raise like most Aristocrats."
+  },
+  "history": [
+    {
+      "exDate": "May 1, 2026",
+      "payDate": "May 15, 2026",
+      "amount": "$0.2680",
+      "notes": ""
+    },
+    {
+      "exDate": "Apr 1, 2026",
+      "payDate": "Apr 15, 2026",
+      "amount": "$0.2675",
+      "notes": "small raise"
+    },
+    {
+      "exDate": "Mar 3, 2026",
+      "payDate": "Mar 14, 2026",
+      "amount": "$0.2670",
+      "notes": ""
+    },
+    {
+      "exDate": "Feb 3, 2026",
+      "payDate": "Feb 14, 2026",
+      "amount": "$0.2665",
+      "notes": "small raise"
+    },
+    {
+      "exDate": "Jan 2, 2026",
+      "payDate": "Jan 15, 2026",
+      "amount": "$0.2660",
+      "notes": ""
+    },
+    {
+      "exDate": "Dec 1, 2025",
+      "payDate": "Dec 15, 2025",
+      "amount": "$0.2645",
+      "notes": ""
+    },
+    {
+      "exDate": "Nov 3, 2025",
+      "payDate": "Nov 14, 2025",
+      "amount": "$0.2640",
+      "notes": "small raise"
+    },
+    {
+      "exDate": "Oct 1, 2025",
+      "payDate": "Oct 15, 2025",
+      "amount": "$0.2635",
+      "notes": ""
+    }
+  ],
+  "peers": {
+    "heading": "How O compares to other monthly-paying REITs and income vehicles",
+    "intro": "For dividend investors evaluating Realty Income against alternative monthly-paying income vehicles:",
+    "columns": [
+      "Ticker",
+      "Yield",
+      "5-yr CAGR",
+      "Streak"
+    ],
+    "rows": [
+      {
+        "ticker": "O",
+        "self": true,
+        "cells": [
+          "5.61%",
+          "+3.8%",
+          "30 yrs · Aristocrat"
+        ]
+      },
+      {
+        "ticker": "STAG",
+        "link": "/dividend/stag.html",
+        "cells": [
+          "4.40%",
+          "+0.8%",
+          "13 yrs"
+        ]
+      },
+      {
+        "ticker": "MAIN",
+        "link": "/dividend/main.html",
+        "cells": [
+          "5.90%",
+          "Never cut",
+          "BDC, not REIT"
+        ]
+      },
+      {
+        "ticker": "EPR",
+        "link": "/dividend/epr.html",
+        "cells": [
+          "7.30%",
+          "Reset 2021",
+          "Experiential REIT, higher risk"
+        ]
+      }
+    ]
+  },
+  "primer": {
+    "heading": "What 'triple-net lease REIT' actually means for the dividend",
+    "body": "In a triple-net lease, the tenant pays the three big variable costs of owning real estate: property taxes, building insurance, and maintenance. The REIT just collects rent. This structure is what makes Realty Income's cash flow so predictable, they don't have to worry about a HVAC system breaking, a tax assessment spiking, or insurance premiums jumping after a storm. The tenant absorbs all of that.\n\nThe trade-off, which experienced investors know to look for, is that triple-net leases lock in lower rent escalators (typically 1-2% per year) in exchange for the long lease terms (10-20 years) and low overhead. That's why O's dividend growth is in the 3-4% range rather than the 6-8% range of an operating company like JNJ or KO. For a Dividend Aristocrat with monthly payments and 30 years of raises, that trade-off has worked out fine for income investors."
+  },
+  "faq": [
+    {
+      "q": "When does Realty Income (O) pay dividends in 2026?",
+      "a": "O pays monthly. 2026 payments arrive on the 15th of each month. Ex-dividend dates fall on the first business day of each month, roughly two weeks before the pay date."
+    },
+    {
+      "q": "What is Realty Income's current dividend yield?",
+      "a": "O's trailing 12-month yield was approximately 5.61% as of May 2026, based on the most recent monthly payment of $0.268. Yield moves inversely with share price."
+    },
+    {
+      "q": "Is Realty Income a Dividend Aristocrat?",
+      "a": "Yes. Realty Income has 30 consecutive years of dividend increases (since 1995), which qualifies it as an S&P 500 Dividend Aristocrat. Aristocrat status requires 25+ consecutive years of raises and S&P 500 membership."
+    },
+    {
+      "q": "Why does Realty Income raise the dividend so often?",
+      "a": "O typically announces small increases multiple times per year, usually four to five times, rather than one large annual raise. The increases are small (often a tenth of a cent or so), but the consistency is the point. It's a deliberate brand choice that has been part of O's identity for decades."
+    },
+    {
+      "q": "How are Realty Income dividends taxed?",
+      "a": "REIT dividends are mostly non-qualified, taxed as ordinary income at your marginal rate. The 2017 Tax Cuts and Jobs Act lets you deduct 20% of qualifying REIT dividend income through the QBI deduction. For most income investors, holding O inside a Roth IRA or traditional IRA is the most tax-efficient option."
+    },
+    {
+      "q": "Is Realty Income safer than STAG Industrial for dividend investors?",
+      "a": "Generally yes. O has 30 consecutive years of raises and 15,000+ properties diversified across 85+ industries. STAG has 13 years of consecutive raises and a ~570-property portfolio concentrated entirely in US industrial real estate. O is the conservative anchor; STAG is a sector-specific bet. Many income portfolios hold both. O as a core 5-10% position, STAG as a 2-3% sector tilt."
+    }
+  ],
+  "disclosure": "YieldOS is a third-party dividend tracking platform and is not affiliated with Realty Income Corporation. Dividend schedules, yields, and figures on this page are estimates derived from public historical data as of May 2026 and may not reflect current market conditions. Nothing on this page is investment advice. Consult a licensed financial advisor before making investment decisions.",
+  "seo": {
+    "title": "O Dividend 2026: Monthly Pay Schedule, 5.61% Yield, 30-Year Aristocrat | YieldOS",
+    "description": "Realty Income (O) is the Monthly Dividend Aristocrat: 650+ consecutive monthly payments since 1969 and 30 consecutive years of raises. See the 2026 pay schedule, 5.61% yield, 8-month payment history, and how O compares to STAG, MAIN, and EPR.",
+    "keywords": "O dividend, Realty Income dividend, when does Realty Income pay dividends, O monthly dividend, O ex-dividend date 2026, O dividend history, O dividend yield, Realty Income Aristocrat, O vs STAG, monthly dividend REIT",
+    "ogTitle": "Realty Income (O) Dividend 2026. Monthly Pay Schedule, 5.61% Yield",
+    "ogDescription": "Realty Income (O) is the Monthly Dividend Aristocrat. 30 years of raises, 650+ consecutive monthly payments, 5.61% yield.",
+    "jsonLdName": "Realty Income Corporation",
+    "jsonLdAlternate": "O",
+    "jsonLdDescription": "Monthly dividend payer. S&P 500 Dividend Aristocrat with 30 consecutive years of dividend increases. Triple-net lease REIT. Listed on NYSE.",
+    "jsonLdCategory": "Triple-Net Lease REIT"
+  }
+}

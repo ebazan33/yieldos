@@ -1,0 +1,192 @@
+{
+  "ticker": "JNJ",
+  "name": "Johnson & Johnson",
+  "exchange": "NYSE",
+  "type": "stock",
+  "frequency": "Quarterly",
+  "subhead": "Johnson & Johnson is a Dividend King with 62 consecutive years of dividend increases. One of only three healthcare names in the King tier. This page covers JNJ's 2026 quarterly pay schedule, current 3.18% yield, recent payment history, and how JNJ compares to peers like ABBV, PFE, and MRK.",
+  "byline": "Updated by Elian Bazan · May 2026",
+  "badges": [
+    {
+      "label": "👑 Dividend King · 62 years",
+      "color": "gold"
+    },
+    {
+      "label": "Quarterly payer since 1944",
+      "color": "emerald"
+    },
+    {
+      "label": "Healthcare",
+      "color": "blue"
+    }
+  ],
+  "stats": [
+    {
+      "label": "Next Ex-Date",
+      "value": "May 26, 2026",
+      "sub": "estimated"
+    },
+    {
+      "label": "Last Payment",
+      "value": "$1.30",
+      "sub": "Mar 11, 2026",
+      "highlight": true
+    },
+    {
+      "label": "TTM Yield",
+      "value": "3.18%",
+      "sub": "trailing 12 months"
+    },
+    {
+      "label": "5-yr Div CAGR",
+      "value": "+5.9%",
+      "sub": "compound annual"
+    }
+  ],
+  "statsAsOf": "May 2026",
+  "editorial": "Johnson & Johnson sells pharmaceuticals (Stelara, Tremfya, Darzalex, Erleada) and medical devices (Ethicon, DePuy Synthes orthopedics) into roughly 175 countries. After the 2023 spinoff of Kenvue (Tylenol, Band-Aid, Listerine, the consumer health side), today's JNJ is a leaner pharma + medtech company. Revenue is over $85B annually with operating margins around 26%, and the company has held a AAA credit rating longer than the US government has.\n\nFor dividend investors, JNJ checks every box. 62 consecutive years of dividend increases makes it one of only ~50 Dividend Kings in the entire US market. The dividend has been paid quarterly without interruption since 1944. JNJ raised through the 1973 oil shock, the 2000 dot-com bust, the 2008 financial crisis, the 2020 pandemic, and the 2022 inflation spike. There is no recent precedent for JNJ pausing or cutting the dividend, and the ~50% payout ratio gives ample room to keep raising even in a bad year.\n\nThe trade-off is the same as most Kings: growth is slow. JNJ's 5-year dividend CAGR is around 5.9%, decent but not exciting. Revenue growth has been in the low single digits for over a decade. Investors don't hold JNJ to outperform the S&P in a tech-led bull market. They hold it because the dividend will still be there, growing, in 20 years, through whatever the next decade throws at the market. The recent talc litigation overhang is mostly priced in at this point, but it's worth knowing about if you're new to the name.",
+  "schedule": {
+    "heading": "When does JNJ pay dividends?",
+    "paragraph": "JNJ pays quarterly. Payments typically arrive in early March, June, September, and December. Ex-dividend dates fall roughly two weeks earlier, in late February, late May, late August, and mid-November. The board announces each year's first raise at the April annual meeting, with the new amount taking effect on the June payment."
+  },
+  "history": [
+    {
+      "exDate": "Feb 24, 2026",
+      "payDate": "Mar 11, 2026",
+      "amount": "$1.30",
+      "notes": "62nd consecutive annual raise"
+    },
+    {
+      "exDate": "Nov 25, 2025",
+      "payDate": "Dec 9, 2025",
+      "amount": "$1.24",
+      "notes": ""
+    },
+    {
+      "exDate": "Aug 26, 2025",
+      "payDate": "Sep 9, 2025",
+      "amount": "$1.24",
+      "notes": ""
+    },
+    {
+      "exDate": "May 27, 2025",
+      "payDate": "Jun 10, 2025",
+      "amount": "$1.24",
+      "notes": ""
+    },
+    {
+      "exDate": "Feb 25, 2025",
+      "payDate": "Mar 11, 2025",
+      "amount": "$1.24",
+      "notes": "61st consecutive annual raise"
+    },
+    {
+      "exDate": "Nov 26, 2024",
+      "payDate": "Dec 10, 2024",
+      "amount": "$1.19",
+      "notes": ""
+    },
+    {
+      "exDate": "Aug 27, 2024",
+      "payDate": "Sep 10, 2024",
+      "amount": "$1.19",
+      "notes": ""
+    },
+    {
+      "exDate": "May 28, 2024",
+      "payDate": "Jun 11, 2024",
+      "amount": "$1.19",
+      "notes": ""
+    }
+  ],
+  "peers": {
+    "heading": "How JNJ compares to peers",
+    "intro": "For dividend investors evaluating JNJ against other large-cap healthcare and Dividend King alternatives:",
+    "columns": [
+      "Ticker",
+      "Yield",
+      "5-yr CAGR",
+      "Streak"
+    ],
+    "rows": [
+      {
+        "ticker": "JNJ",
+        "self": true,
+        "cells": [
+          "3.18%",
+          "+5.9%",
+          "62 yrs · King"
+        ]
+      },
+      {
+        "ticker": "ABBV",
+        "link": "/dividend/abbv.html",
+        "cells": [
+          "3.60%",
+          "+8.2%",
+          "11 yrs (since AbbVie spinoff)"
+        ]
+      },
+      {
+        "ticker": "PFE",
+        "link": "/dividend/pfe.html",
+        "cells": [
+          "6.50%",
+          "+1.5%",
+          "15 yrs"
+        ]
+      },
+      {
+        "ticker": "MRK",
+        "link": "/dividend/mrk.html",
+        "cells": [
+          "3.20%",
+          "+6.8%",
+          "13 yrs"
+        ]
+      }
+    ]
+  },
+  "primer": {
+    "heading": "Why healthcare Dividend Kings sit in most income portfolios",
+    "body": "Healthcare is the second-most-represented sector among Dividend Kings (behind consumer staples). The reason: revenue is largely recession-resistant. People take Stelara for psoriasis, Eliquis for atrial fibrillation, and Humira for arthritis in good economies and bad. That makes cash flow stable, which is exactly what dividend investors are buying.\n\nWithin healthcare, JNJ is the most diversified large-cap option, pharma plus medtech, no single drug responsible for more than ~10% of revenue. That diversification is the differentiator from a name like ABBV (heavily concentrated in Humira's successors) or PFE (still earnings-dependent on COVID-era treatments). For a one-name healthcare anchor in a dividend portfolio, JNJ is the conservative choice."
+  },
+  "faq": [
+    {
+      "q": "When does JNJ pay dividends in 2026?",
+      "a": "JNJ pays quarterly. 2026 payments are scheduled around March 11, June 10, September 9, and December 9. Ex-dividend dates fall roughly two weeks earlier."
+    },
+    {
+      "q": "What is JNJ's current dividend yield?",
+      "a": "JNJ's trailing 12-month yield was approximately 3.18% as of May 2026, based on a quarterly payment of $1.30. Yield moves inversely with share price."
+    },
+    {
+      "q": "Is JNJ a Dividend King?",
+      "a": "Yes. Johnson & Johnson has raised its dividend for 62 consecutive years (since 1963), which qualifies it as a Dividend King, the most exclusive tier in dividend-growth investing. Kings require 50+ consecutive years of raises; Aristocrats require 25+."
+    },
+    {
+      "q": "How much has JNJ's dividend grown over time?",
+      "a": "JNJ's 5-year dividend CAGR is approximately 5.9%. The raise has been announced at the April annual meeting every year for decades, with the new amount taking effect on the June payment."
+    },
+    {
+      "q": "Is JNJ safer than ABBV or PFE for dividend investors?",
+      "a": "Most income investors would say yes. JNJ has 62 years of consecutive raises; ABBV only has 11 (since the AbbVie spinoff from JNJ-rival Abbott in 2013). PFE's payout ratio has stretched after COVID-related revenue rolled off. JNJ's combination of diversification (pharma + medtech), credit rating, and 50% payout ratio is structurally more conservative."
+    },
+    {
+      "q": "What about JNJ's talc litigation, does it threaten the dividend?",
+      "a": "The talc cases have been an overhang since 2018 and JNJ has set aside roughly $9B in reserves. Total exposure is uncertain but unlikely to exceed cash flow over multiple years. JNJ has not signaled any change to the dividend policy, and the company's ~$25B in annual operating cash flow gives it a wide cushion. The market has largely priced this in."
+    }
+  ],
+  "disclosure": "YieldOS is a third-party dividend tracking platform and is not affiliated with Johnson & Johnson. Dividend schedules, yields, and figures on this page are estimates derived from public historical data as of May 2026 and may not reflect current market conditions. Nothing on this page is investment advice. Consult a licensed financial advisor before making investment decisions.",
+  "seo": {
+    "title": "JNJ Dividend 2026: Pay Schedule, Yield, 62-Year Dividend King History | YieldOS",
+    "description": "Johnson & Johnson (JNJ) is a Dividend King with 62 consecutive years of dividend increases. See the 2026 pay schedule, current 3.18% yield, 8-quarter payment history, and how JNJ compares to ABBV, PFE, and MRK.",
+    "keywords": "JNJ dividend, when does JNJ pay dividends, JNJ ex-dividend date 2026, JNJ dividend history, JNJ dividend yield, Johnson & Johnson Dividend King, JNJ vs ABBV, healthcare dividend stocks",
+    "ogTitle": "JNJ Dividend 2026. Pay Schedule, Yield, Dividend King History",
+    "ogDescription": "Johnson & Johnson (JNJ) is a Dividend King with 62 consecutive years of raises. 2026 pay schedule, 3.18% yield, peer comparison.",
+    "jsonLdName": "Johnson & Johnson",
+    "jsonLdAlternate": "JNJ",
+    "jsonLdDescription": "Quarterly dividend payer. Dividend King with 62 consecutive years of dividend increases. Listed on NYSE.",
+    "jsonLdCategory": "Healthcare"
+  }
+}

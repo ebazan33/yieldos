@@ -1,0 +1,192 @@
+{
+  "ticker": "JEPI",
+  "name": "JPMorgan Equity Premium Income ETF",
+  "exchange": "NYSE Arca",
+  "type": "etf",
+  "frequency": "Monthly",
+  "subhead": "JEPI is the most popular covered-call ETF in the US. JPMorgan launched it in 2020 and it has grown to more than $35B in assets, one of the fastest active-ETF launches in history. This page covers JEPI's monthly distribution schedule, current yield, recent payment history, and how it compares to peers like JEPQ, DIVO, and QYLD.",
+  "byline": "Updated by Elian Bazan · May 2026",
+  "badges": [
+    {
+      "label": "Monthly Distributions",
+      "color": "emerald"
+    },
+    {
+      "label": "Covered-Call Strategy",
+      "color": "blue"
+    },
+    {
+      "label": "~$35B AUM",
+      "color": "gold"
+    }
+  ],
+  "stats": [
+    {
+      "label": "Next Ex-Date",
+      "value": "Jun 1, 2026",
+      "sub": "estimated"
+    },
+    {
+      "label": "Last Distribution",
+      "value": "$0.420",
+      "sub": "May 1, 2026",
+      "highlight": true
+    },
+    {
+      "label": "TTM Yield",
+      "value": "7.85%",
+      "sub": "trailing 12 months"
+    },
+    {
+      "label": "Expense Ratio",
+      "value": "0.35%",
+      "sub": "low for active"
+    }
+  ],
+  "statsAsOf": "May 2026",
+  "editorial": "JEPI uses a deliberately conservative covered-call strategy on top of a defensive equity basket. The fund holds roughly 100 quality dividend stocks (think Visa, AbbVie, Microsoft, Pepsi) and sells out-of-the-money call options against an equity-linked note tied to the S&P 500. The option premiums get distributed monthly to shareholders, which is where the 7-8% yield comes from. The underlying equity portfolio still grows (slowly), so JEPI captures more of a bull market than a pure index-call writer like QYLD.\n\nFor dividend investors, JEPI is held for three reasons. First, the monthly cash flow is reliable and predictable in absolute dollar terms. JPMorgan has been writing this kind of structured product for institutional clients for decades. Second, the underlying portfolio is high-quality and defensive, so the fund tends to hold up better than the broader market in drawdowns. Third, the 0.35% expense ratio is reasonable for an actively managed equity-and-options strategy (BlackRock's BUFR and similar funds charge twice as much).\n\nThe trade-offs are real. Distributions are taxed as ordinary income, not qualified dividends. JEPI is best held inside a Roth IRA or 401(k) if you can. Total return in a roaring bull market underperforms the S&P (covered calls cap your upside). And the fund has only existed since 2020, so it has never been tested by a real prolonged bear market the way SCHD has. For an income-first portfolio with a 5-10 year horizon, JEPI is a strong monthly-income building block, but it's not a 'set and forget for 30 years' position the way an Aristocrat ETF would be.",
+  "schedule": {
+    "heading": "When does JEPI pay distributions?",
+    "paragraph": "JEPI distributes monthly. Ex-dividend dates land on the first business day of each month, with the actual payment hitting your brokerage account 2-3 days later. JPMorgan announces each distribution amount roughly a week before the ex-date, and because the amount depends on option premiums collected that month, it varies (typically between $0.35 and $0.50 per share)."
+  },
+  "history": [
+    {
+      "exDate": "May 1, 2026",
+      "payDate": "May 4, 2026",
+      "amount": "$0.420",
+      "notes": ""
+    },
+    {
+      "exDate": "Apr 1, 2026",
+      "payDate": "Apr 3, 2026",
+      "amount": "$0.448",
+      "notes": ""
+    },
+    {
+      "exDate": "Mar 3, 2026",
+      "payDate": "Mar 5, 2026",
+      "amount": "$0.402",
+      "notes": ""
+    },
+    {
+      "exDate": "Feb 3, 2026",
+      "payDate": "Feb 5, 2026",
+      "amount": "$0.395",
+      "notes": ""
+    },
+    {
+      "exDate": "Jan 2, 2026",
+      "payDate": "Jan 6, 2026",
+      "amount": "$0.438",
+      "notes": ""
+    },
+    {
+      "exDate": "Dec 1, 2025",
+      "payDate": "Dec 3, 2025",
+      "amount": "$0.412",
+      "notes": ""
+    },
+    {
+      "exDate": "Nov 3, 2025",
+      "payDate": "Nov 5, 2025",
+      "amount": "$0.430",
+      "notes": ""
+    },
+    {
+      "exDate": "Oct 1, 2025",
+      "payDate": "Oct 3, 2025",
+      "amount": "$0.428",
+      "notes": ""
+    }
+  ],
+  "peers": {
+    "heading": "How JEPI compares to other monthly income ETFs",
+    "intro": "For dividend investors evaluating JEPI against monthly-paying ETF alternatives:",
+    "columns": [
+      "Ticker",
+      "Yield",
+      "Expense",
+      "Strategy"
+    ],
+    "rows": [
+      {
+        "ticker": "JEPI",
+        "self": true,
+        "cells": [
+          "7.85%",
+          "0.35%",
+          "Covered calls on quality basket"
+        ]
+      },
+      {
+        "ticker": "JEPQ",
+        "link": "/dividend/jepq.html",
+        "cells": [
+          "10.2%",
+          "0.35%",
+          "Same strategy on Nasdaq-100"
+        ]
+      },
+      {
+        "ticker": "DIVO",
+        "link": "/dividend/divo.html",
+        "cells": [
+          "4.50%",
+          "0.56%",
+          "Selective calls + quality dividends"
+        ]
+      },
+      {
+        "ticker": "QYLD",
+        "link": "/dividend/qyld.html",
+        "cells": [
+          "11.0%",
+          "0.60%",
+          "At-the-money Nasdaq calls (caps all upside)"
+        ]
+      }
+    ]
+  },
+  "primer": {
+    "heading": "What 'covered-call ETF distributions' means for income investors",
+    "body": "Covered-call ETFs sell options against a stock portfolio. When you sell a call, you collect a premium up front in exchange for capping your gains above the strike price. The premiums become the distribution.\n\nThe trade-off this creates: you get reliable monthly income (good) at the cost of upside participation in big rallies (bad). In 2024's tech rally, the S&P returned 25%; JEPI returned about 14% (income + price). In a flat or down market, JEPI typically outperforms a pure equity ETF because the premium income cushions the drawdown.\n\nFor a dividend investor in accumulation, holding 10-20% of the portfolio in JEPI or a similar covered-call ETF is a reasonable way to smooth the monthly cash flow and reduce overall volatility. For a retiree living off the income, JEPI can be a larger position, but distributions taxed as ordinary income mean it's best held inside a tax-advantaged account."
+  },
+  "faq": [
+    {
+      "q": "When does JEPI pay distributions in 2026?",
+      "a": "JEPI distributes monthly. 2026 payments are scheduled around the first week of each month. Ex-dividend dates fall on the first business day; the actual cash arrives 2-3 days later."
+    },
+    {
+      "q": "What is JEPI's current yield?",
+      "a": "JEPI's trailing 12-month yield was approximately 7.85% as of May 2026, based on the most recent twelve monthly distributions averaging ~$0.42 per share. Yield varies with option premium collected and underlying portfolio price."
+    },
+    {
+      "q": "Is JEPI a Dividend Aristocrat?",
+      "a": "No. JEPI launched in 2020 and has only six years of distribution history. Dividend Aristocrat status requires 25+ consecutive years of dividend increases, which is impossible for any ETF this young. JEPI's appeal is current yield, not growth track record."
+    },
+    {
+      "q": "How are JEPI distributions taxed?",
+      "a": "Mostly as ordinary income, not qualified dividends. The option premium component (most of the distribution) is taxed at your marginal rate. This is why JEPI is most efficient inside a Roth IRA, traditional IRA, or 401(k). In a taxable account, the after-tax yield is meaningfully lower than the headline 7.85%."
+    },
+    {
+      "q": "Should I buy JEPI or SCHD for dividend income?",
+      "a": "Different jobs. JEPI yields higher today (7.85% vs SCHD's ~3.8%) and pays monthly. SCHD yields lower but grows distributions ~10% annually and pays qualified dividends. A common pairing: SCHD as the growth-of-income anchor (held for decades), JEPI as the monthly cash-flow component. Many income portfolios hold both."
+    },
+    {
+      "q": "What's the downside of holding JEPI?",
+      "a": "Three real ones: (1) capped upside in bull markets, you'll underperform the S&P when stocks rally hard; (2) ordinary-income tax treatment makes it inefficient in taxable accounts; (3) only six years of history, no real bear-market test yet. It's a strong income building block but not a position to hold blindly through every cycle."
+    }
+  ],
+  "disclosure": "YieldOS is a third-party dividend tracking platform and is not affiliated with JPMorgan Chase or the JPMorgan Equity Premium Income ETF. Distribution figures and yields on this page are estimates derived from public historical data as of May 2026 and may not reflect current market conditions. Nothing on this page is investment advice. Consult a licensed financial advisor before making investment decisions.",
+  "seo": {
+    "title": "JEPI Dividend 2026: Monthly Pay Schedule, 7.85% Yield, $35B Covered-Call ETF | YieldOS",
+    "description": "JPMorgan Equity Premium Income ETF (JEPI) pays monthly distributions yielding ~7.85%. See the 2026 pay schedule, 8-month distribution history, and how JEPI compares to JEPQ, DIVO, and QYLD.",
+    "keywords": "JEPI dividend, JEPI distribution schedule, JEPI monthly distribution, JPMorgan Equity Premium Income, JEPI yield, JEPI ex-dividend date 2026, covered call ETF, JEPI vs JEPQ, JEPI vs DIVO, JEPI vs SCHD",
+    "ogTitle": "JEPI Dividend 2026. Monthly Schedule, 7.85% Yield",
+    "ogDescription": "JPMorgan's $35B covered-call ETF. Monthly distributions, 2026 schedule, peer comparison vs JEPQ/DIVO/QYLD.",
+    "jsonLdName": "JPMorgan Equity Premium Income ETF",
+    "jsonLdAlternate": "JEPI",
+    "jsonLdDescription": "Monthly distribution covered-call ETF. ~7.85% yield. ~$35B AUM. Listed on NYSE Arca.",
+    "jsonLdCategory": "Covered-Call ETF"
+  }
+}
