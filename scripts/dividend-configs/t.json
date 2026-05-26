@@ -1,0 +1,192 @@
+{
+  "ticker": "T",
+  "name": "AT&T Inc.",
+  "exchange": "NYSE",
+  "type": "stock",
+  "frequency": "Quarterly",
+  "subhead": "AT&T cut its dividend in 2022 after spinning off WarnerMedia and lost its Dividend Aristocrat status. The post-cut dividend has held steady since and the company has focused on debt paydown. This page covers T's 2026 quarterly pay schedule, the 4.3% yield, the cut history every dividend investor should understand, and how T compares to VZ, TMUS, and other telecom income alternatives.",
+  "byline": "Updated by Elian Bazan \u00b7 May 2026",
+  "badges": [
+    {
+      "label": "Cut in 2022",
+      "color": "red"
+    },
+    {
+      "label": "~4.3% yield",
+      "color": "emerald"
+    },
+    {
+      "label": "Quarterly payer",
+      "color": "blue"
+    }
+  ],
+  "stats": [
+    {
+      "label": "Next Ex-Date",
+      "value": "Jul 10, 2026",
+      "sub": "estimated"
+    },
+    {
+      "label": "Last Payment",
+      "value": "$0.2775",
+      "sub": "May 1, 2026",
+      "highlight": true
+    },
+    {
+      "label": "TTM Yield",
+      "value": "4.32%",
+      "sub": "trailing 12 months"
+    },
+    {
+      "label": "Dividend Status",
+      "value": "Steady",
+      "sub": "no raise since 2022 cut"
+    }
+  ],
+  "statsAsOf": "May 2026",
+  "editorial": "AT&T is the largest US telecommunications company, with roughly 70 million postpaid wireless subscribers, a fiber broadband business that's actively expanding, and a legacy wireline business in managed decline. Revenue runs around $120B per year with operating margins in the high teens. The story for the last five years has been a deliberate retreat from the diversified-conglomerate strategy of the 2010s, divesting DirecTV (2021), spinning off WarnerMedia to merge with Discovery into Warner Bros. Discovery (2022), and focusing on the core connectivity business.\n\nFor dividend investors, AT&T is a cautionary tale and a study in income discipline. The company was a Dividend Aristocrat with 35+ consecutive years of dividend growth before the 2022 cut. The WarnerMedia spinoff forced the cut, since AT&T's massive debt load required redirecting cash flow from dividends to debt reduction. The new annual dividend of $1.11 represents roughly a 47% reduction from the pre-cut $2.08. T lost its Aristocrat status permanently. The dividend has held at the new level for over four years since the cut, and the company has paid down meaningful debt (from ~$200B to ~$130B), but no raises have come.\n\nThe trade-off today: T yields about 4.3%, comparable to VZ at 6.2% and meaningfully higher than TMUS at 1.5%. The dividend is statistically safe at current levels, with the payout ratio around 60% of free cash flow. But there's also no obvious path to dividend growth, the company has explicitly prioritized buybacks and continued debt paydown over raises. For income investors who accept that the payment will be flat for years and value the high current yield from a deleveraging telecom, T is rational. For dividend-growth investors who lost faith after the 2022 cut and prefer companies with intact growth streaks, T is permanently disqualified.",
+  "schedule": {
+    "heading": "When does T pay dividends?",
+    "paragraph": "AT&T pays quarterly. Payments typically arrive in early February, early May, early August, and early November. Ex-dividend dates fall roughly four weeks before pay date. AT&T announces the dividend at the quarterly earnings call but has not raised since the 2022 spinoff-driven cut."
+  },
+  "history": [
+    {
+      "exDate": "Apr 10, 2026",
+      "payDate": "May 1, 2026",
+      "amount": "$0.2775",
+      "notes": ""
+    },
+    {
+      "exDate": "Jan 10, 2026",
+      "payDate": "Feb 3, 2026",
+      "amount": "$0.2775",
+      "notes": ""
+    },
+    {
+      "exDate": "Oct 10, 2025",
+      "payDate": "Nov 3, 2025",
+      "amount": "$0.2775",
+      "notes": ""
+    },
+    {
+      "exDate": "Jul 10, 2025",
+      "payDate": "Aug 1, 2025",
+      "amount": "$0.2775",
+      "notes": ""
+    },
+    {
+      "exDate": "Apr 10, 2025",
+      "payDate": "May 1, 2025",
+      "amount": "$0.2775",
+      "notes": ""
+    },
+    {
+      "exDate": "Jan 10, 2025",
+      "payDate": "Feb 3, 2025",
+      "amount": "$0.2775",
+      "notes": ""
+    },
+    {
+      "exDate": "Oct 10, 2024",
+      "payDate": "Nov 1, 2024",
+      "amount": "$0.2775",
+      "notes": ""
+    },
+    {
+      "exDate": "Jul 10, 2024",
+      "payDate": "Aug 1, 2024",
+      "amount": "$0.2775",
+      "notes": ""
+    }
+  ],
+  "peers": {
+    "heading": "How T compares to other telecom and high-yield options",
+    "intro": "For dividend investors evaluating T against other telecom and high-yield alternatives:",
+    "columns": [
+      "Ticker",
+      "Yield",
+      "5-yr CAGR",
+      "Story"
+    ],
+    "rows": [
+      {
+        "ticker": "T",
+        "self": true,
+        "cells": [
+          "4.32%",
+          "\u221216%",
+          "Cut in 2022 \u00b7 steady since"
+        ]
+      },
+      {
+        "ticker": "VZ",
+        "link": "/dividend/vz.html",
+        "cells": [
+          "6.20%",
+          "+2.0%",
+          "20-yr streak \u00b7 slow raises"
+        ]
+      },
+      {
+        "ticker": "TMUS",
+        "link": "/dividend/tmus.html",
+        "cells": [
+          "1.50%",
+          "N/A",
+          "Started dividend 2023"
+        ]
+      },
+      {
+        "ticker": "VYM",
+        "link": "/dividend/vym.html",
+        "cells": [
+          "2.95%",
+          "+6.2%",
+          "Broad diversified, no telecom concentration"
+        ]
+      }
+    ]
+  },
+  "primer": {
+    "heading": "What dividend investors should learn from AT&T's 2022 cut",
+    "body": "Before the cut, AT&T was a 35-year Aristocrat held by virtually every dividend portfolio and dividend ETF. The yield was 7-8%, the streak looked unbreakable, and the income community defended it through years of obvious warning signs: a leveraged balance sheet that required cash flow the dividend was draining, a strategy of buying media assets (Time Warner) that didn't fit the core business, and a payout ratio above 90% of free cash flow.\n\nThe lesson is structural. A 30+ year dividend streak does not guarantee future safety; it only proves past behavior. The dividend can survive recessions and crises and still be cut by management when capital allocation priorities change. AT&T's cut was not driven by an inability to pay (the cash flow existed). It was driven by a strategic decision to redirect that cash flow to debt paydown after spinning off WarnerMedia. For dividend investors, this is the most important kind of risk: not 'can the company afford the dividend' but 'will management choose to keep paying'. The signals to watch are debt-to-EBITDA above 3x, payout ratios above 80% of FCF, and strategic moves (acquisitions, spinoffs) that change capital priorities. T checked all three before the cut. VZ today checks one of them."
+  },
+  "faq": [
+    {
+      "q": "When does T pay dividends in 2026?",
+      "a": "AT&T pays quarterly. 2026 payments are scheduled for early February (already paid), early May (already paid), early August, and early November. Ex-dividend dates fall roughly four weeks before pay date."
+    },
+    {
+      "q": "What is T's current dividend yield?",
+      "a": "T's trailing 12-month yield was approximately 4.32% as of May 2026, based on a quarterly payment of $0.2775. The yield is meaningfully lower than VZ at 6.20% because T's share price has recovered more from the 2022 cut while the payment itself has remained flat."
+    },
+    {
+      "q": "Did AT&T cut its dividend?",
+      "a": "Yes. In April 2022, AT&T cut its annual dividend from $2.08 to $1.11, a 47% reduction. The cut was driven by the WarnerMedia spinoff and a board decision to reduce debt and refocus on core connectivity. AT&T lost its Dividend Aristocrat status permanently after the cut."
+    },
+    {
+      "q": "Will AT&T raise its dividend again?",
+      "a": "Management has explicitly prioritized debt paydown and share buybacks over dividend raises since the 2022 cut. Investors should not expect raises in the near term. The dividend is statistically safe at the current level (around 60% of free cash flow), but is structured as a flat, sustainable payment rather than a growing one."
+    },
+    {
+      "q": "How does T compare to VZ for dividend income?",
+      "a": "VZ yields more (6.20% vs 4.32%) and has an intact 20-year dividend growth streak with small annual raises. T has a higher safety margin (lower payout ratio) but no growth. For dividend-growth investors, VZ wins. For investors who want the safer flat payment and accept no growth, T is the more conservative choice."
+    },
+    {
+      "q": "How are T dividends taxed?",
+      "a": "T's distributions are qualified dividends, taxed at the 0%/15%/20% qualified-dividend rate for US investors. This makes T tax-efficient in a taxable account."
+    }
+  ],
+  "disclosure": "YieldOS is a third-party dividend tracking platform and is not affiliated with AT&T Inc. Dividend schedules, yields, and figures on this page are estimates derived from public historical data as of May 2026 and may not reflect current market conditions. Nothing on this page is investment advice. Consult a licensed financial advisor before making investment decisions.",
+  "seo": {
+    "title": "T Dividend 2026: Quarterly Pay Schedule, 4.32% Yield, Post-Cut Status | YieldOS",
+    "description": "AT&T (T) cut its dividend 47% in 2022 after the WarnerMedia spinoff and lost Aristocrat status. The post-cut dividend has held steady at $0.2775/quarter. See T's 2026 pay schedule, the cut history, and how T compares to VZ, TMUS, and VYM.",
+    "keywords": "T dividend, when does T pay dividends, T ex-dividend date 2026, AT&T dividend history, AT&T dividend cut 2022, T dividend safe, T vs VZ, telecom dividend stocks",
+    "ogTitle": "T Dividend 2026. Quarterly Schedule, 4.32% Yield, Post-Cut Status",
+    "ogDescription": "AT&T. Cut 47% in 2022. Steady at $0.2775 since. Yields 4.32%. 2026 pay schedule, cut history, and peer comparison.",
+    "jsonLdName": "AT&T Inc.",
+    "jsonLdAlternate": "T",
+    "jsonLdDescription": "Quarterly dividend payer. US telecommunications company. Cut dividend 47% in April 2022 after WarnerMedia spinoff; dividend has held steady since. Listed on NYSE.",
+    "jsonLdCategory": "Communication Services"
+  }
+}

@@ -1,0 +1,192 @@
+{
+  "ticker": "MO",
+  "name": "Altria Group, Inc.",
+  "exchange": "NYSE",
+  "type": "stock",
+  "frequency": "Quarterly",
+  "subhead": "Altria is one of the highest-yielding Dividend Kings, with 55+ consecutive years of dividend increases and a current yield near 7.5%. This page covers MO's 2026 quarterly pay schedule, recent payment history, the structural risks behind the high yield, and how MO compares to peers like BTI, PM, and KO.",
+  "byline": "Updated by Elian Bazan \u00b7 May 2026",
+  "badges": [
+    {
+      "label": "Dividend King \u00b7 55+ years",
+      "color": "gold"
+    },
+    {
+      "label": "~7.5% yield",
+      "color": "emerald"
+    },
+    {
+      "label": "Quarterly payer",
+      "color": "blue"
+    }
+  ],
+  "stats": [
+    {
+      "label": "Next Ex-Date",
+      "value": "Jun 15, 2026",
+      "sub": "estimated"
+    },
+    {
+      "label": "Last Payment",
+      "value": "$1.02",
+      "sub": "Apr 30, 2026",
+      "highlight": true
+    },
+    {
+      "label": "TTM Yield",
+      "value": "7.49%",
+      "sub": "trailing 12 months"
+    },
+    {
+      "label": "5-yr Div CAGR",
+      "value": "+4.6%",
+      "sub": "compound annual"
+    }
+  ],
+  "statsAsOf": "May 2026",
+  "editorial": "Altria is the US tobacco business spun off from Philip Morris in 2008. Its flagship Marlboro brand still owns roughly 42% of US cigarette market share, and the company also owns John Middleton cigars, Helix oral nicotine, on! nicotine pouches, and a meaningful stake in Anheuser-Busch InBev. Revenue runs around $20B per year with operating margins in the high 50s, which is what makes the dividend structurally possible even as cigarette volumes decline 4-7% annually.\n\nFor dividend investors, MO sits at the controversial end of the income spectrum. The track record is uncomplicated: 55+ consecutive years of dividend increases, Dividend King status, and a current yield around 7.5%, roughly 4x the S&P 500 average. The payment has been remarkably reliable through tobacco litigation, MSA settlements, FDA menthol threats, and the JUUL writedown. The company has stated publicly that the dividend is the top capital allocation priority. Buybacks are second; growth investments are third.\n\nThe trade-offs are real and well-known. Cigarette volume declines 4-7% per year structurally as US smoking rates fall; MO offsets with price increases, which works until it doesn't. The 2018 JUUL acquisition cost $12.8B and was written down to near zero by 2023; Cronos (cannabis) lost most of its value too. ESG funds exclude tobacco, which caps the buyer base and the multiple. The stock has been a dead-money quote for stretches, with total return coming almost entirely from the dividend reinvestment. For income investors who prioritize current yield, accept the structural decline, and reinvest the 7%+ payments, MO has historically delivered competitive total returns despite the headwinds. For investors prioritizing growth or ESG, MO is the wrong instrument.",
+  "schedule": {
+    "heading": "When does MO pay dividends?",
+    "paragraph": "Altria pays quarterly. Payments typically arrive in mid-January, late April, mid-July, and mid-October. Ex-dividend dates fall roughly two weeks before pay date. The board usually announces the annual raise at the August meeting, with the new amount taking effect on the October payment."
+  },
+  "history": [
+    {
+      "exDate": "Mar 25, 2026",
+      "payDate": "Apr 30, 2026",
+      "amount": "$1.02",
+      "notes": ""
+    },
+    {
+      "exDate": "Dec 26, 2025",
+      "payDate": "Jan 12, 2026",
+      "amount": "$1.02",
+      "notes": ""
+    },
+    {
+      "exDate": "Sep 15, 2025",
+      "payDate": "Oct 10, 2025",
+      "amount": "$1.02",
+      "notes": "55th consecutive annual raise"
+    },
+    {
+      "exDate": "Jun 16, 2025",
+      "payDate": "Jul 11, 2025",
+      "amount": "$1.00",
+      "notes": ""
+    },
+    {
+      "exDate": "Mar 25, 2025",
+      "payDate": "Apr 30, 2025",
+      "amount": "$1.00",
+      "notes": ""
+    },
+    {
+      "exDate": "Dec 26, 2024",
+      "payDate": "Jan 10, 2025",
+      "amount": "$1.00",
+      "notes": ""
+    },
+    {
+      "exDate": "Sep 16, 2024",
+      "payDate": "Oct 10, 2024",
+      "amount": "$1.00",
+      "notes": "54th consecutive annual raise"
+    },
+    {
+      "exDate": "Jun 14, 2024",
+      "payDate": "Jul 11, 2024",
+      "amount": "$0.98",
+      "notes": ""
+    }
+  ],
+  "peers": {
+    "heading": "How MO compares to other high-yield income vehicles",
+    "intro": "For dividend investors evaluating MO against other high-yield options, both within and outside tobacco:",
+    "columns": [
+      "Ticker",
+      "Yield",
+      "5-yr CAGR",
+      "Story"
+    ],
+    "rows": [
+      {
+        "ticker": "MO",
+        "self": true,
+        "cells": [
+          "7.49%",
+          "+4.6%",
+          "Dividend King \u00b7 55+ yrs"
+        ]
+      },
+      {
+        "ticker": "BTI",
+        "link": "/dividend/bti.html",
+        "cells": [
+          "7.10%",
+          "+1.0%",
+          "British American Tobacco \u00b7 ADR"
+        ]
+      },
+      {
+        "ticker": "PM",
+        "link": "/dividend/pm.html",
+        "cells": [
+          "4.30%",
+          "+3.8%",
+          "Philip Morris \u00b7 heated-tobacco growth"
+        ]
+      },
+      {
+        "ticker": "KO",
+        "link": "/dividend/ko.html",
+        "cells": [
+          "2.96%",
+          "+4.8%",
+          "Beverages \u00b7 safer Dividend King"
+        ]
+      }
+    ]
+  },
+  "primer": {
+    "heading": "Why a 7%+ yield is both the appeal and the warning",
+    "body": "A 7.5% dividend yield is roughly 4x the S&P 500 average. Markets do not price stocks this way by accident. When a quality Dividend King yields this much, the market is communicating something specific: either the dividend is at risk, or the business is in structural decline, or both. With MO, it's the second. Cigarette volume drops every year, and the market discounts the future income stream accordingly.\n\nThe contrarian dividend case for MO is that the price-mix offset has worked for 25+ years and there is no obvious near-term catalyst that breaks it. The company raises prices 5-8% per year on a declining volume base of 4-7%, which still generates revenue growth of 1-3% and meaningful free cash flow to fund the dividend. Reinvested at the 7.5% yield, the total return has been competitive with the S&P 500 over many rolling periods despite a flat-to-down share price. The case fails if regulators succeed in mandating a nicotine cap, banning menthol effectively, or accelerating the volume decline materially faster than the price offset can absorb."
+  },
+  "faq": [
+    {
+      "q": "When does MO pay dividends in 2026?",
+      "a": "MO pays quarterly. 2026 payments are scheduled for mid-January (already paid), late April (already paid), mid-July, and mid-October. Ex-dividend dates fall roughly two weeks earlier."
+    },
+    {
+      "q": "What is MO's current dividend yield?",
+      "a": "MO's trailing 12-month yield was approximately 7.49% as of May 2026, based on a quarterly payment of $1.02. Yield is unusually high because the market discounts the long-term cigarette volume decline."
+    },
+    {
+      "q": "Has MO ever cut its dividend?",
+      "a": "Altria as a standalone company (post-2008 spin from Philip Morris) has never cut its dividend. Counting its predecessor entity, the dividend has been raised for 55+ consecutive years, qualifying MO as a Dividend King. The payment has survived tobacco MSA settlements, FDA threats, and the JUUL writedown."
+    },
+    {
+      "q": "Is MO's dividend safe given declining cigarette volume?",
+      "a": "Volume declines 4-7% annually but Altria offsets with annual price increases of 5-8%, generating slight revenue growth. The payout ratio runs around 75-80% of adjusted EPS, which is high but supported by strong free cash flow. The dividend has been management's stated top priority for over 50 years. Long-term, regulatory action (nicotine caps, menthol bans) is the primary risk, not near-term cash flow."
+    },
+    {
+      "q": "How is MO different from BTI or PM?",
+      "a": "All three are tobacco majors but with different geographies. MO is US-domestic only (Marlboro US, on!, NJOY); PM is international plus US heated-tobacco (IQOS, Zyn); BTI is global (Camel, Newport, Vuse) listed in London with an NYSE ADR. PM has the strongest growth profile from heated-tobacco/nicotine-pouch adoption; MO has the highest US yield but slower growth; BTI has currency-translation risk for US investors."
+    },
+    {
+      "q": "How are MO dividends taxed?",
+      "a": "MO's distributions are qualified dividends, taxed at the 0%/15%/20% qualified-dividend rate for US investors. This makes MO tax-efficient in a taxable account, though the high absolute yield generates more tax in dollar terms than a lower-yielding name."
+    }
+  ],
+  "disclosure": "YieldOS is a third-party dividend tracking platform and is not affiliated with Altria Group, Inc. Dividend schedules, yields, and figures on this page are estimates derived from public historical data as of May 2026 and may not reflect current market conditions. Nothing on this page is investment advice. Consult a licensed financial advisor before making investment decisions.",
+  "seo": {
+    "title": "MO Dividend 2026: Quarterly Pay Schedule, 7.49% Yield, 55-Year Dividend King | YieldOS",
+    "description": "Altria Group (MO) is a Dividend King with 55+ consecutive years of dividend increases and one of the highest yields in the S&P 500 (~7.49%). See MO's 2026 pay schedule, 8-quarter history, dividend safety analysis, and how MO compares to BTI, PM, and KO.",
+    "keywords": "MO dividend, when does MO pay dividends, MO ex-dividend date 2026, Altria dividend history, MO dividend yield, Altria Dividend King, MO vs BTI, MO vs PM, tobacco dividend stocks, high yield dividend",
+    "ogTitle": "MO Dividend 2026. Quarterly Schedule, 7.49% Yield, Dividend King",
+    "ogDescription": "Altria. 55+ years of dividend raises. ~7.49% yield. 2026 schedule, payment history, peer comparison, and dividend safety analysis.",
+    "jsonLdName": "Altria Group, Inc.",
+    "jsonLdAlternate": "MO",
+    "jsonLdDescription": "Quarterly dividend payer. Dividend King with 55+ consecutive years of dividend increases. One of the highest-yielding names in the S&P 500. Listed on NYSE.",
+    "jsonLdCategory": "Consumer Staples (Tobacco)"
+  }
+}

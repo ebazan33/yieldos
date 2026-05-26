@@ -1,0 +1,192 @@
+{
+  "ticker": "DIVO",
+  "name": "Amplify CWP Enhanced Dividend Income ETF",
+  "exchange": "NYSE Arca",
+  "type": "etf",
+  "frequency": "Monthly",
+  "subhead": "DIVO is a hybrid monthly-paying ETF that combines a high-quality dividend stock portfolio with a tactical covered-call overlay. Smaller than JEPI but with a longer track record and a more conservative call-writing approach. This page covers DIVO's monthly distribution schedule, 4.6% yield, recent payment history, and how DIVO compares to JEPI, JEPQ, and SCHD.",
+  "byline": "Updated by Elian Bazan \u00b7 May 2026",
+  "badges": [
+    {
+      "label": "Monthly Distributions",
+      "color": "gold"
+    },
+    {
+      "label": "~4.6% yield",
+      "color": "emerald"
+    },
+    {
+      "label": "Covered-call overlay",
+      "color": "blue"
+    }
+  ],
+  "stats": [
+    {
+      "label": "Next Ex-Date",
+      "value": "Jun 19, 2026",
+      "sub": "estimated"
+    },
+    {
+      "label": "Last Distribution",
+      "value": "$0.165",
+      "sub": "May 30, 2026",
+      "highlight": true
+    },
+    {
+      "label": "TTM Yield",
+      "value": "4.62%",
+      "sub": "trailing 12 months"
+    },
+    {
+      "label": "Expense Ratio",
+      "value": "0.55%",
+      "sub": "actively managed"
+    }
+  ],
+  "statsAsOf": "May 2026",
+  "editorial": "DIVO is run by Capital Wealth Planning (CWP) as the lead sub-advisor, with Amplify handling the ETF wrapper. The strategy is intentionally simpler than most covered-call ETFs: own roughly 25-30 high-quality dividend stocks (think MSFT, JPM, JNJ, KO, MCD, HD), then write tactical covered calls on a portion of the holdings when implied volatility is favorable. The call overlay is selective, not systematic. In flat or rising markets where call writing isn't compelling, the team may write very few contracts. In high-volatility periods, the overlay scales up.\n\nFor dividend investors, this matters because it changes the income profile. JEPI, JEPQ, and QYLD write calls on the whole index every month regardless of conditions, producing a higher but more volatile yield. DIVO targets a steadier 4-5% yield by combining the underlying stock dividends (~2% of the yield) with the option premium (~2.5%). The result is a smoother monthly distribution and significantly less capped upside than JEPI or QYLD.\n\nThe trade-offs: DIVO is smaller (around $5B AUM), so liquidity is thinner than JEPI's $35B. The expense ratio at 0.55% is meaningfully higher than passive dividend ETFs at 0.06-0.08%. And the actively-managed overlay means returns depend on the team's judgment, which has been good historically but isn't guaranteed forward. For an income investor who wants monthly cash flow with less upside capping than JEPI and is willing to pay 0.55% for active management, DIVO is one of the cleanest options in the space. The distribution is also predominantly qualified-dividend taxed, which makes DIVO more tax-efficient than JEPI in a taxable account.",
+  "schedule": {
+    "heading": "When does DIVO pay distributions?",
+    "paragraph": "DIVO distributes monthly. Payments arrive around the last business day of each month, with ex-dividend dates falling roughly 7-10 days earlier. Amplify announces the distribution amount about a week ahead of the ex-date. DIVO has paid every month since launch in December 2016."
+  },
+  "history": [
+    {
+      "exDate": "May 21, 2026",
+      "payDate": "May 30, 2026",
+      "amount": "$0.165",
+      "notes": ""
+    },
+    {
+      "exDate": "Apr 22, 2026",
+      "payDate": "Apr 30, 2026",
+      "amount": "$0.165",
+      "notes": ""
+    },
+    {
+      "exDate": "Mar 21, 2026",
+      "payDate": "Mar 31, 2026",
+      "amount": "$0.160",
+      "notes": ""
+    },
+    {
+      "exDate": "Feb 20, 2026",
+      "payDate": "Feb 27, 2026",
+      "amount": "$0.160",
+      "notes": ""
+    },
+    {
+      "exDate": "Jan 23, 2026",
+      "payDate": "Jan 30, 2026",
+      "amount": "$0.160",
+      "notes": ""
+    },
+    {
+      "exDate": "Dec 20, 2025",
+      "payDate": "Dec 31, 2025",
+      "amount": "$0.170",
+      "notes": "year-end special"
+    },
+    {
+      "exDate": "Nov 21, 2025",
+      "payDate": "Nov 28, 2025",
+      "amount": "$0.155",
+      "notes": ""
+    },
+    {
+      "exDate": "Oct 23, 2025",
+      "payDate": "Oct 31, 2025",
+      "amount": "$0.155",
+      "notes": ""
+    }
+  ],
+  "peers": {
+    "heading": "How DIVO compares to other covered-call and dividend ETFs",
+    "intro": "For dividend investors evaluating DIVO against covered-call and conventional dividend ETF alternatives:",
+    "columns": [
+      "Ticker",
+      "Yield",
+      "Frequency",
+      "Strategy"
+    ],
+    "rows": [
+      {
+        "ticker": "DIVO",
+        "self": true,
+        "cells": [
+          "4.62%",
+          "Monthly",
+          "Active dividend + tactical calls"
+        ]
+      },
+      {
+        "ticker": "JEPI",
+        "link": "/dividend/jepi.html",
+        "cells": [
+          "8.15%",
+          "Monthly",
+          "Active low-vol + ELN calls"
+        ]
+      },
+      {
+        "ticker": "JEPQ",
+        "link": "/dividend/jepq.html",
+        "cells": [
+          "10.20%",
+          "Monthly",
+          "Nasdaq-100 + ELN calls"
+        ]
+      },
+      {
+        "ticker": "SCHD",
+        "link": "/dividend/schd.html",
+        "cells": [
+          "3.82%",
+          "Quarterly",
+          "Quality dividend index, no calls"
+        ]
+      }
+    ]
+  },
+  "primer": {
+    "heading": "Why tactical call writing beats systematic for steady income",
+    "body": "A systematic covered-call ETF (like QYLD) writes at-the-money calls on its full index every single month regardless of conditions. This maximizes premium income but caps upside on every rally, which is why QYLD has barely appreciated in 10 years even as the Nasdaq tripled. A tactical covered-call ETF (like DIVO) writes calls only when implied volatility is high enough to make the trade worthwhile, and only on a portion of holdings, typically 10-30%. The result is lower income (4-5% vs QYLD's 11-12%) but materially better participation in upside.\n\nFor a dividend investor, this means DIVO behaves more like a high-quality dividend stock portfolio with a modest income boost, while JEPI/QYLD behave more like a bond-like income vehicle with limited equity upside. Both are valid; they solve different problems. DIVO is the choice if you want growth-plus-income with monthly cash flow. JEPI is the choice if you want maximum yield with capped upside. Many income portfolios hold both to balance the two profiles."
+  },
+  "faq": [
+    {
+      "q": "When does DIVO pay dividends in 2026?",
+      "a": "DIVO distributes monthly. 2026 payments arrive around the last business day of each month. Ex-dividend dates fall roughly 7-10 days earlier."
+    },
+    {
+      "q": "What is DIVO's current dividend yield?",
+      "a": "DIVO's trailing 12-month yield was approximately 4.62% as of May 2026, based on the most recent twelve monthly distributions. Yield is steadier than JEPI's because the call-writing overlay is tactical rather than systematic."
+    },
+    {
+      "q": "Is DIVO better than JEPI?",
+      "a": "Different goals. JEPI yields ~8%; DIVO yields ~4.6%. JEPI uses systematic ELN-based call writing across an S&P 500 low-volatility basket for maximum income. DIVO uses tactical call writing on a smaller 25-30 stock high-quality dividend portfolio for income plus better upside participation. DIVO captures more of bull markets; JEPI delivers more income in flat or sideways markets. Many investors hold both."
+    },
+    {
+      "q": "How are DIVO distributions taxed?",
+      "a": "DIVO's distributions are predominantly qualified dividends (~70-80%) taxed at the 0%/15%/20% qualified-dividend rate, plus a smaller ordinary-income portion from short-term option premium. This makes DIVO meaningfully more tax-efficient than JEPI/QYLD in a taxable account, where most of the distribution is ordinary income."
+    },
+    {
+      "q": "What are DIVO's biggest holdings?",
+      "a": "DIVO's top holdings as of May 2026 include Microsoft, JPMorgan, Visa, Johnson & Johnson, Home Depot, McDonald's, Procter & Gamble, and Apple. The portfolio is concentrated at 25-30 names, with the top 10 representing roughly 45% of assets. Holdings turn over slowly; CWP positions DIVO as a long-term core."
+    },
+    {
+      "q": "Why is DIVO's expense ratio higher than passive dividend ETFs?",
+      "a": "DIVO is actively managed. The 0.55% expense covers the team running stock selection and tactical option writing. Passive dividend ETFs (SCHD, VYM) charge 0.06-0.08% because the index does all the work. For DIVO, the question is whether active management adds 0.50% of value above passive over time. Historically the answer has been yes; whether it continues is the open question."
+    }
+  ],
+  "disclosure": "YieldOS is a third-party dividend tracking platform and is not affiliated with Amplify ETFs or Capital Wealth Planning. Distribution figures and yields on this page are estimates derived from public historical data as of May 2026 and may not reflect current market conditions. Nothing on this page is investment advice. Consult a licensed financial advisor before making investment decisions.",
+  "seo": {
+    "title": "DIVO Dividend 2026: Monthly Pay Schedule, 4.62% Yield, Tactical Covered Calls | YieldOS",
+    "description": "Amplify CWP Enhanced Dividend Income ETF (DIVO) pays monthly distributions yielding ~4.62% via a high-quality dividend portfolio plus tactical covered calls. See DIVO's 2026 pay schedule, 8-month history, and how DIVO compares to JEPI, JEPQ, and SCHD.",
+    "keywords": "DIVO dividend, DIVO distribution schedule, DIVO ex-dividend date 2026, Amplify CWP Enhanced Dividend Income ETF, DIVO vs JEPI, DIVO vs SCHD, covered call ETF, monthly dividend ETF",
+    "ogTitle": "DIVO Dividend 2026. Monthly Schedule, 4.62% Yield",
+    "ogDescription": "Amplify CWP. Tactical covered calls on a high-quality dividend portfolio. Monthly payer. 2026 schedule and peer comparison.",
+    "jsonLdName": "Amplify CWP Enhanced Dividend Income ETF",
+    "jsonLdAlternate": "DIVO",
+    "jsonLdDescription": "Monthly distribution actively-managed ETF. Combines a 25-30 stock high-quality dividend portfolio with a tactical covered-call overlay. ~4.62% yield. Listed on NYSE Arca.",
+    "jsonLdCategory": "Income / Covered-Call ETF"
+  }
+}

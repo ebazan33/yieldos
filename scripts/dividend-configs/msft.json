@@ -1,0 +1,192 @@
+{
+  "ticker": "MSFT",
+  "name": "Microsoft Corporation",
+  "exchange": "NASDAQ",
+  "type": "stock",
+  "frequency": "Quarterly",
+  "subhead": "Microsoft is a low-yield but high-growth dividend stock. The yield is under 1%, but the dividend has grown at roughly 10% annually for two decades and the payout ratio remains conservative under 30%. This page covers MSFT's 2026 quarterly pay schedule, recent payment history, and why dividend-growth investors hold MSFT despite the small starting yield.",
+  "byline": "Updated by Elian Bazan \u00b7 May 2026",
+  "badges": [
+    {
+      "label": "21+ year growth streak",
+      "color": "gold"
+    },
+    {
+      "label": "~10% 5-yr CAGR",
+      "color": "emerald"
+    },
+    {
+      "label": "Quarterly payer",
+      "color": "blue"
+    }
+  ],
+  "stats": [
+    {
+      "label": "Next Ex-Date",
+      "value": "Aug 21, 2026",
+      "sub": "estimated"
+    },
+    {
+      "label": "Last Payment",
+      "value": "$0.83",
+      "sub": "Jun 12, 2026",
+      "highlight": true
+    },
+    {
+      "label": "TTM Yield",
+      "value": "0.71%",
+      "sub": "trailing 12 months"
+    },
+    {
+      "label": "5-yr Div CAGR",
+      "value": "+10.2%",
+      "sub": "compound annual"
+    }
+  ],
+  "statsAsOf": "May 2026",
+  "editorial": "Microsoft is one of the world's largest companies by market cap, with revenue around $250B per year and operating margins above 40%. Azure, the cloud business, has become a meaningful piece of the company's profit pool alongside the legacy Office and Windows franchises, and the LinkedIn, Xbox, and Activision Blizzard acquisitions have rounded out a portfolio that touches enterprise software, consumer software, gaming, and developer tools. MSFT generates roughly $90B in annual free cash flow, returning about 30% of it via dividends and the rest through buybacks and reinvestment.\n\nFor dividend investors, MSFT is the textbook dividend-growth holding rather than an income stock. The current yield is under 1%, which means MSFT is essentially useless for a near-retiree who needs income today. But the dividend has grown at a 10% annualized rate for over a decade, and the payout ratio remains conservative under 30% of earnings. A $10,000 position in MSFT 10 years ago at a 2% starting yield-on-cost now generates a yield-on-cost above 8% if the dividend kept compounding at 10%. This is the dividend-growth case in a single example.\n\nThe trade-off is concentration and valuation. MSFT trades at a premium multiple because the market prices in continued cloud and AI growth. If growth slows, the stock can underperform meaningfully even if the dividend keeps growing. For accumulators with a 15-20 year horizon, MSFT is one of the cleanest growth-of-income stories in the market. For investors who need 3-4% current yield, MSFT is the wrong instrument. And for portfolio construction, MSFT often shows up in dividend-growth ETFs like DGRO, VIG, and SCHD, so investors holding those funds may already own MSFT inside the index without realizing it.",
+  "schedule": {
+    "heading": "When does MSFT pay dividends?",
+    "paragraph": "MSFT pays quarterly. Payments typically arrive in mid-March, mid-June, mid-September, and mid-December. Ex-dividend dates fall about three weeks earlier. Microsoft's board announces the annual raise at the September meeting, with the new amount taking effect on the December payment."
+  },
+  "history": [
+    {
+      "exDate": "May 21, 2026",
+      "payDate": "Jun 12, 2026",
+      "amount": "$0.83",
+      "notes": ""
+    },
+    {
+      "exDate": "Feb 19, 2026",
+      "payDate": "Mar 12, 2026",
+      "amount": "$0.83",
+      "notes": ""
+    },
+    {
+      "exDate": "Nov 20, 2025",
+      "payDate": "Dec 11, 2025",
+      "amount": "$0.83",
+      "notes": "21st consecutive annual raise"
+    },
+    {
+      "exDate": "Aug 21, 2025",
+      "payDate": "Sep 11, 2025",
+      "amount": "$0.75",
+      "notes": ""
+    },
+    {
+      "exDate": "May 15, 2025",
+      "payDate": "Jun 12, 2025",
+      "amount": "$0.75",
+      "notes": ""
+    },
+    {
+      "exDate": "Feb 20, 2025",
+      "payDate": "Mar 13, 2025",
+      "amount": "$0.75",
+      "notes": ""
+    },
+    {
+      "exDate": "Nov 21, 2024",
+      "payDate": "Dec 12, 2024",
+      "amount": "$0.75",
+      "notes": "20th consecutive annual raise"
+    },
+    {
+      "exDate": "Aug 15, 2024",
+      "payDate": "Sep 12, 2024",
+      "amount": "$0.83",
+      "notes": "10% raise"
+    }
+  ],
+  "peers": {
+    "heading": "How MSFT compares to other large-cap dividend-growth stocks",
+    "intro": "For dividend investors evaluating MSFT against other dividend-growth alternatives:",
+    "columns": [
+      "Ticker",
+      "Yield",
+      "5-yr CAGR",
+      "Story"
+    ],
+    "rows": [
+      {
+        "ticker": "MSFT",
+        "self": true,
+        "cells": [
+          "0.71%",
+          "+10.2%",
+          "Cloud + AI \u00b7 21-yr streak"
+        ]
+      },
+      {
+        "ticker": "AAPL",
+        "link": "/dividend/aapl.html",
+        "cells": [
+          "0.44%",
+          "+5.0%",
+          "Consumer tech \u00b7 12-yr streak"
+        ]
+      },
+      {
+        "ticker": "AVGO",
+        "link": "/dividend/avgo.html",
+        "cells": [
+          "1.20%",
+          "+13.5%",
+          "Semis \u00b7 13-yr streak"
+        ]
+      },
+      {
+        "ticker": "V",
+        "link": "/dividend/v.html",
+        "cells": [
+          "0.78%",
+          "+15.2%",
+          "Payments \u00b7 16-yr streak"
+        ]
+      }
+    ]
+  },
+  "primer": {
+    "heading": "Why dividend investors hold sub-1% yields like MSFT",
+    "body": "On the surface, a 0.71% yield disqualifies MSFT as a dividend stock. Most yield screens require 2%+ as the entry bar. But yield screens are static, they measure today's payment against today's price. Dividend-growth strategy looks at the trajectory.\n\nMSFT has grown its dividend roughly 10% per year for over 15 years. At that pace, the dividend doubles every 7 years. An investor who buys today at a 0.71% yield-on-cost will, if the growth continues, hold a 1.4% YoC in seven years, 2.8% in 14 years, and 5.6% in 21 years. By the time the position reaches retirement, the YoC will likely exceed what a 3% high-yield dividend stock would have grown to from the same starting cost, because most high-yield names grow their dividend slower than 4%. The trade-off is opportunity cost on income during the accumulation phase, MSFT pays you very little while you wait. For investors with a long horizon, that's an acceptable trade. For income-now investors, it's the wrong vehicle."
+  },
+  "faq": [
+    {
+      "q": "When does MSFT pay dividends in 2026?",
+      "a": "MSFT pays quarterly. 2026 payments are scheduled for mid-March (already paid), mid-June, mid-September, and mid-December. Ex-dividend dates fall about three weeks earlier."
+    },
+    {
+      "q": "What is MSFT's current dividend yield?",
+      "a": "MSFT's trailing 12-month yield was approximately 0.71% as of May 2026. Yield is low because the stock trades at a premium multiple. The headline yield understates the dividend's quality, which is primarily about growth, not current income."
+    },
+    {
+      "q": "How long has MSFT been raising its dividend?",
+      "a": "Microsoft initiated its first dividend in 2003 and has raised the dividend annually since 2004, giving it a 21-year dividend growth streak as of 2025. The company will become a Dividend Aristocrat (25+ year streak) in 2029 if the pattern continues. The next annual raise is typically announced at the September board meeting."
+    },
+    {
+      "q": "Is MSFT's dividend safe?",
+      "a": "Among the safest in the S&P 500. MSFT's payout ratio runs under 30% of earnings, free cash flow covers the dividend roughly 3-4x, the balance sheet holds more cash than long-term debt, and the underlying business has structural moats in enterprise software and cloud. None of this is investment advice, but the financial setup is unusually conservative for a sub-1% yielder."
+    },
+    {
+      "q": "Should I buy MSFT for dividend income?",
+      "a": "No, if you need income today. The 0.71% yield is too low to be a meaningful income contributor. Yes, if you're an accumulator with 10+ years before you need the cash. MSFT's combination of high dividend growth, strong fundamentals, and reasonable payout ratio makes it a textbook dividend-growth holding. For income-now investors, names like SCHD, MAIN, or O are more appropriate."
+    },
+    {
+      "q": "Do I already own MSFT through a dividend ETF?",
+      "a": "Probably. MSFT is the largest or second-largest holding in DGRO, VIG, and several other dividend-growth ETFs. SCHD does not currently hold MSFT (the strategy's quality+yield screen excludes it for yield being too low). Check your ETF holdings before adding a separate MSFT position to avoid concentration."
+    }
+  ],
+  "disclosure": "YieldOS is a third-party dividend tracking platform and is not affiliated with Microsoft Corporation. Dividend schedules, yields, and figures on this page are estimates derived from public historical data as of May 2026 and may not reflect current market conditions. Nothing on this page is investment advice. Consult a licensed financial advisor before making investment decisions.",
+  "seo": {
+    "title": "MSFT Dividend 2026: Quarterly Pay Schedule, 10% Annual Growth, 21-Year Streak | YieldOS",
+    "description": "Microsoft (MSFT) is a dividend-growth stock with a 21-year dividend increase streak and ~10% annual dividend CAGR. See MSFT's 2026 pay schedule, 8-quarter payment history, and how MSFT compares to AAPL, AVGO, and V.",
+    "keywords": "MSFT dividend, when does MSFT pay dividends, MSFT ex-dividend date 2026, Microsoft dividend history, MSFT dividend yield, MSFT dividend growth, dividend growth stocks, MSFT vs AAPL",
+    "ogTitle": "MSFT Dividend 2026. Quarterly Schedule, 10% Growth, 21-Year Streak",
+    "ogDescription": "Microsoft. 21-year dividend growth streak. ~10% annual CAGR. 2026 pay schedule, payment history, and peer comparison.",
+    "jsonLdName": "Microsoft Corporation",
+    "jsonLdAlternate": "MSFT",
+    "jsonLdDescription": "Quarterly dividend payer. 21+ consecutive years of dividend increases. Low current yield but high dividend growth rate. Listed on NASDAQ.",
+    "jsonLdCategory": "Information Technology"
+  }
+}

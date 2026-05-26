@@ -1,0 +1,192 @@
+{
+  "ticker": "DGRO",
+  "name": "iShares Core Dividend Growth ETF",
+  "exchange": "NYSE Arca",
+  "type": "etf",
+  "frequency": "Quarterly",
+  "subhead": "DGRO is BlackRock's dividend-growth ETF. ~$30B AUM, ~430 underlying holdings, and a screening methodology that favors consistent dividend growth over current yield. This page covers DGRO's quarterly distribution schedule, current 2.35% yield, recent payment history, and how DGRO compares to SCHD, VIG, and VYM.",
+  "byline": "Updated by Elian Bazan \u00b7 May 2026",
+  "badges": [
+    {
+      "label": "~$30B AUM",
+      "color": "gold"
+    },
+    {
+      "label": "Quarterly Distributions",
+      "color": "emerald"
+    },
+    {
+      "label": "Dividend growth screen",
+      "color": "blue"
+    }
+  ],
+  "stats": [
+    {
+      "label": "Next Ex-Date",
+      "value": "Jun 10, 2026",
+      "sub": "estimated"
+    },
+    {
+      "label": "Last Distribution",
+      "value": "$0.310",
+      "sub": "Mar 26, 2026",
+      "highlight": true
+    },
+    {
+      "label": "TTM Yield",
+      "value": "2.35%",
+      "sub": "trailing 12 months"
+    },
+    {
+      "label": "Expense Ratio",
+      "value": "0.08%",
+      "sub": "low-cost passive"
+    }
+  ],
+  "statsAsOf": "May 2026",
+  "editorial": "DGRO tracks the Morningstar US Dividend Growth Index. The screen is straightforward: only US companies with at least 5 consecutive years of dividend growth, payout ratios below 75%, and a quality profile that excludes the highest-yield troubled names. The result is a 430-name basket leaning toward mature growers like Microsoft, Apple, JPMorgan, Johnson & Johnson, and Procter & Gamble. BlackRock charges 0.08% to run it.\n\nFor dividend investors, DGRO sits in a specific niche between SCHD and VYM. It owns more holdings than SCHD (~430 vs ~100), so the diversification is wider. But the dividend-growth screen makes it more selective than VYM (which owns nearly anything paying above-average yield). Yield is on the lower side at 2.35%, but the 5-year dividend CAGR is ~9.5%, the highest of the broad dividend ETFs after SCHD. The combination of growth tilt and big-tech inclusion (Apple, Microsoft, Broadcom) means DGRO captures more of bull markets than yield-focused alternatives.\n\nThe trade-off is current income. DGRO yields about 1.5 percentage points less than SCHD and 0.6 less than VYM. For an accumulator with a 10+ year horizon, the higher growth more than makes up for it: a $10,000 starting income at 9.5% CAGR doubles in about 7.5 years, versus 13 years at SCHD's slightly higher base. For a near-retiree prioritizing current dividend cash flow, DGRO is the wrong instrument. For someone in the accumulation phase, it's one of the best growth-of-income ETFs available.",
+  "schedule": {
+    "heading": "When does DGRO pay distributions?",
+    "paragraph": "DGRO distributes quarterly. Payments typically arrive in late March, late June, late September, and late December. Ex-dividend dates fall a few business days before pay date. BlackRock announces the distribution amount about a week ahead in the iShares fund-distribution release."
+  },
+  "history": [
+    {
+      "exDate": "Mar 24, 2026",
+      "payDate": "Mar 26, 2026",
+      "amount": "$0.310",
+      "notes": ""
+    },
+    {
+      "exDate": "Dec 22, 2025",
+      "payDate": "Dec 24, 2025",
+      "amount": "$0.385",
+      "notes": "year-end larger"
+    },
+    {
+      "exDate": "Sep 22, 2025",
+      "payDate": "Sep 24, 2025",
+      "amount": "$0.295",
+      "notes": ""
+    },
+    {
+      "exDate": "Jun 23, 2025",
+      "payDate": "Jun 25, 2025",
+      "amount": "$0.290",
+      "notes": ""
+    },
+    {
+      "exDate": "Mar 24, 2025",
+      "payDate": "Mar 26, 2025",
+      "amount": "$0.295",
+      "notes": ""
+    },
+    {
+      "exDate": "Dec 23, 2024",
+      "payDate": "Dec 26, 2024",
+      "amount": "$0.365",
+      "notes": "year-end larger"
+    },
+    {
+      "exDate": "Sep 23, 2024",
+      "payDate": "Sep 25, 2024",
+      "amount": "$0.280",
+      "notes": ""
+    },
+    {
+      "exDate": "Jun 24, 2024",
+      "payDate": "Jun 26, 2024",
+      "amount": "$0.275",
+      "notes": ""
+    }
+  ],
+  "peers": {
+    "heading": "How DGRO compares to other dividend-growth ETFs",
+    "intro": "For dividend investors evaluating DGRO against other broad dividend ETF options:",
+    "columns": [
+      "Ticker",
+      "Yield",
+      "5-yr CAGR",
+      "Tilt"
+    ],
+    "rows": [
+      {
+        "ticker": "DGRO",
+        "self": true,
+        "cells": [
+          "2.35%",
+          "+9.5%",
+          "Growth + quality screen"
+        ]
+      },
+      {
+        "ticker": "SCHD",
+        "link": "/dividend/schd.html",
+        "cells": [
+          "3.82%",
+          "+11.1%",
+          "Yield + quality screen"
+        ]
+      },
+      {
+        "ticker": "VIG",
+        "link": "/dividend/vig.html",
+        "cells": [
+          "1.78%",
+          "+9.8%",
+          "10+ yr streak only"
+        ]
+      },
+      {
+        "ticker": "VYM",
+        "link": "/dividend/vym.html",
+        "cells": [
+          "2.95%",
+          "+6.2%",
+          "Broad high-yield"
+        ]
+      }
+    ]
+  },
+  "primer": {
+    "heading": "Why dividend-growth ETFs reward accumulators specifically",
+    "body": "A dividend-growth strategy front-loads lower current income for faster future income. If you own $100k of DGRO yielding 2.35%, your year-one income is $2,350. At a 9.5% CAGR (DGRO's historical pace), that income doubles roughly every 7.5 years. After 15 years of holding, the same $100k position is throwing off ~$9,500 a year in dividends without you adding a dollar.\n\nThe yield-focused alternative (SCHD, VYM) front-loads more income but grows slower. For an accumulator who doesn't need the cash flow yet, DGRO's lower starting yield is a feature, not a bug. By the time you reach retirement and need the income, your yield-on-cost on DGRO will likely exceed what SCHD's yield-on-cost would have been from the same starting point. This is the entire case for dividend-growth-investing as a strategy, and DGRO is one of the cleanest expressions of it in ETF form."
+  },
+  "faq": [
+    {
+      "q": "When does DGRO pay dividends in 2026?",
+      "a": "DGRO distributes quarterly. 2026 payments are scheduled around late March, late June, late September, and late December. Ex-dividend dates fall a few business days before each pay date."
+    },
+    {
+      "q": "What is DGRO's current dividend yield?",
+      "a": "DGRO's trailing 12-month yield was approximately 2.35% as of May 2026, based on the most recent four quarterly distributions. Yield is on the lower end of dividend ETFs because the strategy prioritizes growth over current income."
+    },
+    {
+      "q": "Is DGRO better than SCHD?",
+      "a": "Different goals. DGRO yields 2.35% with ~9.5% growth; SCHD yields 3.82% with ~11.1% growth. For an accumulator with 10+ year horizon, both work; DGRO captures more big-tech upside and has wider diversification (430 names vs SCHD's 100). For a near-retiree, SCHD's higher current yield is more practical."
+    },
+    {
+      "q": "How are DGRO distributions taxed?",
+      "a": "DGRO's distributions are predominantly qualified dividends, taxed at the 0%/15%/20% qualified-dividend rate for US investors. This makes DGRO tax-efficient in a taxable account."
+    },
+    {
+      "q": "What are DGRO's biggest holdings?",
+      "a": "DGRO's top holdings as of May 2026 include Apple, Microsoft, Broadcom, JPMorgan, Johnson & Johnson, ExxonMobil, Procter & Gamble, and AbbVie. Roughly 20% of the portfolio is in the top 10 names, with the remaining 80% spread across 420+ smaller positions."
+    },
+    {
+      "q": "Why does DGRO own Apple and Microsoft when they don't yield much?",
+      "a": "Because the screening rule is 5+ years of dividend growth and a quality profile, not minimum yield. AAPL and MSFT both raise dividends every year and both have payout ratios under 30%, which makes them ideal dividend-growth holdings even though current yield is under 1%. This is the structural reason DGRO outperforms VYM in tech-led bull markets."
+    }
+  ],
+  "disclosure": "YieldOS is a third-party dividend tracking platform and is not affiliated with BlackRock or the iShares Core Dividend Growth ETF. Distribution figures and yields on this page are estimates derived from public historical data as of May 2026 and may not reflect current market conditions. Nothing on this page is investment advice. Consult a licensed financial advisor before making investment decisions.",
+  "seo": {
+    "title": "DGRO Dividend 2026: Quarterly Pay Schedule, 2.35% Yield, 9.5% Growth | YieldOS",
+    "description": "iShares Core Dividend Growth ETF (DGRO) pays quarterly distributions with a 2.35% yield and 9.5% 5-year dividend CAGR. See DGRO's 2026 pay schedule, 8-quarter history, and how it compares to SCHD, VIG, and VYM.",
+    "keywords": "DGRO dividend, DGRO distribution schedule, DGRO ex-dividend date 2026, iShares Core Dividend Growth ETF, DGRO vs SCHD, DGRO vs VIG, DGRO yield, dividend growth ETF",
+    "ogTitle": "DGRO Dividend 2026. Quarterly, 2.35% Yield, 9.5% Growth",
+    "ogDescription": "BlackRock's dividend-growth ETF. 430 holdings, 0.08% expense, 2026 schedule + peer comparison.",
+    "jsonLdName": "iShares Core Dividend Growth ETF",
+    "jsonLdAlternate": "DGRO",
+    "jsonLdDescription": "Quarterly distribution dividend-growth ETF. Tracks the Morningstar US Dividend Growth Index. ~2.35% yield. ~$30B AUM. Listed on NYSE Arca.",
+    "jsonLdCategory": "Dividend-Growth ETF"
+  }
+}
