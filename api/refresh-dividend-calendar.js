@@ -22,6 +22,12 @@
 
 import { createClient } from '@supabase/supabase-js';
 
+// Bump function timeout. Default is 10-15s; we need up to ~7min for the
+// throttled Polygon loop. 300s is Pro's max without Fluid Compute.
+export const config = {
+  maxDuration: 300,
+};
+
 const supabase = createClient(
   process.env.SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY,
@@ -32,7 +38,8 @@ const supabase = createClient(
 // functions via process.env — the VITE_ prefix only controls client-bundle
 // exposure. Read the legacy name first, fall back to the new canonical name.
 const POLYGON_KEY = process.env.POLYGON_API_KEY || process.env.VITE_POLYGON_KEY;
-const SLEEP_MS = 13_000;        // 13s between calls — under 5 req/min cap
+const SLEEP_MS = 12_500;        // 12.5s between calls — just under 5 req/min cap
+const MAX_TICKERS_PER_RUN = 22; // keeps total runtime under maxDuration with margin
 
 function sleep(ms) {
   return new Promise(r => setTimeout(r, ms));
@@ -100,17 +107,36 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'tickers_query_failed', detail: tickersErr.message });
   }
 
-  const tickers = Array.from(
+  const allTickers = Array.from(
     new Set(
       (rows || [])
         .map(r => (r.ticker || '').toString().trim().toUpperCase())
         .filter(t => t.length > 0 && t.length <= 6 && /^[A-Z.\-]+$/.test(t))
     )
-  ).sort();
+  );
 
-  if (tickers.length === 0) {
+  if (allTickers.length === 0) {
     return res.status(200).json({ ok: true, tickers_refreshed: 0, errors: [] });
   }
+
+  // Order by staleness: tickers absent from dividend_calendar OR with the
+  // oldest last_refreshed_at go first. The daily cron caps total work at
+  // MAX_TICKERS_PER_RUN; over a few days the cache covers everything.
+  const { data: existing } = await supabase
+    .from('dividend_calendar')
+    .select('ticker, last_refreshed_at');
+  const lastRefreshByTicker = new Map();
+  for (const r of existing || []) {
+    lastRefreshByTicker.set(r.ticker, r.last_refreshed_at || '');
+  }
+  const tickers = allTickers
+    .slice()
+    .sort((a, b) => {
+      const la = lastRefreshByTicker.get(a) || '';   // empty = never refreshed = oldest
+      const lb = lastRefreshByTicker.get(b) || '';
+      return la.localeCompare(lb);
+    })
+    .slice(0, MAX_TICKERS_PER_RUN);
 
   const startedAt = Date.now();
   const errors = [];
@@ -154,7 +180,9 @@ export default async function handler(req, res) {
 
   return res.status(200).json({
     ok: true,
-    tickers_seen: tickers.length,
+    total_tickers_in_holdings: allTickers.length,
+    tickers_processed_this_run: tickers.length,
+    tickers_remaining_for_next_run: Math.max(0, allTickers.length - tickers.length),
     tickers_refreshed: refreshed,
     tickers_skipped_no_upcoming: skipped_no_upcoming,
     errors,
