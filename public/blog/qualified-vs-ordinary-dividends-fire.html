@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#080b10" />
+
+  <title>Qualified vs Ordinary Dividends: The Tax Math That Changes Your FIRE Timeline (2026)</title>
+  <meta name="description" content="Most FIRE calculators ignore dividend tax classification. Here's how qualified vs ordinary dividends quietly change your real FIRE number — with worked examples for SCHD, JEPI, REITs, and BDCs." />
+  <meta name="keywords" content="qualified vs ordinary dividends, qualified dividends FIRE, dividend tax FIRE, REIT dividend tax, JEPI tax treatment, dividend tax bracket, FIRE tax planning, dividend income tax 2026" />
+  <meta name="author" content="YieldOS" />
+  <link rel="canonical" href="https://yieldos.app/blog/qualified-vs-ordinary-dividends-fire.html" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+  <meta property="og:type" content="article" />
+  <meta property="og:title" content="Qualified vs Ordinary Dividends: The Tax Math That Changes Your FIRE Timeline" />
+  <meta property="og:description" content="Most FIRE calculators ignore dividend tax classification. Here's how it quietly changes your real FIRE number — with worked examples." />
+  <meta property="og:url" content="https://yieldos.app/blog/qualified-vs-ordinary-dividends-fire.html" />
+  <meta property="og:image" content="https://yieldos.app/og-image.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    "headline": "Qualified vs Ordinary Dividends: The Tax Math That Changes Your FIRE Timeline",
+    "description": "Most FIRE calculators ignore dividend tax classification. Here's how it quietly changes your real FIRE number.",
+    "image": "https://yieldos.app/og-image.png",
+    "author": { "@type": "Organization", "name": "YieldOS", "url": "https://yieldos.app" },
+    "publisher": { "@type": "Organization", "name": "YieldOS", "logo": { "@type": "ImageObject", "url": "https://yieldos.app/favicon.svg" } },
+    "datePublished": "2026-05-27",
+    "dateModified": "2026-05-27",
+    "mainEntityOfPage": { "@type": "WebPage", "@id": "https://yieldos.app/blog/qualified-vs-ordinary-dividends-fire.html" }
+  }
+  </script>
+
+  <style>
+    :root {
+      --bg:#080b10; --surface:#0f1420; --card:#131925; --border:#1c2536;
+      --text:#f1f5f9; --text-sub:#94a3b8; --text-muted:#64748b;
+      --blue:#4f8ef7; --emerald:#34d399; --gold:#f59e0b; --red:#f87171;
+    }
+    *{box-sizing:border-box;} html,body{margin:0;padding:0;background:var(--bg);color:var(--text);font-family:'Inter',system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased;}
+    @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,700;0,9..144,800&family=Inter:wght@400;500;600;700&display=swap');
+    a{color:var(--blue);text-decoration:none;} a:hover{text-decoration:underline;}
+    nav{position:sticky;top:0;z-index:10;background:rgba(8,11,16,0.94);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:14px 22px;display:flex;justify-content:space-between;align-items:center;}
+    nav .logo{display:flex;align-items:center;gap:10px;font-family:'Fraunces',serif;font-weight:700;font-size:17px;letter-spacing:-0.01em;color:var(--text);}
+    nav .cta{background:var(--blue);color:#fff;padding:8px 16px;border-radius:8px;font-size:13px;font-weight:600;}
+    nav .cta:hover{text-decoration:none;opacity:0.9;}
+    main{max-width:720px;margin:0 auto;padding:48px 22px 80px;}
+    .kicker{font-size:11px;color:var(--blue);font-weight:700;letter-spacing:0.12em;text-transform:uppercase;margin-bottom:14px;}
+    h1{font-family:'Fraunces',serif;font-size:clamp(32px,5vw,44px);font-weight:800;line-height:1.12;letter-spacing:-0.02em;margin:0 0 16px;}
+    .byline{font-size:12px;color:var(--text-muted);margin-bottom:38px;}
+    h2{font-family:'Fraunces',serif;font-size:clamp(22px,3vw,28px);font-weight:700;letter-spacing:-0.015em;margin:44px 0 14px;}
+    h3{font-family:'Fraunces',serif;font-size:18px;font-weight:700;margin:28px 0 8px;}
+    p{font-size:16px;line-height:1.75;color:var(--text-sub);margin:0 0 18px;}
+    p strong,li strong{color:var(--text);}
+    ul,ol{padding-left:22px;color:var(--text-sub);font-size:16px;line-height:1.8;}
+    li{margin-bottom:8px;}
+    .callout{background:var(--card);border:1px solid var(--border);border-left:3px solid var(--blue);border-radius:10px;padding:18px 22px;margin:22px 0;font-size:15px;line-height:1.7;color:var(--text-sub);}
+    .callout strong{color:var(--text);}
+    .callout.warn{border-left-color:var(--gold);}
+    table{width:100%;border-collapse:collapse;margin:18px 0;font-size:14px;}
+    table th{text-align:left;padding:10px 12px;background:var(--surface);color:var(--text);font-weight:600;border-bottom:1px solid var(--border);}
+    table td{padding:10px 12px;border-bottom:1px solid var(--border);color:var(--text-sub);}
+    table td.num{font-variant-numeric:tabular-nums;text-align:right;color:var(--text);}
+    table td.good{color:var(--emerald);font-weight:600;}
+    table td.bad{color:var(--red);font-weight:600;}
+    .example-box{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:22px 24px;margin:24px 0;}
+    .example-box h3{margin-top:0;color:var(--text);}
+    .example-box .row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:14px;}
+    .example-box .row:last-of-type{border-bottom:none;font-weight:700;color:var(--text);padding-top:12px;}
+    .example-box .row .label{color:var(--text-sub);}
+    .example-box .row .val{color:var(--text);font-variant-numeric:tabular-nums;font-weight:600;}
+    .example-box .row .val.good{color:var(--emerald);}
+    .example-box .row .val.bad{color:var(--red);}
+    .cta-box{background:linear-gradient(135deg,rgba(79,142,247,0.14),rgba(52,211,153,0.08));border:1px solid rgba(79,142,247,0.3);border-radius:14px;padding:28px;margin:36px 0;text-align:center;}
+    .cta-box h3{margin:0 0 8px;font-size:20px;color:var(--text);}
+    .cta-box p{margin:0 0 16px;color:var(--text-sub);}
+    .cta-box a{display:inline-block;background:var(--blue);color:#fff;padding:11px 22px;border-radius:9px;font-size:14px;font-weight:600;}
+    .cta-box a:hover{text-decoration:none;opacity:0.92;}
+    footer{border-top:1px solid var(--border);padding:24px 22px;text-align:center;font-size:12px;color:var(--text-muted);}
+    .related{background:var(--surface);border-radius:12px;padding:20px 22px;margin:28px 0;border:1px solid var(--border);}
+    .related h4{font-family:'Fraunces',serif;font-size:14px;color:var(--text);margin:0 0 10px;}
+    .related a{display:block;padding:6px 0;font-size:14px;}
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="/" class="logo">
+      <svg width="26" height="26" viewBox="0 0 28 28"><rect width="28" height="28" rx="7" fill="#4f8ef7"/><path d="M8 20 L14 8 L20 20" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/><circle cx="14" cy="17" r="2" fill="#fff"/></svg>
+      YieldOS
+    </a>
+    <a href="/" class="cta">Try YieldOS free →</a>
+  </nav>
+
+  <main>
+    <div class="kicker">FIRE TAX MATH · 11 MIN READ</div>
+    <h1>Qualified vs Ordinary Dividends: The Tax Math That Changes Your FIRE Timeline</h1>
+    <div class="byline">Published May 27, 2026 · Written by the YieldOS team</div>
+
+    <p>Most FIRE calculators have a quiet bug: they assume every dollar of dividend income is created equal. It isn't. A dollar from SCHD and a dollar from a covered-call ETF can land in your account looking identical, then leave with very different amounts taken out by the IRS.</p>
+
+    <p>The gap is "qualified" vs "ordinary" dividends — a tax classification that most dividend investors learn about the first time they file taxes after going heavy into REITs or high-yield ETFs and get an unexpected bill. For a FIRE investor planning two decades of distributions, the difference compounds into a real number: roughly <strong>10–25% more capital required</strong> to hit the same after-tax income, depending on your portfolio mix and bracket.</p>
+
+    <p>This post breaks down what the two categories mean, which popular dividend payers fall into each, the math that actually moves your FIRE date, and the simple structural fix that closes most of the gap.</p>
+
+    <div class="callout warn">
+      <strong>Disclaimer:</strong> This is not tax advice. Tax rules change, your filing status matters, state taxes vary, and the IRS makes its own decisions. Use this post to ask better questions of your CPA — not as a substitute for one.
+    </div>
+
+    <h2>The two categories, in plain English</h2>
+
+    <h3>Qualified dividends</h3>
+    <p>Taxed at the same favorable rates as long-term capital gains: <strong>0%, 15%, or 20%</strong>, depending on your total taxable income. To qualify, three conditions matter most:</p>
+    <ol>
+      <li>The dividend was paid by a US corporation or a "qualified" foreign corporation.</li>
+      <li>You held the underlying stock for more than 60 days during the 121-day window that begins 60 days before the ex-dividend date.</li>
+      <li>The dividend isn't on the IRS's exclusion list (REIT and BDC distributions are excluded by design, for example).</li>
+    </ol>
+    <p>Most blue-chip US dividend payers — Coca-Cola (KO), Johnson &amp; Johnson (JNJ), Microsoft (MSFT), Procter &amp; Gamble (PG) — pay qualified dividends. Most plain-vanilla dividend ETFs (SCHD, VYM, DGRO, VIG) pass through mostly qualified dividends to their holders.</p>
+
+    <h3>Ordinary dividends</h3>
+    <p>Taxed at your <strong>marginal income rate</strong>: 10%, 12%, 22%, 24%, 32%, 35%, or 37%. Same rates as the wages you earned at your day job. The biggest sources of ordinary dividends in a typical FIRE portfolio:</p>
+    <ul>
+      <li><strong>REITs</strong> — Realty Income (O), Stag Industrial (STAG), and every REIT-focused ETF distribute mostly ordinary dividends, by IRS rule. REITs don't pay corporate tax themselves, so the tax has to land at the investor.</li>
+      <li><strong>BDCs</strong> — Main Street Capital (MAIN), Ares Capital (ARCC), and other Business Development Companies are structurally similar to REITs for tax purposes.</li>
+      <li><strong>Covered-call ETFs</strong> — JEPI, JEPQ, QYLD, RYLD, and most "income" ETFs distribute a complex mix of ordinary dividends, option premium (taxed as short-term gains), and return of capital. The mix shifts year to year, but the qualified portion is usually small.</li>
+      <li><strong>Foreign companies without a tax treaty</strong> — Some ADRs pay non-qualified dividends. Always check.</li>
+      <li><strong>Money market funds and savings interest</strong> — Always ordinary, though not usually called "dividends" in casual conversation.</li>
+    </ul>
+
+    <div class="callout">
+      <strong>The REIT carve-out you should know about:</strong> Under Section 199A of the tax code, individual investors can deduct 20% of their REIT dividend income before the ordinary tax rate is applied. So a 22%-bracket investor effectively pays about 17.6% on REIT dividends, not the full 22%. This deduction was scheduled to sunset at the end of 2025, but has been extended in subsequent legislation. Confirm current status with your CPA — it materially changes the math for REIT-heavy portfolios.
+    </div>
+
+    <h2>Why this matters for FIRE specifically</h2>
+
+    <p>A standard FIRE calculator asks: "How much do I need to spend per year, and what's the safe withdrawal rate?" Then it spits out a target number. The hidden assumption is that the dollar coming out of your portfolio is the dollar landing in your wallet. For dividends, it isn't — there's a tax layer in between, and the size of that layer depends on what you own.</p>
+
+    <p>Here's the same FIRE retiree — married filing jointly, no other income, taking $60,000/year in dividends — under three portfolio profiles. We're using rough 2026 federal-only brackets and the standard deduction. Round numbers, directional accuracy.</p>
+
+    <div class="example-box">
+      <h3>Profile A: All-qualified portfolio (SCHD, VIG, DGRO, blue chips)</h3>
+      <div class="row"><span class="label">Gross dividend income</span><span class="val">$60,000</span></div>
+      <div class="row"><span class="label">Standard deduction (MFJ, 2026 est.)</span><span class="val">–$31,500</span></div>
+      <div class="row"><span class="label">Taxable income</span><span class="val">$28,500</span></div>
+      <div class="row"><span class="label">Effective federal tax (mostly 0% LTCG bracket)</span><span class="val good">~$0</span></div>
+      <div class="row"><span class="label">After-tax income</span><span class="val good">$60,000</span></div>
+    </div>
+
+    <p>This is the dividend investor's dream scenario. For a couple with no other income, qualified dividends up to roughly $96,700 of taxable income fall into the 0% long-term capital gains bracket. You can pull $60k of qualified dividends and pay essentially zero federal tax. State taxes still apply, but federally — clean.</p>
+
+    <div class="example-box">
+      <h3>Profile B: 50/50 qualified + ordinary (mixed FIRE portfolio)</h3>
+      <div class="row"><span class="label">Gross dividend income ($30k qualified, $30k ordinary)</span><span class="val">$60,000</span></div>
+      <div class="row"><span class="label">Standard deduction</span><span class="val">–$31,500</span></div>
+      <div class="row"><span class="label">Taxable ordinary dividends after deduction</span><span class="val">~$0–$15,000</span></div>
+      <div class="row"><span class="label">Federal tax (10% bracket on ordinary, 0% on qualified)</span><span class="val bad">~$0–$1,500</span></div>
+      <div class="row"><span class="label">After-tax income</span><span class="val">$58,500–$60,000</span></div>
+    </div>
+
+    <p>Still favorable, because the standard deduction wipes out most of the ordinary dividend exposure and the qualified dividends stay in the 0% bracket. The damage starts to show as income climbs.</p>
+
+    <div class="example-box">
+      <h3>Profile C: REIT- and JEPI-heavy portfolio (high-yield FIRE)</h3>
+      <div class="row"><span class="label">Gross dividend income (mostly ordinary)</span><span class="val">$60,000</span></div>
+      <div class="row"><span class="label">Standard deduction</span><span class="val">–$31,500</span></div>
+      <div class="row"><span class="label">Taxable ordinary dividends</span><span class="val">$28,500</span></div>
+      <div class="row"><span class="label">Federal tax (10% on first $23k, 12% above)</span><span class="val bad">~$3,000</span></div>
+      <div class="row"><span class="label">Less 199A QBI deduction on REIT portion (if applicable)</span><span class="val good">–$600</span></div>
+      <div class="row"><span class="label">After-tax income</span><span class="val">~$57,600</span></div>
+    </div>
+
+    <p>The gap between Profile A and Profile C is about <strong>$2,400/year in this scenario</strong> — and that's at one of the more tax-friendly income levels possible for a retiree. Move the same retiree to $120,000/year of dividends (Fat FIRE territory) with a side of part-time consulting income, and the qualified-vs-ordinary gap can stretch to <strong>$5,000–$8,000/year</strong>.</p>
+
+    <h2>What this does to your FIRE number</h2>
+
+    <p>Here's the part most calculators miss. Your FIRE target isn't the amount of <em>gross</em> dividend income you need — it's the amount of <em>after-tax</em> income you need. If your portfolio is 100% qualified, those two numbers are nearly identical at low retirement incomes. If your portfolio is 100% ordinary, you need more gross income to net the same spend.</p>
+
+    <p>Worked example: a retiree who needs $55,000/year of after-tax income to live.</p>
+
+    <table>
+      <thead>
+        <tr><th>Portfolio profile</th><th>Yield assumption</th><th>Gross income needed</th><th>Capital required</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>All-qualified (SCHD-style)</td><td class="num">3.5%</td><td class="num">$55,000</td><td class="num">$1,571,000</td></tr>
+        <tr><td>50/50 mix</td><td class="num">4.0%</td><td class="num">$56,500</td><td class="num">$1,413,000</td></tr>
+        <tr><td>High-yield (REIT/JEPI)</td><td class="num">6.0%</td><td class="num">$58,500</td><td class="num">$975,000</td></tr>
+      </tbody>
+    </table>
+
+    <p>Notice the headline result: the high-yield portfolio still gets you there with less capital, because the yield difference (3.5% vs 6%) is bigger than the tax drag (~$2,400/yr). The tax math doesn't <em>kill</em> the high-yield FIRE strategy — but it does take a real bite. And in the wrong account, that bite gets a lot bigger.</p>
+
+    <h2>The simple structural fix: asset location</h2>
+
+    <p>"Asset location" is the rule that the same investments belong in different account types depending on how they're taxed. For dividend investors, the playbook is:</p>
+
+    <ul>
+      <li><strong>Tax-advantaged accounts first (IRA, 401k, Roth IRA, HSA):</strong> Hold your <em>ordinary</em>-dividend assets here. REITs, BDCs, JEPI, JEPQ, QYLD, taxable bond funds. These pay no current tax in the account, so the ordinary classification doesn't matter — you only pay tax on withdrawal (and not at all, in a Roth).</li>
+      <li><strong>Taxable brokerage:</strong> Hold your <em>qualified</em>-dividend assets here. SCHD, VIG, DGRO, blue-chip US stocks, broad-market equity ETFs. The 0% / 15% / 20% LTCG rates are most of the benefit of a taxable account, so the qualified dividends compound efficiently.</li>
+    </ul>
+
+    <p>This single move closes most of the qualified-vs-ordinary tax gap for a FIRE investor with a normal mix of account types. A retiree pulling $30k/year from a Roth IRA full of REITs and $30k/year from a taxable account full of SCHD pays approximately <em>zero</em> federal tax on the entire $60k — the Roth withdrawals are tax-free and the taxable qualified dividends stay in the 0% LTCG bracket.</p>
+
+    <div class="callout">
+      <strong>The catch:</strong> If you don't have enough room in your tax-advantaged accounts to hold all your ordinary-dividend assets, the overflow lands in your taxable account and gets taxed at the painful rate. This is one of several reasons that "max out the IRA every year" is harder to argue against than people who are bored of hearing it want to admit.
+    </div>
+
+    <h2>What this means for how you build the portfolio</h2>
+
+    <p>Three practical takeaways for someone in the accumulation phase:</p>
+
+    <ol>
+      <li><strong>Track qualified vs ordinary split in your spreadsheet</strong> — or use a tracker that does. Treating "dividend income" as one bucket hides a tax problem you can fix while you're still adding capital.</li>
+      <li><strong>If you're chasing yield in a taxable account, do the after-tax math first.</strong> JEPI at a 7% gross yield in a 22% bracket nets ~5.4% after federal tax (and worse in higher brackets). SCHD at 3.5% qualified might net 3.5% in the 0% LTCG bracket. The yield gap shrinks once tax enters the picture.</li>
+      <li><strong>Build the asset-location plan now, not at retirement.</strong> The Roth IRA conversion ladder, the order you fill account types, the rebalancing strategy — these all get easier when you know which dividends belong where.</li>
+    </ol>
+
+    <h2>How YieldOS helps</h2>
+
+    <p>Tracking the qualified-vs-ordinary split is on the YieldOS roadmap — flagging each holding's tax classification, computing an effective after-tax yield based on your bracket, and showing your FIRE projection in <em>after-tax</em> terms rather than gross. If this would change how you plan, <a href="mailto:hello@yieldos.app">let us know</a> — feature priority is shaped by what users actually ask for, and tax-aware FIRE projections move up the list every time someone mentions them.</p>
+
+    <p>What YieldOS already does today: shows your <strong>monthly</strong> dividend income as the headline number, projects when those dividends will replace your salary (Path to FIRE), and supports the asset-location workflow by showing portfolios separately per account (so you can build a "taxable" portfolio with qualified-heavy holdings and a "Roth IRA" portfolio with ordinary-heavy holdings and see them side-by-side).</p>
+
+    <div class="cta-box">
+      <h3>Plan your FIRE in real income, not just balance.</h3>
+      <p>YieldOS shows every dividend as a paycheck with a countdown and projects the exact year your dividends replace your salary.</p>
+      <a href="/?utm_source=blog&utm_medium=post&utm_campaign=qualified-vs-ordinary">Try YieldOS free →</a>
+    </div>
+
+    <h2>Quick reference: where common holdings fall</h2>
+
+    <table>
+      <thead>
+        <tr><th>Holding</th><th>Type</th><th>Best account location</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>SCHD</td><td>Mostly qualified</td><td>Taxable</td></tr>
+        <tr><td>VYM</td><td>Mostly qualified</td><td>Taxable</td></tr>
+        <tr><td>DGRO</td><td>Mostly qualified</td><td>Taxable</td></tr>
+        <tr><td>VIG</td><td>Mostly qualified</td><td>Taxable</td></tr>
+        <tr><td>KO, JNJ, MSFT, PG, etc.</td><td>Qualified</td><td>Taxable</td></tr>
+        <tr><td>O (Realty Income)</td><td>Ordinary (REIT)</td><td>IRA / Roth IRA</td></tr>
+        <tr><td>STAG</td><td>Ordinary (REIT)</td><td>IRA / Roth IRA</td></tr>
+        <tr><td>VNQ</td><td>Ordinary (REIT ETF)</td><td>IRA / Roth IRA</td></tr>
+        <tr><td>MAIN</td><td>Ordinary (BDC)</td><td>IRA / Roth IRA</td></tr>
+        <tr><td>ARCC</td><td>Ordinary (BDC)</td><td>IRA / Roth IRA</td></tr>
+        <tr><td>JEPI</td><td>Mixed (mostly ordinary + ROC)</td><td>IRA / Roth IRA</td></tr>
+        <tr><td>JEPQ</td><td>Mixed (mostly ordinary + ROC)</td><td>IRA / Roth IRA</td></tr>
+        <tr><td>QYLD</td><td>Mixed (mostly ordinary + ROC)</td><td>IRA / Roth IRA</td></tr>
+        <tr><td>DIVO</td><td>Mixed (partial qualified)</td><td>IRA preferred</td></tr>
+      </tbody>
+    </table>
+
+    <p style="font-size:13px;color:var(--text-muted);margin-top:18px;">Tax treatment of mixed-strategy ETFs varies year to year based on the fund's distribution composition. Check each fund's 19a-1 notices and 1099-DIV every January for the exact qualified percentage in your tax year.</p>
+
+    <h2>The bottom line</h2>
+
+    <p>Qualified vs ordinary isn't an exotic tax detail — it's a structural feature of the FIRE math that hides in plain sight. For most dividend investors, the fix doesn't require rebuilding the portfolio; it requires putting the right holdings in the right accounts. Do that, and the tax drag on your FIRE timeline shrinks from "real" to "rounding error."</p>
+
+    <p>The next time a calculator hands you a FIRE number, ask one more question: is that gross or after-tax? If the calculator doesn't know, you do.</p>
+
+    <div class="related">
+      <h4>Keep reading</h4>
+      <a href="/blog/path-to-fire-dividend-calculator.html">Path to FIRE: the dividend investor's calculator →</a>
+      <a href="/blog/how-much-invested-to-live-off-dividends.html">How much do you need invested to live off dividends? →</a>
+      <a href="/blog/best-dividend-trackers-2026.html">Best dividend trackers in 2026: honest comparison →</a>
+    </div>
+
+    <p style="font-size:11px;color:var(--text-muted);margin-top:36px;line-height:1.7;">
+      <strong>Disclosure:</strong> This article is informational only — not tax, investment, or legal advice. Tax brackets and deductions cited are 2026 federal estimates and may differ in your filing situation; consult a CPA for guidance specific to your taxes. Holdings classified above are based on each fund's most recent 1099-DIV / 19a-1 distributions and may change. YieldOS is our product.
+    </p>
+  </main>
+
+  <footer>
+    © 2026 YieldOS · <a href="/">Home</a> · <a href="/#pricing">Pricing</a> · <a href="/#privacy">Privacy</a> · <a href="/#terms">Terms</a>
+  </footer>
+</body>
+</html>
