@@ -60,15 +60,20 @@
     .callout{background:var(--card);border:1px solid var(--border);border-left:3px solid var(--blue);border-radius:10px;padding:18px 22px;margin:22px 0;font-size:15px;line-height:1.7;color:var(--text-sub);}
     .callout strong{color:var(--text);}
     .callout.warn{border-left-color:var(--gold);}
+    .table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:18px 0;border:1px solid var(--border);border-radius:10px;}
+    .table-wrap table{margin:0;border:none;min-width:480px;}
     table{width:100%;border-collapse:collapse;margin:18px 0;font-size:14px;}
-    table th{text-align:left;padding:10px 12px;background:var(--surface);color:var(--text);font-weight:600;border-bottom:1px solid var(--border);}
+    table th{text-align:left;padding:10px 12px;background:var(--surface);color:var(--text);font-weight:600;border-bottom:1px solid var(--border);white-space:nowrap;}
     table td{padding:10px 12px;border-bottom:1px solid var(--border);color:var(--text-sub);}
-    table td.num{font-variant-numeric:tabular-nums;text-align:right;color:var(--text);}
+    table tr:last-child td{border-bottom:none;}
+    table td.num{font-variant-numeric:tabular-nums;text-align:right;color:var(--text);white-space:nowrap;}
     table td.good{color:var(--emerald);font-weight:600;}
     table td.bad{color:var(--red);font-weight:600;}
     .example-box{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:22px 24px;margin:24px 0;}
     .example-box h3{margin-top:0;color:var(--text);}
-    .example-box .row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:14px;}
+    .example-box .row{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap;padding:8px 0;border-bottom:1px solid var(--border);font-size:14px;}
+    .example-box .row .label{min-width:0;flex:1 1 auto;}
+    .example-box .row .val{flex:0 0 auto;white-space:nowrap;}
     .example-box .row:last-of-type{border-bottom:none;font-weight:700;color:var(--text);padding-top:12px;}
     .example-box .row .label{color:var(--text-sub);}
     .example-box .row .val{color:var(--text);font-variant-numeric:tabular-nums;font-weight:600;}
@@ -180,16 +185,18 @@
 
     <p>Worked example: a retiree who needs $55,000/year of after-tax income to live.</p>
 
-    <table>
-      <thead>
-        <tr><th>Portfolio profile</th><th>Yield assumption</th><th>Gross income needed</th><th>Capital required</th></tr>
-      </thead>
-      <tbody>
-        <tr><td>All-qualified (SCHD-style)</td><td class="num">3.5%</td><td class="num">$55,000</td><td class="num">$1,571,000</td></tr>
-        <tr><td>50/50 mix</td><td class="num">4.0%</td><td class="num">$56,500</td><td class="num">$1,413,000</td></tr>
-        <tr><td>High-yield (REIT/JEPI)</td><td class="num">6.0%</td><td class="num">$58,500</td><td class="num">$975,000</td></tr>
-      </tbody>
-    </table>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Portfolio profile</th><th>Yield assumption</th><th>Gross income needed</th><th>Capital required</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>All-qualified (SCHD-style)</td><td class="num">3.5%</td><td class="num">$55,000</td><td class="num">$1,571,000</td></tr>
+          <tr><td>50/50 mix</td><td class="num">4.0%</td><td class="num">$56,500</td><td class="num">$1,413,000</td></tr>
+          <tr><td>High-yield (REIT/JEPI)</td><td class="num">6.0%</td><td class="num">$58,500</td><td class="num">$975,000</td></tr>
+        </tbody>
+      </table>
+    </div>
 
     <p>Notice the headline result: the high-yield portfolio still gets you there with less capital, because the yield difference (3.5% vs 6%) is bigger than the tax drag (~$2,400/yr). The tax math doesn't <em>kill</em> the high-yield FIRE strategy — but it does take a real bite. And in the wrong account, that bite gets a lot bigger.</p>
 
@@ -232,27 +239,29 @@
 
     <h2>Quick reference: where common holdings fall</h2>
 
-    <table>
-      <thead>
-        <tr><th>Holding</th><th>Type</th><th>Best account location</th></tr>
-      </thead>
-      <tbody>
-        <tr><td>SCHD</td><td>Mostly qualified</td><td>Taxable</td></tr>
-        <tr><td>VYM</td><td>Mostly qualified</td><td>Taxable</td></tr>
-        <tr><td>DGRO</td><td>Mostly qualified</td><td>Taxable</td></tr>
-        <tr><td>VIG</td><td>Mostly qualified</td><td>Taxable</td></tr>
-        <tr><td>KO, JNJ, MSFT, PG, etc.</td><td>Qualified</td><td>Taxable</td></tr>
-        <tr><td>O (Realty Income)</td><td>Ordinary (REIT)</td><td>IRA / Roth IRA</td></tr>
-        <tr><td>STAG</td><td>Ordinary (REIT)</td><td>IRA / Roth IRA</td></tr>
-        <tr><td>VNQ</td><td>Ordinary (REIT ETF)</td><td>IRA / Roth IRA</td></tr>
-        <tr><td>MAIN</td><td>Ordinary (BDC)</td><td>IRA / Roth IRA</td></tr>
-        <tr><td>ARCC</td><td>Ordinary (BDC)</td><td>IRA / Roth IRA</td></tr>
-        <tr><td>JEPI</td><td>Mixed (mostly ordinary + ROC)</td><td>IRA / Roth IRA</td></tr>
-        <tr><td>JEPQ</td><td>Mixed (mostly ordinary + ROC)</td><td>IRA / Roth IRA</td></tr>
-        <tr><td>QYLD</td><td>Mixed (mostly ordinary + ROC)</td><td>IRA / Roth IRA</td></tr>
-        <tr><td>DIVO</td><td>Mixed (partial qualified)</td><td>IRA preferred</td></tr>
-      </tbody>
-    </table>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Holding</th><th>Type</th><th>Best account location</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>SCHD</td><td>Mostly qualified</td><td>Taxable</td></tr>
+          <tr><td>VYM</td><td>Mostly qualified</td><td>Taxable</td></tr>
+          <tr><td>DGRO</td><td>Mostly qualified</td><td>Taxable</td></tr>
+          <tr><td>VIG</td><td>Mostly qualified</td><td>Taxable</td></tr>
+          <tr><td>KO, JNJ, MSFT, PG, etc.</td><td>Qualified</td><td>Taxable</td></tr>
+          <tr><td>O (Realty Income)</td><td>Ordinary (REIT)</td><td>IRA / Roth IRA</td></tr>
+          <tr><td>STAG</td><td>Ordinary (REIT)</td><td>IRA / Roth IRA</td></tr>
+          <tr><td>VNQ</td><td>Ordinary (REIT ETF)</td><td>IRA / Roth IRA</td></tr>
+          <tr><td>MAIN</td><td>Ordinary (BDC)</td><td>IRA / Roth IRA</td></tr>
+          <tr><td>ARCC</td><td>Ordinary (BDC)</td><td>IRA / Roth IRA</td></tr>
+          <tr><td>JEPI</td><td>Mixed (mostly ordinary + ROC)</td><td>IRA / Roth IRA</td></tr>
+          <tr><td>JEPQ</td><td>Mixed (mostly ordinary + ROC)</td><td>IRA / Roth IRA</td></tr>
+          <tr><td>QYLD</td><td>Mixed (mostly ordinary + ROC)</td><td>IRA / Roth IRA</td></tr>
+          <tr><td>DIVO</td><td>Mixed (partial qualified)</td><td>IRA preferred</td></tr>
+        </tbody>
+      </table>
+    </div>
 
     <p style="font-size:13px;color:var(--text-muted);margin-top:18px;">Tax treatment of mixed-strategy ETFs varies year to year based on the fund's distribution composition. Check each fund's 19a-1 notices and 1099-DIV every January for the exact qualified percentage in your tax year.</p>
 

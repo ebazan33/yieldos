@@ -677,7 +677,7 @@ function ValueChart({ timeline, drip, forecast }) {
         ))}
       </svg>
 
-      <div style={{display:"flex",gap:14,marginTop:8,fontSize:11,color:C.textSub,flexWrap:"wrap"}}>
+      <div style={{display:"flex",gap:14,marginTop:8,fontSize:12,color:C.textSub,flexWrap:"wrap"}}>
         <span><span style={{display:"inline-block",width:10,height:3,background:C.blue,verticalAlign:"middle",marginRight:6,borderRadius:2}}/> Portfolio value {drip ? "(with DRIP)" : "(cash + shares)"}</span>
         <span><span style={{display:"inline-block",width:10,height:0,borderTop:`2px dashed ${C.emerald}`,verticalAlign:"middle",marginRight:6}}/> Total contributed</span>
         {fcLen > 0 && (
@@ -686,7 +686,7 @@ function ValueChart({ timeline, drip, forecast }) {
       </div>
 
       {fcLen > 0 && forecast?.annualMu != null && (
-        <div style={{marginTop:6,fontSize:11,color:C.textMuted,lineHeight:1.5}}>
+        <div style={{marginTop:8,fontSize:12,color:C.textMuted,lineHeight:1.55}}>
           Projection based on this backtest's realized {forecast.annualMu >= 0 ? "+" : ""}{forecast.annualMu.toFixed(1)}%/yr return and {forecast.annualSigma.toFixed(1)}%/yr volatility. Bands show ±1σ (68% range) and ±2σ (95% range). Not a guarantee — past performance doesn't predict the future, but historical volatility is a reasonable proxy for how much uncertainty is in the projection.
         </div>
       )}
