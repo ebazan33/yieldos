@@ -437,7 +437,7 @@ function ErrorState({ msg }) {
 
 // ─── Results view ───────────────────────────────────────────────────────
 function Results({ result, drip }) {
-  const { summary, timeline, annualDividendSeries } = result;
+  const { summary, timeline, annualDividendSeries, forecast } = result;
   if (!summary || !timeline?.length) return null;
 
   return (
@@ -489,7 +489,7 @@ function Results({ result, drip }) {
           <div style={{fontFamily:"'Fraunces',serif",fontSize:18,fontWeight:700}}>Portfolio value over time</div>
           <div style={{fontSize:11,color:C.textMuted}}>{summary.startLabel} → {summary.endLabel}</div>
         </div>
-        <ValueChart timeline={timeline} drip={drip} />
+        <ValueChart timeline={timeline} drip={drip} forecast={forecast} />
       </div>
 
       {/* Annual dividend bars */}
@@ -538,15 +538,20 @@ function useMeasuredWidth() {
   return [ref, w];
 }
 
-// ─── Hand-rolled SVG line chart (portfolio value) ───────────────────────
-// Shows two series: total value (bold blue area) and contributions
-// (thin green line). The gap between them = compounding returns, which is
-// the whole emotional payoff of the chart.
-function ValueChart({ timeline, drip }) {
+// ─── Hand-rolled SVG line chart (portfolio value + forecast) ────────────
+// Two regions stacked horizontally:
+//   1. History (timeline): solid blue value line, dashed green contribution
+//      line, gradient-filled area beneath value.
+//   2. Forecast (right of "today"): ±2σ and ±1σ confidence bands as filled
+//      regions, plus a dashed blue central forecast line. Visual signal:
+//      bands fan out with √horizon because future uncertainty compounds.
+//
+// The gap between contribution line and value line during the history half
+// is the emotional payoff. The fanning forecast region on the right side is
+// the honest signal that the future isn't a single number.
+function ValueChart({ timeline, drip, forecast }) {
   const [ref, W] = useMeasuredWidth();
-  // Aspect ratio: shorter on phones, wider on desktop. We want more vertical
-  // room on phones so the gap between contribution line and value line is
-  // visually obvious even at 340px wide.
+  // Aspect ratio: shorter on phones, wider on desktop.
   const H = W < 480 ? Math.round(W * 0.70) : Math.round(W * 0.36);
   const padL = W < 480 ? 44 : 58;
   const padR = 12;
@@ -556,18 +561,77 @@ function ValueChart({ timeline, drip }) {
   const fontXLabel = W < 480 ? 10 : 12;
 
   const n = timeline.length;
-  const maxVal = Math.max(...timeline.map(t => Math.max(t.totalValue, t.contributed))) * 1.05 || 1;
-  const minVal = 0;
+  const fc = forecast?.points?.length ? forecast.points.slice(1) : []; // drop t=0 (duplicate of last hist point)
+  const fcLen = fc.length;
+  const totalN = n + fcLen;
 
-  const x = (i) => padL + (i / Math.max(n - 1, 1)) * (W - padL - padR);
+  // Y-axis scaling needs to include both history and forecast extremes so
+  // the ±2σ upper band doesn't clip out the top of the chart. We cap the
+  // visible top at 4x the historical max so a high-vol stock's ±2σ doesn't
+  // make everything else look like a flat line at the bottom.
+  const histMax = Math.max(...timeline.map(t => Math.max(t.totalValue, t.contributed))) || 1;
+  const fcMax = fcLen ? Math.max(...fc.map(p => p.up2)) : 0;
+  const fcMin = fcLen ? Math.min(...fc.map(p => p.down2)) : 0;
+  const maxVal = Math.max(histMax, Math.min(fcMax, histMax * 4)) * 1.05;
+  const minVal = Math.max(0, Math.min(0, fcMin)); // never go negative on this chart
+
+  // X-axis: index 0 to (totalN - 1) covers history then forecast.
+  const x = (i) => padL + (i / Math.max(totalN - 1, 1)) * (W - padL - padR);
   const y = (v) => padT + (1 - (v - minVal) / (maxVal - minVal || 1)) * (H - padT - padB);
 
+  // History paths.
   const valuePath = timeline.map((t, i) => `${i === 0 ? "M" : "L"}${x(i).toFixed(1)},${y(t.totalValue).toFixed(1)}`).join(" ");
   const contribPath = timeline.map((t, i) => `${i === 0 ? "M" : "L"}${x(i).toFixed(1)},${y(t.contributed).toFixed(1)}`).join(" ");
   const areaPath = `${valuePath} L${x(n - 1).toFixed(1)},${y(0).toFixed(1)} L${x(0).toFixed(1)},${y(0).toFixed(1)} Z`;
 
+  // Forecast paths — only if we have forecast data.
+  // Each band is a closed polygon: go along the upper bound left-to-right,
+  // then back along the lower bound right-to-left.
+  const lastHistX = n - 1;
+  const fcStart = lastHistX; // anchor forecast at the final history point
+  const fcXi = (j) => fcStart + 1 + j;
+
+  let band2Path = "";
+  let band1Path = "";
+  let centralPath = "";
+  if (fcLen) {
+    const startV = timeline[n - 1].totalValue;
+    // Bands include the anchor point (last historical value) so the polygon
+    // visually starts AT the line, not floating one month to the right.
+    const up2 = `${x(lastHistX).toFixed(1)},${y(startV).toFixed(1)} ` +
+      fc.map((p, j) => `${x(fcXi(j)).toFixed(1)},${y(p.up2).toFixed(1)}`).join(" ");
+    const down2Rev = fc.slice().reverse().map((p, j) => {
+      const origIdx = fc.length - 1 - j;
+      return `${x(fcXi(origIdx)).toFixed(1)},${y(p.down2).toFixed(1)}`;
+    }).join(" ");
+    band2Path = `M${up2} L${down2Rev} L${x(lastHistX).toFixed(1)},${y(startV).toFixed(1)} Z`;
+
+    const up1 = `${x(lastHistX).toFixed(1)},${y(startV).toFixed(1)} ` +
+      fc.map((p, j) => `${x(fcXi(j)).toFixed(1)},${y(p.up1).toFixed(1)}`).join(" ");
+    const down1Rev = fc.slice().reverse().map((p, j) => {
+      const origIdx = fc.length - 1 - j;
+      return `${x(fcXi(origIdx)).toFixed(1)},${y(p.down1).toFixed(1)}`;
+    }).join(" ");
+    band1Path = `M${up1} L${down1Rev} L${x(lastHistX).toFixed(1)},${y(startV).toFixed(1)} Z`;
+
+    centralPath = `M${x(lastHistX).toFixed(1)},${y(startV).toFixed(1)} ` +
+      fc.map((p, j) => `L${x(fcXi(j)).toFixed(1)},${y(p.central).toFixed(1)}`).join(" ");
+  }
+
   const ticks = [0, 0.25, 0.5, 0.75, 1].map(f => minVal + f * (maxVal - minVal));
-  const xLabels = n > 0 ? [0, Math.floor(n / 2), n - 1].map(i => ({ i, label: timeline[i].label })) : [];
+
+  // X labels: start of history, today, end of forecast. Only 3 to avoid clutter.
+  const xLabels = [];
+  if (totalN > 0) {
+    xLabels.push({ i: 0, label: timeline[0].label, anchor: "start" });
+    if (fcLen) {
+      xLabels.push({ i: lastHistX, label: "Today", anchor: "middle" });
+      xLabels.push({ i: totalN - 1, label: fc[fc.length - 1].label, anchor: "end" });
+    } else {
+      xLabels.push({ i: Math.floor(n / 2), label: timeline[Math.floor(n / 2)].label, anchor: "middle" });
+      xLabels.push({ i: n - 1, label: timeline[n - 1].label, anchor: "end" });
+    }
+  }
 
   return (
     <div ref={ref} style={{width:"100%",overflow:"hidden"}}>
@@ -579,6 +643,7 @@ function ValueChart({ timeline, drip }) {
           </linearGradient>
         </defs>
 
+        {/* Y gridlines */}
         {ticks.map((t, i) => (
           <g key={i}>
             <line x1={padL} x2={W - padR} y1={y(t)} y2={y(t)} stroke={C.border} strokeWidth="1" strokeDasharray={i === 0 ? "" : "2 4"} />
@@ -588,12 +653,25 @@ function ValueChart({ timeline, drip }) {
           </g>
         ))}
 
+        {/* Forecast bands — drawn before lines so they sit underneath. */}
+        {fcLen > 0 && (
+          <>
+            <path d={band2Path} fill={C.blue} opacity="0.08" />
+            <path d={band1Path} fill={C.blue} opacity="0.14" />
+            <path d={centralPath} fill="none" stroke={C.blue} strokeWidth="2" strokeDasharray="5 4" opacity="0.6" />
+            {/* Vertical "today" divider */}
+            <line x1={x(lastHistX)} x2={x(lastHistX)} y1={padT} y2={H - padB} stroke={C.textMuted} strokeWidth="1" strokeDasharray="3 3" opacity="0.4" />
+          </>
+        )}
+
+        {/* History */}
         <path d={areaPath} fill="url(#valGrad)" />
         <path d={contribPath} fill="none" stroke={C.emerald} strokeWidth="1.5" strokeDasharray="4 3" />
         <path d={valuePath} fill="none" stroke={C.blue} strokeWidth="2.5" />
 
-        {xLabels.map(({ i, label }) => (
-          <text key={i} x={x(i)} y={H - 6} fontSize={fontXLabel} fill={C.textMuted} textAnchor={i === 0 ? "start" : i === n - 1 ? "end" : "middle"} fontFamily="Inter,sans-serif">
+        {/* X labels */}
+        {xLabels.map(({ i, label, anchor }) => (
+          <text key={`${i}-${label}`} x={x(i)} y={H - 6} fontSize={fontXLabel} fill={C.textMuted} textAnchor={anchor} fontFamily="Inter,sans-serif">
             {label}
           </text>
         ))}
@@ -602,7 +680,16 @@ function ValueChart({ timeline, drip }) {
       <div style={{display:"flex",gap:14,marginTop:8,fontSize:11,color:C.textSub,flexWrap:"wrap"}}>
         <span><span style={{display:"inline-block",width:10,height:3,background:C.blue,verticalAlign:"middle",marginRight:6,borderRadius:2}}/> Portfolio value {drip ? "(with DRIP)" : "(cash + shares)"}</span>
         <span><span style={{display:"inline-block",width:10,height:0,borderTop:`2px dashed ${C.emerald}`,verticalAlign:"middle",marginRight:6}}/> Total contributed</span>
+        {fcLen > 0 && (
+          <span><span style={{display:"inline-block",width:10,height:10,background:C.blue,opacity:0.14,verticalAlign:"middle",marginRight:6,borderRadius:2}}/> Forecast range (±1σ / ±2σ)</span>
+        )}
       </div>
+
+      {fcLen > 0 && forecast?.annualMu != null && (
+        <div style={{marginTop:6,fontSize:11,color:C.textMuted,lineHeight:1.5}}>
+          Projection based on this backtest's realized {forecast.annualMu >= 0 ? "+" : ""}{forecast.annualMu.toFixed(1)}%/yr return and {forecast.annualSigma.toFixed(1)}%/yr volatility. Bands show ±1σ (68% range) and ±2σ (95% range). Not a guarantee — past performance doesn't predict the future, but historical volatility is a reasonable proxy for how much uncertainty is in the projection.
+        </div>
+      )}
     </div>
   );
 }

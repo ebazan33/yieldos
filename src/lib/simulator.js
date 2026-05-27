@@ -390,6 +390,88 @@ export async function runBacktest({
     }
     const annualDividendSeries = [...byYear.entries()].map(([year, amount]) => ({ year, amount }));
 
+    // ── Forecast extension ──────────────────────────────────────────────
+    //
+    // Project the portfolio forward using geometric Brownian motion calibrated
+    // on the realized monthly log-returns of the backtest. The math:
+    //
+    //   r_t = ln(value_t / value_{t-1})        // monthly log return
+    //   μ   = mean(r_t)                          // drift
+    //   σ   = stddev(r_t)                        // volatility
+    //
+    //   forecast_central(t) = currentValue × exp(μ × t)
+    //   forecast_upper(t)   = currentValue × exp(μ × t + k × σ × √t)
+    //   forecast_lower(t)   = currentValue × exp(μ × t − k × σ × √t)
+    //
+    // The √t scaling is the standard random-walk uncertainty growth — bands
+    // widen with the square root of horizon, not linearly. Forecast horizon
+    // matches backtest length so a 5-year history projects 5 years forward.
+    //
+    // Edge cases:
+    //   - Backtest < 24 months → not enough data for stable σ, skip forecast.
+    //   - Continued monthly contributions are NOT added to forecasted shares.
+    //     This is a "compound what you have today" projection, not a DCA
+    //     forecast. Could extend later if users want.
+    const forecast = (() => {
+      if (timeline.length < 24) return null;          // need 2 yrs of monthly data
+      if (!last.totalValue || last.totalValue <= 0) return null;
+
+      // Build monthly log returns from totalValue.
+      const logReturns = [];
+      for (let i = 1; i < timeline.length; i++) {
+        const a = timeline[i - 1].totalValue;
+        const b = timeline[i].totalValue;
+        if (a > 0 && b > 0) {
+          logReturns.push(Math.log(b / a));
+        }
+      }
+      if (logReturns.length < 12) return null;
+
+      const mu = logReturns.reduce((s, r) => s + r, 0) / logReturns.length;
+      const variance = logReturns.reduce((s, r) => s + (r - mu) ** 2, 0) / logReturns.length;
+      const sigma = Math.sqrt(variance);
+
+      // Horizon = same number of months as the backtest, capped at 240 (20 yr)
+      // so absurdly long backtests don't blow up the chart.
+      const horizonMonths = Math.min(timeline.length, 240);
+      const startKey = lastMonth;
+      const startValue = last.totalValue;
+
+      const points = [];
+      let k = startKey;
+      for (let t = 0; t <= horizonMonths; t++) {
+        const drift = mu * t;
+        const widthOneSigma = sigma * Math.sqrt(t);
+        const central = startValue * Math.exp(drift);
+        const up1 = startValue * Math.exp(drift + widthOneSigma);
+        const down1 = startValue * Math.exp(drift - widthOneSigma);
+        const up2 = startValue * Math.exp(drift + 2 * widthOneSigma);
+        const down2 = startValue * Math.exp(drift - 2 * widthOneSigma);
+        points.push({
+          monthKey: k,
+          label: formatMonthLabel(k),
+          monthsAhead: t,
+          central,
+          up1,
+          down1,
+          up2,
+          down2,
+        });
+        k = nextMonth(k);
+      }
+
+      // Annualized expected return for the caption ("based on X%/yr historical")
+      const annualMu = (Math.exp(mu * 12) - 1) * 100;
+      const annualSigma = (sigma * Math.sqrt(12)) * 100;
+
+      return {
+        points,
+        horizonMonths,
+        annualMu,
+        annualSigma,
+      };
+    })();
+
     return {
       error: null,
       summary: {
@@ -422,6 +504,7 @@ export async function runBacktest({
       },
       timeline,
       annualDividendSeries,
+      forecast,
     };
   } catch (e) {
     return { error: e.message || "Backtest failed — try again" };
