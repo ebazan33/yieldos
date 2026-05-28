@@ -1597,37 +1597,42 @@ export default function AppMain() {
     const msg = aiPrompt.trim(); setAiPrompt(""); setAiLoading(true);
     const hist = [...aiHistory, {role:"user", content:msg}]; setAiHistory(hist);
     const ctx = port.length > 0 ? port.map(h=>`${h.ticker} (${h.name}): ${h.shares}sh @ $${h.price}, ${h.yld}% yld, ${h.freq} payer, next pay ${h.next_div||"TBD"}, $${h.annual.toFixed(0)}/yr, sector ${h.sector}`).join("\n") : "No holdings yet.";
-    const apiKey = import.meta.env.VITE_ANTHROPIC_KEY;
-    if (!apiKey) {
-      setAiHistory([...hist, {role:"assistant", content:"AI Insights isn't configured yet. Add VITE_ANTHROPIC_KEY=sk-ant-... to your .env file (in the project root) and restart `npm run dev`. You can grab a key from console.anthropic.com."}]);
+
+    // Pull the user's Supabase JWT so the server can verify the session +
+    // re-check Pro plan before calling Anthropic. The Anthropic key itself
+    // never touches the client.
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.access_token) {
+      setAiHistory([...hist, {role:"assistant", content:"Please sign in again — your session has expired."}]);
       setAiLoading(false); return;
     }
+
     try {
-      const r = await fetch("https://api.anthropic.com/v1/messages", {
+      const r = await fetch("/api/ai-chat", {
         method:"POST",
         headers:{
           "Content-Type":"application/json",
-          "x-api-key": apiKey,
-          "anthropic-version":"2023-06-01",
-          "anthropic-dangerous-direct-browser-access":"true",
+          "Authorization": `Bearer ${session.access_token}`,
         },
         body: JSON.stringify({
-          model: "claude-sonnet-4-5",
-          max_tokens: 800,
-          system: "You are a sharp, no-fluff passive income research assistant for an app called Yieldos. You are NOT a licensed financial advisor and must not present your output as financial, tax, or investment advice. You see the user's real portfolio below. Share specific, educational observations — name tickers, describe concrete trade-offs, cite numbers from their portfolio — but frame conclusions as ideas to research or consider, not as recommendations to act on. If the user asks for specific buy/sell advice, remind them that final decisions are theirs and you're providing information only. Keep replies to 3-6 sentences unless asked otherwise.",
-          messages: [
-            ...aiHistory.map(m=>({role:m.role, content:m.content})),
-            {role:"user", content:`My portfolio:\n${ctx}\n\nTotals — value: ${$(totVal)}, annual income: ${$(totAnn)}, monthly: ${$(totMo)}, blended yield: ${blYld.toFixed(2)}%, monthly goal: ${$(goal,0)}.\n\nQuestion: ${msg}`}
-          ]
+          prompt: msg,
+          history: aiHistory.map(m => ({ role: m.role, content: m.content })),
+          portfolioContext: ctx,
+          totals: { value: totVal, annual: totAnn, monthly: totMo, yield: blYld, goal },
         })
       });
       if (!r.ok) {
         const err = await r.json().catch(()=>({}));
-        setAiHistory([...hist, {role:"assistant", content:`API error (${r.status}): ${err?.error?.message || "check that your Anthropic key is valid and funded."}`}]);
+        const friendly = r.status === 403
+          ? "AI Insights is a Pro feature. Upgrade to Grow or Harvest to unlock it."
+          : r.status === 401
+            ? "Please sign in again — your session expired."
+            : `Something went wrong (${r.status}): ${err?.detail || "try again in a moment."}`;
+        setAiHistory([...hist, {role:"assistant", content: friendly}]);
         setAiLoading(false); return;
       }
       const d = await r.json();
-      setAiHistory([...hist, {role:"assistant", content: d.content?.[0]?.text || "Unable to respond."}]);
+      setAiHistory([...hist, {role:"assistant", content: d.reply || "Unable to respond."}]);
     } catch (e) {
       setAiHistory([...hist, {role:"assistant", content:`Connection error: ${e.message}. Try again in a moment.`}]);
     }
@@ -1649,8 +1654,9 @@ export default function AppMain() {
       const cached = localStorage.getItem(cacheKey);
       if (cached) { setBriefing(cached); return; }
     }
-    const apiKey = import.meta.env.VITE_ANTHROPIC_KEY;
-    if (!apiKey) { setBriefingError("Set VITE_ANTHROPIC_KEY in .env to enable."); return; }
+    // Pull the user's Supabase JWT for the server endpoint.
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.access_token) { setBriefingError("Please sign in again."); return; }
 
     // Yesterday's snapshot → diff ("ticked up $X since yesterday")
     const snaps = getSnapshots ? getSnapshots() : [];
@@ -1663,31 +1669,33 @@ export default function AppMain() {
 
     setBriefingLoading(true); setBriefingError("");
     try {
-      const r = await fetch("https://api.anthropic.com/v1/messages", {
+      const r = await fetch("/api/ai-briefing", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "x-api-key": apiKey,
-          "anthropic-version": "2023-06-01",
-          "anthropic-dangerous-direct-browser-access": "true",
+          "Authorization": `Bearer ${session.access_token}`,
         },
         body: JSON.stringify({
-          model: "claude-sonnet-4-5",
-          max_tokens: 220,
-          system: "You write the 'Daily Briefing' for Yieldos, a dividend-tracking app. Output is EXACTLY 2 sentences, max 60 words total. Tone: calm, factual, encouraging — like a friendly analyst texting the user an update. Reference specific numbers or tickers from their portfolio. If there is a change vs. yesterday, mention it. If today is an ex-dividend date or a payment date, mention it. NEVER give buy/sell advice or use words like 'recommend', 'should buy', 'should sell'. You are NOT a licensed financial advisor. No disclaimers in your output — the app adds those elsewhere. No emojis unless highly relevant. Do not start with 'Good morning' or 'Here is' — just the briefing content.",
-          messages: [{
-            role: "user",
-            content: `Today is ${today}.\n\nMy portfolio:\n${portLine}\n\nToday's totals — value: ${$(totVal)}, annual income: ${$(totAnn)}, monthly income: ${$(totMo)}, blended yield: ${blYld.toFixed(2)}%, monthly goal: ${$(goal,0)}.\n\n${diffLine}\n\nWrite my daily briefing now.`
-          }]
+          portfolioContext: portLine,
+          totals: { value: totVal, annual: totAnn, monthly: totMo, yield: blYld, goal },
+          diffLine,
+          today,
         })
       });
       if (!r.ok) {
         const err = await r.json().catch(()=>({}));
-        setBriefingError(`Couldn't generate briefing: ${err?.error?.message || `API ${r.status}`}`);
+        // 429 = throttled by server (1/60s per user). Silent-ish; just bail.
+        if (r.status === 429) { setBriefingLoading(false); return; }
+        const friendly = r.status === 403
+          ? "Daily Briefing is a Pro feature."
+          : r.status === 401
+            ? "Please sign in again."
+            : `Couldn't generate briefing: ${err?.detail || `error ${r.status}`}`;
+        setBriefingError(friendly);
         setBriefingLoading(false); return;
       }
       const d = await r.json();
-      const txt = d.content?.[0]?.text?.trim() || "";
+      const txt = (d.briefing || "").trim();
       if (txt) {
         setBriefing(txt);
         localStorage.setItem(cacheKey, txt);
