@@ -53,36 +53,17 @@ export default function App() {
   // Supabase auth events:
   //   PASSWORD_RECOVERY → fires when the user lands via a reset-password
   //     email link. We pop ResetPasswordModal over whatever's rendered.
-  //   SIGNED_IN → fires on every fresh sign-in (and on session restore on
-  //     page load). We use this to defensively set the 14-day Grow trial
-  //     on users who never got one — specifically Google OAuth signups,
-  //     which bypass AuthModal's signUp() options.data path and land in
-  //     auth.users without trial_ends_at metadata. The handler is
-  //     idempotent: if the user already has trial_ends_at, we no-op.
+  //
+  // NOTE: This used to also auto-grant a 14-day Grow trial on SIGNED_IN
+  // for Google OAuth signups that bypassed AuthModal's metadata write.
+  // That logic was removed when we switched to card-required trials —
+  // the only way to start a Grow trial now is via Stripe Checkout, which
+  // collects payment up front (Stripe Payment Link is configured with
+  // trial_period_days: 14). New signups land in Seed and stay there
+  // until they explicitly start a trial via the upgrade CTA.
   useEffect(() => {
-    const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: sub } = supabase.auth.onAuthStateChange((event /* session */) => {
       if (event === "PASSWORD_RECOVERY") setShowReset(true);
-
-      if (event === "SIGNED_IN" && session?.user) {
-        const meta = session.user.user_metadata || {};
-        if (!meta.trial_ends_at) {
-          // Fire-and-forget. If updateUser fails, AppMain handles missing
-          // trial metadata gracefully (treats user as Seed with no trial).
-          (async () => {
-            try {
-              const trialEndsAt = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString();
-              await supabase.auth.updateUser({
-                data: {
-                  plan: meta.plan || "Seed",
-                  trial_ends_at: trialEndsAt,
-                },
-              });
-            } catch {
-              // Silent — defensive logic shouldn't block sign-in.
-            }
-          })();
-        }
-      }
     });
     return () => sub?.subscription?.unsubscribe?.();
   }, []);

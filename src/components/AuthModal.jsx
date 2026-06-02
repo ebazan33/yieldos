@@ -63,16 +63,15 @@ export default function AuthModal({ onClose, onAuth }) {
     setLoading(true); setError(''); setSuccess('')
     try {
       if (mode === 'signup') {
-        // Every new signup gets a 14-day full-access trial. The trial_ends_at
-        // timestamp lives on user_metadata; AppMain reads it on session hydration
-        // and computes effectivePlan = "Grow" while the trial is active, reverting
-        // to Seed after. We stamp plan: "Seed" too so the plan chip + localStorage
-        // default match from the first render onward.
-        const trialEndsAt = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString()
+        // New signups land on the free Seed plan. NO automatic trial — the
+        // 14-day Grow trial is now opt-in and requires a card via Stripe
+        // Checkout (configured with trial_period_days: 14 on the Payment
+        // Link). This kills trial abuse from throwaway email accounts.
+        // AppMain treats users without trial_ends_at as Seed by default.
         const { error } = await supabase.auth.signUp({
           email,
           password,
-          options: { data: { plan: 'Seed', trial_ends_at: trialEndsAt } },
+          options: { data: { plan: 'Seed' } },
         })
         if (error) { setError(error.message); setLoading(false); return }
         setSuccess('Check your email to confirm your account, then sign in!')
