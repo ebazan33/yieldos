@@ -1059,7 +1059,24 @@ export default function AppMain() {
   });
   const [planCycle, setPlanCycle]   = useState(() => localStorage.getItem("yieldos_plan_cycle") || "annual"); // "monthly" | "annual"
   const [checkoutBanner, setCheckoutBanner] = useState(null); // { status }
-  const [pendingPlan, setPendingPlan]       = useState(null); // { plan, cycle } — queued during signup from Landing
+  // Queued during signup from Landing — used to redirect to Stripe Checkout
+  // immediately after the user finishes signin. Persisted to localStorage so
+  // it survives the email-confirm round-trip (user clicks "Start trial" →
+  // signs up → leaves to confirm email → returns to a fresh page → signs in →
+  // we still know they wanted the Grow trial and route them to Stripe).
+  const [pendingPlan, setPendingPlanRaw] = useState(() => {
+    try {
+      const raw = localStorage.getItem("yieldos_pending_plan");
+      return raw ? JSON.parse(raw) : null;
+    } catch { return null; }
+  });
+  const setPendingPlan = (next) => {
+    setPendingPlanRaw(next);
+    try {
+      if (next) localStorage.setItem("yieldos_pending_plan", JSON.stringify(next));
+      else      localStorage.removeItem("yieldos_pending_plan");
+    } catch {}
+  };
   useEffect(() => { localStorage.setItem("yieldos_plan_cycle", planCycle); }, [planCycle]);
   const chatEnd = useRef(null);
   useEffect(() => { localStorage.setItem("yieldos_fire_contribution", String(fireContribution)); }, [fireContribution]);
