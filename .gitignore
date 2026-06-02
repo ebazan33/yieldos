@@ -13,3 +13,17 @@ LAUNCH_WEEK_1.md
 # User email exports (contains PII — never commit)
 seed-users.csv
 *-users.csv
+
+# Personal documents — don't commit to repo
+YIELDOS_EXPENSE_LEDGER.xlsx
+YIELDOS_OPERATING_AGREEMENT.md
+LLC_FORMATION_CHECKLIST.md
+LLC_FORM205_CHEATSHEET.md
+OUTREACH_EMAIL_TEMPLATE.md
+OUTREACH_LOG.md
+TWITTER_BATCH_MAY28.md
+Elian-Bazan-Resume-v2.docx
+Elian-Bazan-Resume-v2.pdf
+Elian-Bazan-Cover-Letter.pdf
+.~lock.*
+*.tmp
