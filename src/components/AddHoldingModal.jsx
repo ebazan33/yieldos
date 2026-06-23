@@ -215,6 +215,9 @@ export default function AddHoldingModal({ onClose, onAdd, onMerge, existingHoldi
         freq,
         safe:     selected.safe || 'N/A',
         next_div: selected.nextDiv || 'TBD',
+        // Ex-date for the upcoming dividend — actionable for investors who
+        // care about when they need to own/sell to capture or skip a payment.
+        next_ex_date: selected.nextExDiv || 'TBD',
         currency: 'USD',
         cost_basis: costBasis !== '' ? parseFloat(costBasis) : null,
         // Persist streak data fetched from Polygon so the Holdings table

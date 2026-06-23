@@ -261,6 +261,10 @@ export function useHoldings(userId) {
               price:    live.price,
               yld:      live.yld != null ? live.yld : h.yld,
               next_div: live.nextDiv || h.next_div,
+              // Ex-dividend date is the actionable timing field — must own
+              // the stock BY this date to qualify for the dividend. Shown
+              // alongside pay date on the Paychecks page per user feedback.
+              next_ex_date: live.nextExDiv || h.next_ex_date,
               safe:     live.safe || h.safe,
               sector:   live.sector || h.sector,
               freq:     live.freq || h.freq,

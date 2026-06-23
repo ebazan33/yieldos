@@ -155,6 +155,7 @@ export default function ImportHoldingsModal({ onClose, onAdd }) {
               freq:     details.freq || 'Quarterly',
               safe:     details.safe || 'N/A',
               next_div: details.nextDiv || 'TBD',
+              next_ex_date: details.nextExDiv || 'TBD',
               currency: 'USD',
               cost_basis: row.csvCostBasis != null && row.csvCostBasis > 0 ? row.csvCostBasis : null,
               growth_streak: details.growthStreak ?? null,

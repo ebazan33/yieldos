@@ -189,6 +189,26 @@ function nextDivLabel(dividends, freq) {
   return next.toLocaleDateString("en-US", { month: "short", day: "numeric" });
 }
 
+// Format projected next EX-dividend date as "May 13"
+// Ex-date is the day you must own the stock to qualify for the dividend.
+// For active investors this is the actionable date (when to buy/sell);
+// the pay date is just when the money lands. Joshua Bagley flagged that
+// the Paychecks page should surface BOTH because ex-date is the one that
+// drives decisions. Mirrors nextDivLabel but projects from the most recent
+// ex-date instead of pay date.
+function nextExDivLabel(dividends, freq) {
+  if (!dividends || !dividends.length) return "TBD";
+  const mostRecent = dividends[0];
+  const base = new Date(mostRecent.ex_dividend_date || mostRecent.pay_date || Date.now());
+  if (isNaN(base.getTime())) return "TBD";
+  const add = FREQ_DAYS[freq] || 91;
+  let next = new Date(base.getTime() + add * 24 * 60 * 60 * 1000);
+  while (next.getTime() < Date.now()) {
+    next = new Date(next.getTime() + add * 24 * 60 * 60 * 1000);
+  }
+  return next.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+}
+
 // Compute a safety grade from what we actually have: payment history length,
 // yield level, and frequency. Not as precise as Simply Safe Dividends, but honest.
 function computeSafetyGrade(dividends, yld) {
@@ -276,6 +296,7 @@ export async function getStockDetails(rawTicker) {
   const yldRaw    = price > 0 && ttm > 0 ? (ttm / price) * 100 : 0;
   const yld       = yldRaw > 0 ? +yldRaw.toFixed(2) : null;
   const nextDiv   = nextDivLabel(dividends, freqCode);
+  const nextExDiv = nextExDivLabel(dividends, freqCode);
   const { grade: safe } = computeSafetyGrade(dividends, yld);
   // Dividend growth streak + Aristocrat/King badges. Cheap to compute (just
   // groups the history we already fetched) so we always ship it with details.
@@ -287,7 +308,7 @@ export async function getStockDetails(rawTicker) {
   );
 
   return {
-    ticker, name, price: +price.toFixed(2), sector, yld, freq, nextDiv, safe,
+    ticker, name, price: +price.toFixed(2), sector, yld, freq, nextDiv, nextExDiv, safe,
     growthStreak, payStreak, badge,
   };
 }

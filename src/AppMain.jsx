@@ -424,7 +424,22 @@ function Landing({ onEnter, onPickPlan, onDemo, onFeedback }) {
   const [count,setCount]=useState(0);
   const [annual,setAnnual]=useState(true); // pricing toggle: true = annual (save), false = monthly
   useEffect(()=>{ const id=setInterval(()=>setCount(c=>c<2847?c+19:2847),14); return()=>clearInterval(id); },[]);
-  const cta={background:C.blue,color:"#fff",border:"none",borderRadius:10,padding:"14px 30px",fontSize:14,fontWeight:600,cursor:"pointer",fontFamily:"inherit",transition:"all 0.2s"};
+
+  // Scroll-reveal: fade + rise each .reveal section into view once. Falls back
+  // to showing everything if IntersectionObserver is unavailable. Runs after
+  // paint so the elements exist; observes with a small bottom margin so a
+  // section animates just before it's fully on screen (feels responsive, not late).
+  useEffect(()=>{
+    const els = Array.from(document.querySelectorAll(".reveal"));
+    if (!els.length) return;
+    if (!("IntersectionObserver" in window)) { els.forEach(el=>el.classList.add("in")); return; }
+    const io = new IntersectionObserver((entries)=>{
+      entries.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add("in"); io.unobserve(e.target); } });
+    }, { rootMargin:"0px 0px -8% 0px", threshold:0.06 });
+    els.forEach(el=>io.observe(el));
+    return ()=>io.disconnect();
+  },[]);
+  const cta={background:"var(--accent)",color:"var(--accent-ink)",border:"none",borderRadius:8,padding:"14px 30px",fontSize:14,fontWeight:600,cursor:"pointer",fontFamily:"inherit",transition:"all 0.2s"};
   const ghost={background:"transparent",color:C.textSub,border:`1px solid ${C.border}`,borderRadius:10,padding:"13px 26px",fontSize:13,fontWeight:500,cursor:"pointer",fontFamily:"inherit",transition:"all 0.2s"};
 
   // Hero mock curve for FIRE preview in the product screenshot
@@ -454,7 +469,7 @@ function Landing({ onEnter, onPickPlan, onDemo, onFeedback }) {
     { label:"Priority support",               seed:false,         grow:false,       harvest:true },
   ];
   const cellVal = v => {
-    if (v === true)  return <span style={{color:C.emerald,fontWeight:700}}>✓</span>;
+    if (v === true)  return <span style={{color:"var(--accent)",fontWeight:700}}>✓</span>;
     if (v === false) return <span style={{color:C.textMuted}}>—</span>;
     return <span style={{color:C.text,fontSize:11,fontWeight:500}}>{v}</span>;
   };
@@ -468,7 +483,32 @@ function Landing({ onEnter, onPickPlan, onDemo, onFeedback }) {
   const harvestDisplay = annual ? `$${(harvestAnnual/12).toFixed(0)}` : `$${harvestMonthly}`;
 
   return (
-    <div style={{minHeight:"100vh",background:C.bg,color:C.text,fontFamily:"'Plus Jakarta Sans',sans-serif"}}>
+    <div style={{
+      minHeight:"100vh",
+      background:"var(--bg)",
+      color:"var(--text)",
+      fontFamily:"'Plus Jakarta Sans',sans-serif",
+      // ── Landing-scoped theme (Phase 1 redesign) ──────────────────────
+      // Override surface + text CSS vars ONLY on this subtree. The landing
+      // renders warm cream; the authenticated app keeps its dark/light
+      // tokens untouched. Surfaces already flow through these vars (via
+      // const C), so this one override reskins every card/border/text on
+      // the landing at once. Accents are still hardcoded in C and get
+      // swapped section-by-section — the --accent tokens below are the target.
+      "--bg":"#EFE9DF",          // deeper warm cream — clearly "paper", not near-white
+      "--surface":"#E6DECF",     // recessed bands (pricing, ticker) — distinct step down
+      "--card":"#FBF9F4",        // warm white cards (NOT stark #fff) lifting off the cream
+      "--border":"#DED4C3",      // visible warm borders so card edges stay crisp on cream
+      "--text":"#2D2926",        // warm near-black (never pure #000)
+      "--text-sub":"#5C5854",    // secondary text
+      "--text-muted":"#8B8782",  // muted text
+      "--blue-glow":"rgba(43,62,91,0.10)",   // soft navy glow
+      "--accent":"#2B3E5B",          // deep navy — primary brand accent (CTAs, links, logo)
+      "--accent-ink":"#EEF1F6",      // cool off-white text ON navy
+      "--accent-hover":"#34496B",    // navy, slightly lifted (hover)
+      "--accent-positive":"#4E8A5F", // income green — ONLY for dollar numbers / gains
+      "--accent-negative":"#B85450", // warm brick — losses
+    }}>
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,700;0,9..144,800;1,9..144,700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
         *{box-sizing:border-box;margin:0;padding:0;}
@@ -514,15 +554,25 @@ function Landing({ onEnter, onPickPlan, onDemo, onFeedback }) {
         @keyframes ticker{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
         @keyframes up{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
         @keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
-        .fcard{background:${C.card};border:1px solid ${C.border};border-radius:14px;padding:24px;transition:all 0.25s;}
-        .fcard:hover{border-color:${C.blue}40;transform:translateY(-3px);}
+        /* Scroll-reveal — sections fade + rise into view once, on a calm
+           ease-out curve (no bounce). JS adds .in via IntersectionObserver.
+           Honors prefers-reduced-motion: those users see content instantly. */
+        .reveal{opacity:0;transform:translateY(22px);transition:opacity 0.7s cubic-bezier(0.22,0.61,0.36,1),transform 0.7s cubic-bezier(0.22,0.61,0.36,1);will-change:opacity,transform;}
+        .reveal.in{opacity:1;transform:none;}
+        @media (prefers-reduced-motion: reduce){.reveal{opacity:1!important;transform:none!important;transition:none!important;}}
+        /* Warm paper-lift shadow on landing cards. In a light editorial UI,
+           depth comes from soft warm shadow + crisp border, not luminance.
+           Shadow is tinted brown (not gray/black) so it reads as warm paper. */
+        .fcard,.diffcard,.pricecol{box-shadow:0 1px 2px rgba(74,60,44,0.05),0 10px 30px -16px rgba(74,60,44,0.18);}
+        .fcard{background:${C.card};border:1px solid ${C.border};border-radius:14px;padding:24px;transition:transform 0.3s cubic-bezier(0.22,0.61,0.36,1),border-color 0.3s ease,box-shadow 0.3s ease;}
+        .fcard:hover{border-color:rgba(43,62,91,0.35);transform:translateY(-3px);box-shadow:0 2px 4px rgba(74,60,44,0.06),0 16px 36px -18px rgba(43,62,91,0.28);}
         .diffcard{background:linear-gradient(180deg,${C.card},${C.surface});border:1px solid ${C.border};border-radius:16px;padding:26px;transition:all 0.25s;position:relative;overflow:hidden;}
-        .diffcard:hover{border-color:${C.emerald}40;transform:translateY(-4px);box-shadow:0 18px 40px -24px ${C.emerald}40;}
+        .diffcard:hover{border-color:rgba(43,62,91,0.35);transform:translateY(-4px);box-shadow:0 18px 40px -26px rgba(43,62,91,0.30);}
         .pricecol{background:${C.card};border:1px solid ${C.border};border-radius:16px;padding:28px 26px;display:flex;flex-direction:column;gap:14px;transition:all 0.25s;position:relative;}
-        .pricecol.pop{border-color:${C.blue}80;box-shadow:0 0 0 1px ${C.blue}35 inset, 0 22px 60px -28px ${C.blue}80;transform:translateY(-6px);}
+        .pricecol.pop{border-color:rgba(43,62,91,0.55);box-shadow:0 0 0 1px rgba(43,62,91,0.25) inset, 0 22px 60px -30px rgba(43,62,91,0.45);transform:translateY(-6px);}
         .pricecol ul.features{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:9px;}
         .pricecol ul.features li{display:flex;align-items:flex-start;gap:10px;font-size:12.5px;color:${C.textSub};line-height:1.45;}
-        .pricecol ul.features li .check{color:${C.emerald};font-weight:800;flex-shrink:0;margin-top:1px;}
+        .pricecol ul.features li .check{color:var(--accent);font-weight:800;flex-shrink:0;margin-top:1px;}
         .pricecol ul.features li .more{color:${C.textMuted};font-style:italic;}
         .pricecol .tier-divider{height:1px;background:${C.border};margin:4px 0 2px;}
         ::-webkit-scrollbar{width:3px;} ::-webkit-scrollbar-thumb{background:${C.border};border-radius:2px;}
@@ -575,9 +625,9 @@ function Landing({ onEnter, onPickPlan, onDemo, onFeedback }) {
           .pricecol .tier-divider{display:none;}
         }
       `}</style>
-      <nav className="landing-nav" style={{borderBottom:`1px solid ${C.border}`,backdropFilter:"blur(16px)",position:"sticky",top:0,zIndex:50,background:"rgba(8,11,16,0.92)"}}>
+      <nav className="landing-nav" style={{borderBottom:`1px solid ${C.border}`,backdropFilter:"blur(16px)",WebkitBackdropFilter:"blur(16px)",position:"sticky",top:0,zIndex:50,background:"rgba(243,238,229,0.82)"}}>
         <div style={{display:"flex",alignItems:"center",gap:10}}>
-          <svg width="28" height="28" viewBox="0 0 28 28"><rect width="28" height="28" rx="7" fill={C.blue}/><path d="M8 20 L14 8 L20 20" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" fill="none"/><circle cx="14" cy="17" r="2" fill="#fff"/></svg>
+          <svg width="28" height="28" viewBox="0 0 28 28"><rect width="28" height="28" rx="7" fill="var(--accent)"/><path d="M8 20 L14 8 L20 20" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" fill="none"/><circle cx="14" cy="17" r="2" fill="#fff"/></svg>
           <span style={{fontFamily:"'Fraunces',serif",fontSize:19,fontWeight:700,letterSpacing:"-0.01em"}}>YieldOS</span>
         </div>
         <div className="landing-nav-links">
@@ -585,7 +635,7 @@ function Landing({ onEnter, onPickPlan, onDemo, onFeedback }) {
               gets a styled pill instead of a gray nav-anchor — visually
               promotes it above the other anchors AND stays visible on mobile
               (the secondary nav-anchor links get hidden under 640px). */}
-          <a className="nav-simulator" href="/simulator" style={{fontSize:12,color:C.blue,textDecoration:"none",fontWeight:600,padding:"7px 14px",border:`1px solid ${C.blue}80`,background:`${C.blue}14`,borderRadius:999,transition:"all 0.15s"}}>Simulator</a>
+          <a className="nav-simulator" href="/simulator" style={{fontSize:12,color:"var(--accent)",textDecoration:"none",fontWeight:600,padding:"7px 14px",border:"1px solid rgba(43,62,91,0.45)",background:"rgba(43,62,91,0.07)",borderRadius:999,transition:"all 0.15s"}}>Simulator</a>
           <a className="nav-anchor" href="#differentiators" style={{fontSize:12,color:C.textSub,textDecoration:"none",fontWeight:500}}>Why YieldOS</a>
           <a className="nav-anchor" href="#pricing" style={{fontSize:12,color:C.textSub,textDecoration:"none",fontWeight:500}}>Pricing</a>
           <span className="inv-count" style={{fontSize:11,color:C.textMuted,marginLeft:4}}>{count.toLocaleString()} investors</span>
@@ -595,13 +645,13 @@ function Landing({ onEnter, onPickPlan, onDemo, onFeedback }) {
       </nav>
 
       {/* HERO — income-first tagline + product mock side-by-side */}
-      <div style={{maxWidth:1200,margin:"0 auto",padding:"72px 24px 40px",animation:"up 0.6s ease"}}>
+      <div className="reveal" style={{maxWidth:1200,margin:"0 auto",padding:"72px 24px 40px"}}>
         <div className="hero-grid">
           <div>
-            <div style={{display:"inline-flex",alignItems:"center",gap:8,background:C.emerald+"14",border:`1px solid ${C.emerald}30`,borderRadius:20,padding:"6px 18px",fontSize:11,color:C.emerald,marginBottom:24,fontWeight:600,letterSpacing:"0.06em"}}>✦ FREE BETA — NO CREDIT CARD NEEDED</div>
+            <div style={{display:"inline-flex",alignItems:"center",gap:8,background:"rgba(78,138,95,0.12)",border:"1px solid rgba(78,138,95,0.30)",borderRadius:20,padding:"6px 18px",fontSize:11,color:"#3F6B4E",marginBottom:24,fontWeight:600,letterSpacing:"0.06em"}}>Free beta — no credit card needed</div>
             <h1 style={{fontFamily:"'Fraunces',serif",fontSize:"clamp(40px,5vw,62px)",fontWeight:800,lineHeight:1.05,marginBottom:22,letterSpacing:"-0.02em"}}>
               Track your paychecks.<br/>
-              <em style={{fontStyle:"italic",background:`linear-gradient(135deg,${C.blue},${C.emerald})`,WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent"}}>Plan your freedom.</em>
+              <em style={{fontStyle:"italic",color:"var(--accent)"}}>Plan your freedom.</em>
             </h1>
             <p style={{fontSize:17,color:C.textSub,lineHeight:1.7,maxWidth:520,marginBottom:32}}>
               YieldOS is the only dividend tracker that shows every payout as a paycheck and projects your exact year to financial independence — so you actually know when your investments replace your job.
@@ -629,7 +679,7 @@ function Landing({ onEnter, onPickPlan, onDemo, onFeedback }) {
                 gap:5,
               }}>
                 Or run the dividend simulator first
-                <span style={{color:C.blue,fontWeight:600}}>— no signup →</span>
+                <span style={{color:"var(--accent)",fontWeight:600}}>— no signup →</span>
               </a>
             </div>
             <div style={{display:"flex",gap:22,fontSize:11,color:C.textMuted,fontWeight:500,flexWrap:"wrap"}}>
@@ -649,7 +699,7 @@ function Landing({ onEnter, onPickPlan, onDemo, onFeedback }) {
               The fake browser chrome (red/yellow/green dots) is kept so the
               framing feels familiar even without the hand-coded UI inside. */}
           <div style={{position:"relative",animation:"floaty 6s ease-in-out infinite"}}>
-            <div style={{background:"linear-gradient(180deg,"+C.card+","+C.surface+")",border:`1px solid ${C.border}`,borderRadius:18,padding:12,boxShadow:`0 30px 80px -30px ${C.blue}50, 0 0 0 1px ${C.border}`}}>
+            <div style={{background:"linear-gradient(180deg,"+C.card+","+C.surface+")",border:`1px solid ${C.border}`,borderRadius:18,padding:12,boxShadow:`0 30px 80px -34px rgba(43,62,91,0.30), 0 0 0 1px ${C.border}`}}>
               <div style={{display:"flex",gap:6,marginBottom:10,paddingLeft:4}}>
                 <div style={{width:10,height:10,borderRadius:10,background:"#f87171"}}/>
                 <div style={{width:10,height:10,borderRadius:10,background:"#fbbf24"}}/>
@@ -674,19 +724,18 @@ function Landing({ onEnter, onPickPlan, onDemo, onFeedback }) {
       {/* Brokerage ticker bar */}
       <div style={{overflow:"hidden",borderTop:`1px solid ${C.border}`,borderBottom:`1px solid ${C.border}`,padding:"14px 0",background:C.surface,margin:"40px 0 72px"}}>
         <div style={{display:"flex",alignItems:"center",gap:40,maxWidth:1100,margin:"0 auto",padding:"0 24px",flexWrap:"wrap",justifyContent:"center"}}>
-          <span style={{fontSize:10,color:C.textMuted,fontWeight:600,letterSpacing:"0.12em"}}>IMPORT YOUR PORTFOLIO FROM</span>
-          {/* Deeper emerald (#10b981) rather than the bright A+/safety green —
-              a row of six names in the brighter shade felt neon. This reads
-              more "serious finance" while still clearly saying "we support
-              your broker." Weight stays at 600 to match the rest of the page. */}
+          <span style={{fontSize:10,color:"var(--text-sub)",fontWeight:600,letterSpacing:"0.12em"}}>IMPORT YOUR PORTFOLIO FROM</span>
+          {/* Unified muted wordmarks: label + all broker names share --text-sub
+              (warm gray). A "works with" strip reads as quiet monochrome — the
+              old green made the names compete with the navy CTAs. */}
           {["Fidelity","Charles Schwab","Vanguard","E*TRADE","TD Ameritrade","Robinhood"].map((n,i)=>(
-            <span key={i} style={{fontSize:13,color:"#10b981",fontWeight:600,letterSpacing:"-0.01em"}}>{n}</span>
+            <span key={i} style={{fontSize:13,color:"var(--text-sub)",fontWeight:600,letterSpacing:"-0.01em"}}>{n}</span>
           ))}
         </div>
       </div>
 
       {/* DIFFERENTIATORS — the Reddit-screenshot bait */}
-      <div id="differentiators" style={{maxWidth:1080,margin:"0 auto 96px",padding:"0 24px"}}>
+      <div id="differentiators" className="reveal" style={{maxWidth:1080,margin:"0 auto 96px",padding:"0 24px"}}>
         <div style={{textAlign:"center",marginBottom:48}}>
           <div style={{display:"inline-block",fontSize:11,color:C.gold,fontWeight:700,letterSpacing:"0.12em",marginBottom:14}}>WHY YIELDOS</div>
           <h2 style={{fontFamily:"'Fraunces',serif",fontSize:"clamp(30px,3.5vw,40px)",fontWeight:700,marginBottom:12,letterSpacing:"-0.015em"}}>4 things no other dividend tracker does.</h2>
@@ -694,17 +743,23 @@ function Landing({ onEnter, onPickPlan, onDemo, onFeedback }) {
         </div>
         <div className="diff-grid">
           {[
-            { e:"💸", t:"Income-first dashboard",
+            { t:"Income-first dashboard",
               d:"Your Monthly Passive Income is the giant number — not some tiny stat buried under total value. You know at a glance exactly what your portfolio pays you every month." },
-            { e:"📅", t:"Paycheck Calendar",
+            { t:"Paycheck Calendar",
               d:"Every upcoming dividend shown as a paycheck with a countdown — not a generic payout date. See your next $200 hit in 3 days, not just 'NEE pays June 14'." },
-            { e:"🔥", t:"Path to FIRE projection",
+            { t:"Path to FIRE projection",
               d:"A real compounding model: your contributions, dividend growth, DRIP. Tells you the exact month your dividends replace your salary — and what a $100 bump does to that date." },
-            { e:"🗞️", t:"Daily AI Briefing",
+            { t:"Daily AI Briefing",
               d:"Every morning, Claude reads your actual holdings and writes a 3-line briefing: ex-div dates this week, what moved, what to watch. Not generic market news." },
           ].map((f,i)=>(
             <div key={i} className="diffcard">
-              <div style={{fontSize:28,marginBottom:14}}>{f.e}</div>
+              {/* Numbered editorial marker replaces the old emoji — a serif index
+                  + hairline rule gives the card rhythm and a reading order without
+                  a decorative icon. */}
+              <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:16}}>
+                <span style={{fontFamily:"'Fraunces',serif",fontSize:15,fontWeight:700,color:"var(--accent)",letterSpacing:"0.04em"}}>{String(i+1).padStart(2,"0")}</span>
+                <span style={{flex:1,height:1,background:"var(--border)"}}/>
+              </div>
               <h3 style={{fontFamily:"'Fraunces',serif",fontSize:19,fontWeight:700,marginBottom:10,letterSpacing:"-0.01em"}}>{f.t}</h3>
               <p style={{fontSize:13,color:C.textSub,lineHeight:1.7}}>{f.d}</p>
             </div>
@@ -713,7 +768,7 @@ function Landing({ onEnter, onPickPlan, onDemo, onFeedback }) {
       </div>
 
       {/* Full feature grid */}
-      <div style={{maxWidth:1020,margin:"0 auto 80px",padding:"0 24px"}}>
+      <div className="reveal" style={{maxWidth:1020,margin:"0 auto 80px",padding:"0 24px"}}>
         <div style={{textAlign:"center",marginBottom:44}}>
           <h2 style={{fontFamily:"'Fraunces',serif",fontSize:30,fontWeight:700,marginBottom:10,letterSpacing:"-0.015em"}}>Everything you need to compound income.</h2>
           <p style={{color:C.textSub,fontSize:13}}>Built for serious dividend investors — not day traders, not crypto.</p>
@@ -736,7 +791,7 @@ function Landing({ onEnter, onPickPlan, onDemo, onFeedback }) {
                 <span style={{fontFamily:"'Fraunces',serif",fontSize:15,fontWeight:700,color:C.text}}>{f.t}</span>
                 {f.pro&&<GoldBadge/>}
                 {f.harvest&&<span style={{background:C.goldGlow,color:C.gold,border:`1px solid ${C.gold}30`,borderRadius:5,padding:"1px 7px",fontSize:9,fontWeight:700}}>HARVEST</span>}
-                {f.free&&<Chip color={C.emerald}>FREE</Chip>}
+                {f.free&&<Chip color="#2B3E5B">FREE</Chip>}
               </div>
               <p style={{fontSize:12,color:C.textSub,lineHeight:1.65}}>{f.d}</p>
             </div>
@@ -746,15 +801,15 @@ function Landing({ onEnter, onPickPlan, onDemo, onFeedback }) {
 
       {/* PRICING */}
       <div id="pricing" style={{background:C.surface,borderTop:`1px solid ${C.border}`,borderBottom:`1px solid ${C.border}`,padding:"76px 24px",marginBottom:80}}>
-        <div style={{maxWidth:1080,margin:"0 auto"}}>
+        <div className="reveal" style={{maxWidth:1080,margin:"0 auto"}}>
           <div style={{textAlign:"center",marginBottom:36}}>
-            <div style={{display:"inline-block",fontSize:11,color:C.blue,fontWeight:700,letterSpacing:"0.12em",marginBottom:14}}>PRICING</div>
+            <div style={{display:"inline-block",fontSize:11,color:"var(--accent)",fontWeight:700,letterSpacing:"0.12em",marginBottom:14}}>PRICING</div>
             <h2 style={{fontFamily:"'Fraunces',serif",fontSize:"clamp(30px,3.5vw,40px)",fontWeight:700,marginBottom:12,letterSpacing:"-0.015em"}}>Start free. Upgrade when it pays for itself.</h2>
             <p style={{color:C.textSub,fontSize:14,maxWidth:520,margin:"0 auto 24px"}}>The Grow plan pays for itself the moment you catch one dividend you didn't know was coming.</p>
             {/* monthly/annual toggle */}
             <div style={{display:"inline-flex",background:C.card,border:`1px solid ${C.border}`,borderRadius:10,padding:4,gap:2}}>
               <button onClick={()=>setAnnual(false)} style={{background:!annual?C.blue:"transparent",color:!annual?"#fff":C.textSub,border:"none",borderRadius:8,padding:"8px 18px",fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit"}}>Monthly</button>
-              <button onClick={()=>setAnnual(true)}  style={{background: annual?C.blue:"transparent",color: annual?"#fff":C.textSub,border:"none",borderRadius:8,padding:"8px 18px",fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit",display:"flex",alignItems:"center",gap:6}}>Annual <span style={{background:annual?"#fff2":C.emerald+"22",color:annual?"#fff":C.emerald,borderRadius:4,padding:"1px 6px",fontSize:9,fontWeight:700}}>SAVE 22%</span></button>
+              <button onClick={()=>setAnnual(true)}  style={{background: annual?C.blue:"transparent",color: annual?"#fff":C.textSub,border:"none",borderRadius:8,padding:"8px 18px",fontSize:12,fontWeight:600,cursor:"pointer",fontFamily:"inherit",display:"flex",alignItems:"center",gap:6}}>Annual <span style={{background:annual?"#fff2":"#2B3E5B22",color:annual?"#fff":"#2B3E5B",borderRadius:4,padding:"1px 6px",fontSize:9,fontWeight:700}}>SAVE 22%</span></button>
             </div>
           </div>
 
@@ -854,9 +909,9 @@ function Landing({ onEnter, onPickPlan, onDemo, onFeedback }) {
           permission) once we have 3 willing to be quoted. Until then, the
           strongest social proof we have is the product itself — lean into
           the three things that actually differentiate us. */}
-      <div style={{maxWidth:940,margin:"0 auto 80px",padding:"0 24px"}}>
+      <div className="reveal" style={{maxWidth:940,margin:"0 auto 80px",padding:"0 24px"}}>
         <div style={{textAlign:"center",marginBottom:36}}>
-          <div style={{display:"inline-block",fontSize:11,color:C.emerald,fontWeight:700,letterSpacing:"0.12em",marginBottom:12}}>BUILT FOR INCOME INVESTORS</div>
+          <div style={{display:"inline-block",fontSize:11,color:"var(--accent)",fontWeight:700,letterSpacing:"0.12em",marginBottom:12}}>BUILT FOR INCOME INVESTORS</div>
           <h2 style={{fontFamily:"'Fraunces',serif",fontSize:"clamp(24px,3.2vw,30px)",fontWeight:700,letterSpacing:"-0.015em",marginBottom:10}}>Three things we obsess over.</h2>
           <p style={{color:C.textSub,fontSize:13,maxWidth:520,margin:"0 auto"}}>
             We're an indie project built by an investor for investors — not a VC-backed stock ticker. Here's what we care about most.
@@ -881,7 +936,7 @@ function Landing({ onEnter, onPickPlan, onDemo, onFeedback }) {
       </div>
 
       {/* Final CTA */}
-      <div style={{textAlign:"center",padding:"72px 24px 88px",background:`radial-gradient(ellipse at center, ${C.blueGlow} 0%, transparent 60%)`}}>
+      <div className="reveal" style={{textAlign:"center",padding:"72px 24px 88px",background:`radial-gradient(ellipse at center, ${C.blueGlow} 0%, transparent 60%)`}}>
         <h2 style={{fontFamily:"'Fraunces',serif",fontSize:"clamp(32px,4vw,44px)",fontWeight:800,marginBottom:14,letterSpacing:"-0.02em",maxWidth:680,margin:"0 auto 14px"}}>Know the exact year your money replaces your job.</h2>
         <p style={{color:C.textSub,fontSize:15,marginBottom:34,maxWidth:500,margin:"0 auto 34px"}}>Free forever plan. Setup in 2 minutes. Bring your brokerage CSV and watch it happen.</p>
         <button style={{...cta,padding:"16px 36px",fontSize:15}} onClick={onEnter}>Create your free account →</button>
@@ -897,8 +952,8 @@ function Landing({ onEnter, onPickPlan, onDemo, onFeedback }) {
         <div style={{maxWidth:1100,margin:"0 auto",display:"grid",gridTemplateColumns:"repeat(auto-fit,minmax(220px,1fr))",gap:18}}>
           <div>
             <div style={{fontSize:11,color:C.textMuted,fontWeight:700,textTransform:"uppercase",letterSpacing:"0.1em",marginBottom:10}}>Need help?</div>
-            <a href="mailto:hello@yieldos.app?subject=YieldOS%20question" style={{display:"block",fontSize:13,color:C.text,textDecoration:"none",marginBottom:8,fontWeight:500}}>📧 Email us — hello@yieldos.app</a>
-            <a href="#feedback" onClick={(e)=>{e.preventDefault(); onFeedback && onFeedback();}} style={{display:"block",fontSize:13,color:C.text,textDecoration:"none",marginBottom:8,fontWeight:500,cursor:"pointer"}}>💬 Send feedback (in-app)</a>
+            <a href="mailto:hello@yieldos.app?subject=YieldOS%20question" style={{display:"block",fontSize:13,color:C.text,textDecoration:"none",marginBottom:8,fontWeight:500}}>Email us — hello@yieldos.app</a>
+            <a href="#feedback" onClick={(e)=>{e.preventDefault(); onFeedback && onFeedback();}} style={{display:"block",fontSize:13,color:C.text,textDecoration:"none",marginBottom:8,fontWeight:500,cursor:"pointer"}}>Send feedback (in-app)</a>
             <div style={{fontSize:11,color:C.textMuted,marginTop:6}}>I read every message myself, usually within 24 hours.</div>
           </div>
           <div>
@@ -2780,6 +2835,15 @@ export default function AppMain() {
                         {soon && <Chip color={C.emerald}>💰 paycheck soon</Chip>}
                       </div>
                       <div style={{fontSize:11,color:C.textMuted}}>{h.shares} shares · {h.yld}% yield</div>
+                      {/* Ex-dividend date — the actionable timing field that
+                          decides whether you actually capture this dividend.
+                          Must own the stock BY this date. Shown alongside pay
+                          date so investors can plan around it. */}
+                      {h.next_ex_date && h.next_ex_date !== "TBD" && (
+                        <div style={{fontSize:11,color:C.textMuted,marginTop:2}}>
+                          <span style={{color:C.textSub,fontWeight:600}}>Ex-date</span> {h.next_ex_date} <span style={{color:C.textMuted,opacity:0.6}}>· own by then to qualify</span>
+                        </div>
+                      )}
                     </div>
                     <div style={{textAlign:"right",flexShrink:0}}>
                       <div style={{fontFamily:"'Fraunces',serif",fontSize:20,fontWeight:700,color:C.emerald}}>+{$(per)}</div>
