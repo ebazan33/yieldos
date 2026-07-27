@@ -2899,6 +2899,32 @@ export default function AppMain() {
                           </button>
                         );
                       })()}
+                      {/* Remove holding CTA. Users kept asking "how do I delete
+                          a holding?" on this page. The Holdings table had a ✕
+                          in the last column but Paychecks is where most people
+                          actually spend time, so the delete lived nowhere they
+                          could see it. Confirm modal + native toast. */}
+                      <button
+                        onClick={() => setConfirmState({
+                          title: `Remove ${h.ticker}?`,
+                          body: `This will delete ${h.shares} share${h.shares===1?"":"s"} of ${h.name} from your portfolio. This can't be undone.`,
+                          confirmLabel: "Remove",
+                          danger: true,
+                          onConfirm: async () => {
+                            const { error } = await removeHolding(h.id);
+                            setConfirmState(null);
+                            if (!error) window.toast?.({ text: `${h.ticker} removed`, kind: "success" });
+                            else window.toast?.({ text: "Couldn't remove — try again", kind: "error" });
+                          },
+                          onCancel: () => setConfirmState(null),
+                        })}
+                        title="Remove holding"
+                        aria-label={`Remove ${h.ticker} from portfolio`}
+                        style={{marginTop:6,marginLeft:6,background:"transparent",color:C.textMuted,border:`1px solid ${C.border}`,borderRadius:6,cursor:"pointer",fontSize:10,fontWeight:600,padding:"3px 8px",fontFamily:"inherit",transition:"all 0.15s"}}
+                        onMouseEnter={e=>{e.currentTarget.style.borderColor=C.red;e.currentTarget.style.color=C.red;}}
+                        onMouseLeave={e=>{e.currentTarget.style.borderColor=C.border;e.currentTarget.style.color=C.textMuted;}}>
+                        ✕ Remove
+                      </button>
                     </div>
                   </div>
                 );
