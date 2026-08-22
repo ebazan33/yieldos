@@ -37,7 +37,17 @@ function inferCurrencyFromTicker(raw) {
   return 'USD'
 }
 
-export default function AddHoldingModal({ onClose, onAdd, onMerge, existingHoldings = [], prefillTicker }) {
+export default function AddHoldingModal({ onClose, onAdd, onMerge, onEdit, existingHoldings = [], prefillTicker, editingHolding = null }) {
+  // Edit mode. When editingHolding is provided (from the ✎ Edit button on
+  // the Holdings table or Paychecks page), we re-purpose this modal into an
+  // edit form:
+  //   - the search flow is hidden (ticker is fixed — can't be changed)
+  //   - the manual-mode header displays ticker + currency read-only
+  //   - shares / yield / cost basis / frequency / price stay editable
+  //   - the merge banner is suppressed (doesn't apply to a single-row edit)
+  //   - the rapid-fire "Add another" loop is suppressed — a single save
+  //     closes the modal
+  const isEditing = !!editingHolding
   const [query, setQuery]         = useState('')
   const [results, setResults]     = useState([])
   const [selected, setSelected]   = useState(null)
@@ -140,6 +150,29 @@ export default function AddHoldingModal({ onClose, onAdd, onMerge, existingHoldi
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [prefillTicker])
 
+  // Edit-mode seeding. When editingHolding is provided we drop straight into
+  // the manual-mode form (all fields visible, ticker + currency displayed as
+  // read-only in the header) with every field pre-populated from the row the
+  // user is editing. We piggy-back on manualMode to get the ticker header
+  // and per-currency preview for free instead of building a parallel edit UI.
+  useEffect(() => {
+    if (!editingHolding) return
+    setManualMode(true)
+    setQuery(String(editingHolding.ticker || '').toUpperCase())
+    setManualName(editingHolding.name || '')
+    setManualPrice(editingHolding.price != null ? String(editingHolding.price) : '')
+    setManualCurrency(editingHolding.currency || 'USD')
+    setShares(editingHolding.shares != null ? String(editingHolding.shares) : '')
+    setYld(editingHolding.yld != null ? String(editingHolding.yld) : '')
+    setFreq(editingHolding.freq || 'Quarterly')
+    setCostBasis(
+      editingHolding.cost_basis != null && editingHolding.cost_basis !== ''
+        ? String(editingHolding.cost_basis)
+        : ''
+    )
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editingHolding])
+
   async function handleSelect(r) {
     setLoading(true)
     setResults([])
@@ -176,6 +209,42 @@ export default function AddHoldingModal({ onClose, onAdd, onMerge, existingHoldi
 
   async function handleAdd() {
     setError('')
+
+    // ── Edit mode — save changes to an existing row, no rapid-fire, no merge ──
+    // We build a patch (not a full holding object) so we only overwrite fields
+    // that a user is legitimately allowed to edit. Ticker + name + currency
+    // stay locked to what's on the row already; changing those would be a
+    // delete-and-re-add, not an edit.
+    if (isEditing && editingHolding && onEdit) {
+      if (!shares || !yld) { setError('Shares and yield are required'); return }
+      const priceNum = parseFloat(manualPrice)
+      const patch = {
+        shares:     parseFloat(shares),
+        yld:        parseFloat(yld),
+        freq,
+        cost_basis: costBasis !== '' ? parseFloat(costBasis) : null,
+      }
+      // Allow correcting price for any holding — USD rows will get resynced
+      // on the next Polygon refresh, but manual (CAD/GBP/etc.) rows have no
+      // other way to update. Only apply if the user typed a valid number.
+      if (manualPrice !== '' && isFinite(priceNum) && priceNum > 0) {
+        patch.price = priceNum
+      }
+      // Name is displayed read-only in the header when editing, but if a user
+      // fixes a typo we want to keep it — mainly matters for CAD manual rows.
+      if (manualName && manualName.trim() && manualName !== editingHolding.name) {
+        patch.name = manualName.trim()
+      }
+      const { error } = (await onEdit(editingHolding.id, patch)) || {}
+      if (error) {
+        setError(typeof error === 'string' ? error : (error.message || 'Couldn\'t save — try again.'))
+        return
+      }
+      // Single-shot: close the modal cleanly instead of the rapid-fire reset
+      onClose?.()
+      return
+    }
+
     let holding
 
     if (manualMode) {
@@ -279,11 +348,15 @@ export default function AddHoldingModal({ onClose, onAdd, onMerge, existingHoldi
       <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:16,padding:"clamp(20px, 5vw, 32px)",maxWidth:480,width:"100%",maxHeight:"calc(100dvh - 32px)",overflowY:"auto"}} onClick={e=>e.stopPropagation()}>
         <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:4,gap:12}}>
           <div>
-            <div style={{fontFamily:"'Fraunces',serif",fontSize:20,fontWeight:700,letterSpacing:"-0.01em"}}>Add Holding</div>
+            <div style={{fontFamily:"'Fraunces',serif",fontSize:20,fontWeight:700,letterSpacing:"-0.01em"}}>
+              {isEditing ? `Edit ${editingHolding?.ticker || 'Holding'}` : 'Add Holding'}
+            </div>
             <div style={{fontSize:12,color:C.textSub,marginTop:2}}>
-              {addedList.length === 0
-                ? "Search for a stock, ETF, or REIT"
-                : `${addedList.length} added this session — keep going, or hit Done when finished`}
+              {isEditing
+                ? 'Update shares, yield, cost basis, or frequency. Ticker stays as-is.'
+                : (addedList.length === 0
+                    ? 'Search for a stock, ETF, or REIT'
+                    : `${addedList.length} added this session — keep going, or hit Done when finished`)}
             </div>
           </div>
           {/* Running list of tickers added — visible reinforcement that rapid-fire works */}
@@ -305,6 +378,8 @@ export default function AddHoldingModal({ onClose, onAdd, onMerge, existingHoldi
           </div>
         )}
 
+        {/* Search UI is entirely hidden in edit mode — the ticker is fixed. */}
+        {!isEditing && (<>
         {/* Search — the results dropdown was previously position:absolute with
             top:100%, which broke on mobile. When the soft keyboard opens, the
             modal's maxHeight:90vh shrinks, the absolute-positioned dropdown
@@ -422,9 +497,11 @@ export default function AddHoldingModal({ onClose, onAdd, onMerge, existingHoldi
           </div>
         )}
 
+        </>)}
         {/* Manual-entry summary — CAD/TSX flow. Looks deliberately different
             from the US blue card so the user knows they're in a different
-            flow and understands why they have to type the name/price. */}
+            flow and understands why they have to type the name/price. Also
+            used as the edit-mode ticker header. */}
         {manualMode && (
           <div style={{background:`${C.emerald}0d`,border:`1px solid ${C.emerald}40`,borderRadius:10,padding:"14px 16px",marginBottom:16}}>
             <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
@@ -432,10 +509,12 @@ export default function AddHoldingModal({ onClose, onAdd, onMerge, existingHoldi
                 <span style={{background:`${C.emerald}22`,color:C.emerald,border:`1px solid ${C.emerald}50`,borderRadius:5,padding:"2px 8px",fontSize:10,fontWeight:700,letterSpacing:"0.04em"}}>{(query||'').toUpperCase() || 'TICKER'}</span>
                 <span style={{background:`${C.emerald}16`,color:C.emerald,border:`1px solid ${C.emerald}30`,borderRadius:4,padding:"1px 6px",fontSize:9,fontWeight:700,letterSpacing:"0.06em"}}>{manualCurrency}</span>
               </div>
-              <button onClick={()=>{setManualMode(false);setManualName('');setManualPrice('');setQuery('');setManualCurrency('USD');setTimeout(()=>searchRef.current?.focus(),0)}}
-                style={{background:"transparent",border:"none",color:C.textMuted,fontSize:11,cursor:"pointer",fontFamily:"inherit"}}>
-                ← back to search
-              </button>
+              {!isEditing && (
+                <button onClick={()=>{setManualMode(false);setManualName('');setManualPrice('');setQuery('');setManualCurrency('USD');setTimeout(()=>searchRef.current?.focus(),0)}}
+                  style={{background:"transparent",border:"none",color:C.textMuted,fontSize:11,cursor:"pointer",fontFamily:"inherit"}}>
+                  ← back to search
+                </button>
+              )}
             </div>
             {/* Currency picker — defaults to inferred currency from the ticker
                 suffix, but lets the user override (e.g. for ADRs, ETFs traded
@@ -489,7 +568,7 @@ export default function AddHoldingModal({ onClose, onAdd, onMerge, existingHoldi
             case (DRIP top-up, recurring buy) is one click. The "Track as
             separate lot" branch stays available for tax-tracking use cases
             (FIFO/LIFO, IRA vs taxable). */}
-        {existingMatch && (
+        {existingMatch && !isEditing && (
           <div style={{
             background: `${C.blue}10`,
             border: `1px solid ${C.blue}40`,
@@ -623,17 +702,23 @@ export default function AddHoldingModal({ onClose, onAdd, onMerge, existingHoldi
         {error && <div style={{fontSize:12,color:C.red,marginBottom:12}}>{error}</div>}
 
         {(() => {
-          const canAdd = manualMode
-            ? !!(query && manualName && manualPrice && shares && yld)
-            : !!(selected && shares && yld)
+          // In edit mode the only requirement is shares + yld; ticker,
+          // name, currency, and price are already on the row (price is
+          // optional to override).
+          const canAdd = isEditing
+            ? !!(shares && yld)
+            : (manualMode
+                ? !!(query && manualName && manualPrice && shares && yld)
+                : !!(selected && shares && yld))
           return (
             <div style={{display:"flex",gap:8}}>
               <button onClick={onClose} style={{flex:1,background:"transparent",color:addedList.length>0?C.text:C.textSub,border:`1px solid ${addedList.length>0?C.emerald+"60":C.border}`,borderRadius:9,cursor:"pointer",fontFamily:"inherit",fontSize:12,fontWeight:addedList.length>0?600:500,padding:"10px",transition:"all 0.15s"}}>
-                {addedList.length > 0 ? `Done (${addedList.length})` : 'Cancel'}
+                {isEditing ? 'Cancel' : (addedList.length > 0 ? `Done (${addedList.length})` : 'Cancel')}
               </button>
               <button onClick={handleAdd} disabled={!canAdd}
                 style={{flex:2,background:C.blue,color:"#fff",border:"none",borderRadius:9,cursor:!canAdd?"default":"pointer",fontFamily:"inherit",fontWeight:600,fontSize:13,padding:"10px",opacity:!canAdd?0.4:1,transition:"opacity 0.2s"}}>
                 {(() => {
+                  if (isEditing) return 'Save changes'
                   // Merge: show the math on the button so the user sees
                   // exactly what's about to happen — "add 7 → 107 total".
                   if (existingMatch && mergeMode && shares) {

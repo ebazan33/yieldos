@@ -1064,6 +1064,10 @@ export default function AppMain() {
   const openUpgrade = (reason) => { setUpReason(reason || null); setShowUp(true); };
   const [showAuth, setShowAuth]     = useState(false);
   const [showAdd, setShowAdd]       = useState(false);
+  // Editing an existing holding (opens AddHoldingModal in edit mode). Wired
+  // to the ✎ pencil button on both the Holdings table (desktop) and the
+  // Paychecks page (mobile). Cleared on close alongside showAdd/prefillTicker.
+  const [editingHolding, setEditingHolding] = useState(null);
   const [showImport, setShowImport] = useState(false);
   const [showFeedback, setShowFeedback] = useState(false);
   // Public-share management modal. Grow-only; gated in the button onClick.
@@ -1161,6 +1165,7 @@ export default function AppMain() {
     // error so the vibe stays "try me out, no friction".
     addHolding:        async () => ({ error: { message: "Sign up to save holdings." } }),
     removeHolding:     async () => ({ error: { message: "Sign up to edit holdings." } }),
+    updateHolding:     async () => ({ error: { message: "Sign up to edit holdings." } }),
     updateHolding:     async () => ({ error: { message: "Sign up to edit holdings." } }),
     mergeIntoExisting: async () => ({ error: { message: "Sign up to edit holdings." } }),
     refreshAllPrices:  async () => {},
@@ -2547,21 +2552,35 @@ export default function AppMain() {
                         <td style={{padding:"13px 14px",fontSize:12,color:h.next_div&&h.next_div!=="TBD"?C.text:C.textMuted,fontWeight:500,whiteSpace:"nowrap"}}>{h.next_div||"TBD"}</td>
                         <td style={{padding:"13px 14px"}}><Sparkline/></td>
                         <td style={{padding:"13px 14px"}}>
-                          <button onClick={()=>setConfirmState({
-                            title: `Remove ${h.ticker}?`,
-                            body: `This will delete ${h.shares} share${h.shares===1?"":"s"} of ${h.name} from your portfolio. This can't be undone.`,
-                            confirmLabel: "Remove",
-                            danger: true,
-                            onConfirm: async () => {
-                              const { error } = await removeHolding(h.id);
-                              setConfirmState(null);
-                              if (!error) window.toast?.({ text: `${h.ticker} removed`, kind: "success" });
-                              else window.toast?.({ text: "Couldn't remove — try again", kind: "error" });
-                            },
-                            onCancel: () => setConfirmState(null),
-                          })} style={{background:"none",border:`1px solid ${C.border}`,borderRadius:6,color:C.textMuted,cursor:"pointer",fontSize:10,padding:"3px 8px",fontFamily:"inherit",transition:"all 0.15s"}}
-                            onMouseEnter={e=>{e.currentTarget.style.borderColor=C.red;e.currentTarget.style.color=C.red;}}
-                            onMouseLeave={e=>{e.currentTarget.style.borderColor=C.border;e.currentTarget.style.color=C.textMuted;}}>✕</button>
+                          <div style={{display:"flex",gap:6,justifyContent:"flex-end"}}>
+                            {/* ✎ Edit — opens the AddHoldingModal in edit mode with
+                                every field pre-populated. Shipped in response to a
+                                paying-customer report: "there was no way to modify a
+                                holding without deleting and re-adding it, which wipes
+                                cost basis and streaks." Hover styles match the ✕ button
+                                (neutral → blue) so they read as a two-button group. */}
+                            <button onClick={()=>setEditingHolding(h)}
+                              title="Edit holding"
+                              aria-label={`Edit ${h.ticker}`}
+                              style={{background:"none",border:`1px solid ${C.border}`,borderRadius:6,color:C.textMuted,cursor:"pointer",fontSize:10,padding:"3px 8px",fontFamily:"inherit",transition:"all 0.15s"}}
+                              onMouseEnter={e=>{e.currentTarget.style.borderColor=C.blue;e.currentTarget.style.color=C.blue;}}
+                              onMouseLeave={e=>{e.currentTarget.style.borderColor=C.border;e.currentTarget.style.color=C.textMuted;}}>✎</button>
+                            <button onClick={()=>setConfirmState({
+                              title: `Remove ${h.ticker}?`,
+                              body: `This will delete ${h.shares} share${h.shares===1?"":"s"} of ${h.name} from your portfolio. This can't be undone.`,
+                              confirmLabel: "Remove",
+                              danger: true,
+                              onConfirm: async () => {
+                                const { error } = await removeHolding(h.id);
+                                setConfirmState(null);
+                                if (!error) window.toast?.({ text: `${h.ticker} removed`, kind: "success" });
+                                else window.toast?.({ text: "Couldn't remove — try again", kind: "error" });
+                              },
+                              onCancel: () => setConfirmState(null),
+                            })} style={{background:"none",border:`1px solid ${C.border}`,borderRadius:6,color:C.textMuted,cursor:"pointer",fontSize:10,padding:"3px 8px",fontFamily:"inherit",transition:"all 0.15s"}}
+                              onMouseEnter={e=>{e.currentTarget.style.borderColor=C.red;e.currentTarget.style.color=C.red;}}
+                              onMouseLeave={e=>{e.currentTarget.style.borderColor=C.border;e.currentTarget.style.color=C.textMuted;}}>✕</button>
+                          </div>
                         </td>
                       </tr>
                     ))}
@@ -2904,6 +2923,29 @@ export default function AppMain() {
                           in the last column but Paychecks is where most people
                           actually spend time, so the delete lived nowhere they
                           could see it. Confirm modal + native toast. */}
+                      {/* Stacked BELOW Mark paid so mobile screens don't
+                          push the right column wider and squeeze the ticker
+                          name. display:block + marginLeft:auto keeps it
+                          right-aligned inside the parent's textAlign:right
+                          column. Distinct muted styling on hover -> red
+                          separates it visually from the neutral Mark paid
+                          CTA so the tap targets don't feel adjacent. */}
+                      {/* ✎ Edit — same trigger as the desktop Holdings table.
+                          Shipped after a paying customer reported the mobile
+                          browser only exposed delete, with no way to fix a wrong
+                          share count / yield / cost basis without re-adding the
+                          holding (which wiped streaks + cost basis). Kept stacked
+                          above Remove so the destructive action stays visually
+                          separated. */}
+                      <button
+                        onClick={() => setEditingHolding(h)}
+                        title="Edit holding"
+                        aria-label={`Edit ${h.ticker}`}
+                        style={{display:"block",marginLeft:"auto",marginTop:6,background:"transparent",color:C.textMuted,border:`1px solid ${C.border}`,borderRadius:6,cursor:"pointer",fontSize:10,fontWeight:600,padding:"5px 10px",fontFamily:"inherit",transition:"all 0.15s",WebkitTapHighlightColor:"transparent"}}
+                        onMouseEnter={e=>{e.currentTarget.style.borderColor=C.blue;e.currentTarget.style.color=C.blue;}}
+                        onMouseLeave={e=>{e.currentTarget.style.borderColor=C.border;e.currentTarget.style.color=C.textMuted;}}>
+                        ✎ Edit
+                      </button>
                       <button
                         onClick={() => setConfirmState({
                           title: `Remove ${h.ticker}?`,
@@ -2920,7 +2962,7 @@ export default function AppMain() {
                         })}
                         title="Remove holding"
                         aria-label={`Remove ${h.ticker} from portfolio`}
-                        style={{marginTop:6,marginLeft:6,background:"transparent",color:C.textMuted,border:`1px solid ${C.border}`,borderRadius:6,cursor:"pointer",fontSize:10,fontWeight:600,padding:"3px 8px",fontFamily:"inherit",transition:"all 0.15s"}}
+                        style={{display:"block",marginLeft:"auto",marginTop:6,background:"transparent",color:C.textMuted,border:`1px solid ${C.border}`,borderRadius:6,cursor:"pointer",fontSize:10,fontWeight:600,padding:"5px 10px",fontFamily:"inherit",transition:"all 0.15s",WebkitTapHighlightColor:"transparent"}}
                         onMouseEnter={e=>{e.currentTarget.style.borderColor=C.red;e.currentTarget.style.color=C.red;}}
                         onMouseLeave={e=>{e.currentTarget.style.borderColor=C.border;e.currentTarget.style.color=C.textMuted;}}>
                         ✕ Remove
@@ -3906,7 +3948,22 @@ export default function AppMain() {
         </div>
       </footer>
 
-      {showAdd&&<AddHoldingModal onClose={()=>{setShowAdd(false);setPrefillTicker(null);}} onAdd={addHoldingGated} onMerge={mergeIntoExisting} existingHoldings={holdings} prefillTicker={prefillTicker}/>}
+      {(showAdd || editingHolding) && (
+        <AddHoldingModal
+          onClose={() => { setShowAdd(false); setPrefillTicker(null); setEditingHolding(null); }}
+          onAdd={addHoldingGated}
+          onMerge={mergeIntoExisting}
+          onEdit={async (id, patch) => {
+            const res = await updateHolding(id, patch);
+            if (!res?.error) window.toast?.({ text: `${editingHolding?.ticker || 'Holding'} updated`, kind: 'success' });
+            else window.toast?.({ text: 'Couldn\'t save — try again', kind: 'error' });
+            return res;
+          }}
+          existingHoldings={holdings}
+          prefillTicker={prefillTicker}
+          editingHolding={editingHolding}
+        />
+      )}
       {showImport&&<ImportHoldingsModal onClose={()=>setShowImport(false)} onAdd={addHoldingGated}/>}
       {showShare && isPro && !demoMode && user?.id && (
         <SharePortfolioModal
