@@ -2431,13 +2431,38 @@ export default function AppMain() {
           : port.length===0 ? <Empty/>
           : (
             <>
-              <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:14,overflow:"hidden",marginBottom:14}}>
+              {/* Holdings table wrapper. Was `overflow:"hidden"` which silently
+                  clipped the last column (Actions with ✎ Edit + ✕ Remove) off
+                  the right edge on any laptop viewport narrower than the table's
+                  17-column natural width. Customer report: "add/delete/edit
+                  buttons don't display on desktop Chrome" — that was literally
+                  the buttons being invisible with no scrollbar to reach them.
+                  Switched to `overflowX:"auto"` so users can scroll horizontally
+                  when needed, and stickied the Actions column so it stays pinned
+                  to the right regardless of scroll position (Chrome, Safari, and
+                  Firefox all support position:sticky in table cells). */}
+              <div style={{background:C.card,border:`1px solid ${C.border}`,borderRadius:14,overflowX:"auto",overflowY:"hidden",marginBottom:14}}>
                 <table style={{width:"100%",borderCollapse:"collapse"}}>
                   <thead>
                     <tr style={{borderBottom:`1px solid ${C.border}`}}>
-                      {["Ticker","Company","Shares","Price","Value","Cost","Gain","YoC","Yield","Annual","Monthly","Freq","Safety","Streak","Next Pay","Trend",""].map(h=>(
-                        <th key={h} style={{padding:"10px 14px",textAlign:"left",fontSize:9,color:C.textMuted,textTransform:"uppercase",letterSpacing:"0.08em",fontWeight:600,whiteSpace:"nowrap"}}>{h}</th>
-                      ))}
+                      {["Ticker","Company","Shares","Price","Value","Cost","Gain","YoC","Yield","Annual","Monthly","Freq","Safety","Streak","Next Pay","Trend",""].map((h,idx,arr)=>{
+                        const isLast = idx === arr.length - 1;
+                        return (
+                          <th key={h} style={{
+                            padding:"10px 14px",
+                            textAlign: isLast ? "right" : "left",
+                            fontSize:9,
+                            color:C.textMuted,
+                            textTransform:"uppercase",
+                            letterSpacing:"0.08em",
+                            fontWeight:600,
+                            whiteSpace:"nowrap",
+                            // Sticky-right so the Actions column stays visible
+                            // while the rest of the wide table scrolls horizontally.
+                            ...(isLast ? {position:"sticky", right:0, background:C.card, zIndex:2, borderLeft:`1px solid ${C.border}`} : {}),
+                          }}>{h}</th>
+                        );
+                      })}
                     </tr>
                   </thead>
                   <tbody>
@@ -2551,7 +2576,18 @@ export default function AppMain() {
                         </td>
                         <td style={{padding:"13px 14px",fontSize:12,color:h.next_div&&h.next_div!=="TBD"?C.text:C.textMuted,fontWeight:500,whiteSpace:"nowrap"}}>{h.next_div||"TBD"}</td>
                         <td style={{padding:"13px 14px"}}><Sparkline/></td>
-                        <td style={{padding:"13px 14px"}}>
+                        <td style={{
+                          padding:"13px 14px",
+                          // Matches the sticky <th> above so the Actions column
+                          // stays pinned to the right as the wide table scrolls
+                          // horizontally. Background must be opaque or the
+                          // scrolling cells behind will bleed through.
+                          position:"sticky",
+                          right:0,
+                          background:C.card,
+                          zIndex:1,
+                          borderLeft:`1px solid ${C.border}`,
+                        }}>
                           <div style={{display:"flex",gap:6,justifyContent:"flex-end"}}>
                             {/* ✎ Edit — opens the AddHoldingModal in edit mode with
                                 every field pre-populated. Shipped in response to a
