@@ -522,34 +522,40 @@ export default function AddHoldingModal({ onClose, onAdd, onMerge, onEdit, exist
                 Layout note: flex basis of 50px + 5px gaps keeps all 5 chips
                 on one row down to ~290px content width (covers iPhone SE
                 @ 320px after backdrop + card padding). Buttons are 44px tall
-                to meet iOS HIG tap-target guidance. */}
-            <div style={{marginBottom:10}}>
-              <div style={{fontSize:10,color:C.textMuted,fontWeight:600,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:5}}>Currency</div>
-              <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
-                {SUPPORTED_CURRENCIES.map(ccy => (
-                  <button
-                    key={ccy}
-                    onClick={() => setManualCurrency(ccy)}
-                    style={{
-                      flex:"1 1 50px",
-                      background: manualCurrency === ccy ? C.emerald : C.surface,
-                      border:`1px solid ${manualCurrency === ccy ? C.emerald : C.border}`,
-                      borderRadius:7,
-                      padding:"10px 4px",
-                      fontSize:11,
-                      fontWeight: manualCurrency === ccy ? 700 : 500,
-                      color: manualCurrency === ccy ? "#0b0b0b" : C.textSub,
-                      cursor:"pointer",
-                      fontFamily:"inherit",
-                      transition:"all 0.12s",
-                      minHeight:44,
-                      WebkitTapHighlightColor:"transparent",
-                    }}>
-                    {currencySymbol(ccy)} {ccy}
-                  </button>
-                ))}
+                to meet iOS HIG tap-target guidance.
+                Hidden in edit mode — changing currency without also updating
+                price + cost basis is mathematically wrong (would blend USD
+                and CAD numbers), so we lock it to what's on the row. The
+                currency badge in the header above shows the current value. */}
+            {!isEditing && (
+              <div style={{marginBottom:10}}>
+                <div style={{fontSize:10,color:C.textMuted,fontWeight:600,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:5}}>Currency</div>
+                <div style={{display:"flex",gap:5,flexWrap:"wrap"}}>
+                  {SUPPORTED_CURRENCIES.map(ccy => (
+                    <button
+                      key={ccy}
+                      onClick={() => setManualCurrency(ccy)}
+                      style={{
+                        flex:"1 1 50px",
+                        background: manualCurrency === ccy ? C.emerald : C.surface,
+                        border:`1px solid ${manualCurrency === ccy ? C.emerald : C.border}`,
+                        borderRadius:7,
+                        padding:"10px 4px",
+                        fontSize:11,
+                        fontWeight: manualCurrency === ccy ? 700 : 500,
+                        color: manualCurrency === ccy ? "#0b0b0b" : C.textSub,
+                        cursor:"pointer",
+                        fontFamily:"inherit",
+                        transition:"all 0.12s",
+                        minHeight:44,
+                        WebkitTapHighlightColor:"transparent",
+                      }}>
+                      {currencySymbol(ccy)} {ccy}
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
             <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:10,marginBottom:4}}>
               <div>
                 <div style={{fontSize:10,color:C.textMuted,fontWeight:600,textTransform:"uppercase",letterSpacing:"0.08em",marginBottom:5}}>Company Name</div>
