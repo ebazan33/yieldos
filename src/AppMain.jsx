@@ -3885,7 +3885,17 @@ export default function AppMain() {
       `}</style>
 
       <div className="app-topbar" style={{height:54,borderBottom:`1px solid ${C.border}`,position:"sticky",top:0,zIndex:40,background:"rgba(8,11,16,0.96)",backdropFilter:"blur(16px)"}}>
-        <div style={{display:"flex",alignItems:"center",gap:10,cursor:"pointer",flexShrink:0}} onClick={()=>setPage("home")}>
+        {/* Logo click behavior: signed-in users go to their dashboard, not
+            the marketing home page. First paying customer (Rick, Sep 7 2026)
+            reported that clicking the logo appeared to sign him out — what
+            was actually happening was he'd get dropped onto the landing
+            page which shows "Sign in" and "Get started free" buttons and
+            no dashboard tabs, which reads as "signed out" even though the
+            session was intact. Bounce logged-in users back to their app. */}
+        <div style={{display:"flex",alignItems:"center",gap:10,cursor:"pointer",flexShrink:0}} onClick={()=>{
+          if (user || demoMode) { navigate("dashboard"); }
+          else { setPage("home"); }
+        }}>
           <svg width="26" height="26" viewBox="0 0 28 28"><rect width="28" height="28" rx="7" fill={C.blue}/><path d="M8 20 L14 8 L20 20" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" fill="none"/><circle cx="14" cy="17" r="2" fill="#fff"/></svg>
           <span className="app-topbar-logo-text" style={{fontFamily:"'Fraunces',serif",fontWeight:700,fontSize:16,letterSpacing:"-0.01em"}}>YieldOS</span>
         </div>
