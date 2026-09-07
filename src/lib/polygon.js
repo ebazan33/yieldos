@@ -1,10 +1,7 @@
 // Stock data helpers — Polygon.io only (FMP's v3 endpoints are paid-tier now).
 // Polygon covers: ticker search, prev close, company profile, dividend history.
-//
-// All Polygon calls now go through /api/polygon/* on our own domain. The
-// server-side proxy adds the API key from process.env.POLYGON_KEY so the
-// key never ends up in the client bundle. The proxy also caches responses
-// at Vercel's edge, so most calls never actually hit Polygon.
+
+const POLYGON_KEY = import.meta.env.VITE_POLYGON_KEY;
 
 const log = (...args) => { if (import.meta.env.DEV) console.log("[stock]", ...args); };
 
@@ -20,6 +17,7 @@ const log = (...args) => { if (import.meta.env.DEV) console.log("[stock]", ...ar
 // Exact match always appears first in the dropdown so users never miss the
 // ticker they typed. Dedupes by ticker.
 export async function searchTicker(query) {
+  if (!POLYGON_KEY) { console.warn("[stock] Missing VITE_POLYGON_KEY in .env"); return []; }
   const q = String(query || "").trim();
   if (!q) return [];
 
@@ -27,9 +25,9 @@ export async function searchTicker(query) {
   // REI-UN). For these we also hit the exact-ticker endpoint in parallel.
   const looksLikeTicker = /^[A-Za-z.\-]{1,6}$/.test(q);
   const exactUrl = looksLikeTicker
-    ? `/api/polygon/v3/reference/tickers?ticker=${encodeURIComponent(q.toUpperCase())}&active=true`
+    ? `https://api.polygon.io/v3/reference/tickers?ticker=${encodeURIComponent(q.toUpperCase())}&active=true&apiKey=${POLYGON_KEY}`
     : null;
-  const fuzzyUrl = `/api/polygon/v3/reference/tickers?search=${encodeURIComponent(q)}&market=stocks&active=true&limit=10`;
+  const fuzzyUrl = `https://api.polygon.io/v3/reference/tickers?search=${encodeURIComponent(q)}&market=stocks&active=true&limit=10&apiKey=${POLYGON_KEY}`;
 
   try {
     const [exactRes, fuzzyRes] = await Promise.all([
@@ -57,10 +55,11 @@ export async function searchTicker(query) {
 
 // ── Price + company details ─────────────────────────────────────────────────
 async function fetchPolygonPrice(ticker) {
+  if (!POLYGON_KEY) return { price: 0, name: null, sector: null };
   try {
     const [priceRes, detailRes] = await Promise.all([
-      fetch(`/api/polygon/v2/aggs/ticker/${encodeURIComponent(ticker)}/prev?adjusted=true`),
-      fetch(`/api/polygon/v3/reference/tickers/${encodeURIComponent(ticker)}`),
+      fetch(`https://api.polygon.io/v2/aggs/ticker/${encodeURIComponent(ticker)}/prev?adjusted=true&apiKey=${POLYGON_KEY}`),
+      fetch(`https://api.polygon.io/v3/reference/tickers/${encodeURIComponent(ticker)}?apiKey=${POLYGON_KEY}`),
     ]);
     const priceData  = priceRes.ok  ? await priceRes.json()  : {};
     const detailData = detailRes.ok ? await detailRes.json() : {};
@@ -84,10 +83,11 @@ const FREQ_LABEL = { 1: "Annual", 2: "Semi-Annual", 4: "Quarterly", 12: "Monthly
 const FREQ_DAYS  = { 1: 365,      2: 182,           4: 91,          12: 30,        52: 7,        0: 365 };
 
 async function fetchPolygonDividends(ticker) {
+  if (!POLYGON_KEY) return null;
   try {
     // limit=500 is plenty — even monthly payers like O top out at ~360 in 30 years.
     // This gives us enough history to compute multi-decade growth streaks.
-    const url = `/api/polygon/v3/reference/dividends?ticker=${encodeURIComponent(ticker)}&limit=500&order=desc`;
+    const url = `https://api.polygon.io/v3/reference/dividends?ticker=${encodeURIComponent(ticker)}&limit=500&order=desc&apiKey=${POLYGON_KEY}`;
     const res = await fetch(url);
     if (!res.ok) { console.warn("[stock] Polygon dividends HTTP error:", res.status); return null; }
     const data = await res.json();

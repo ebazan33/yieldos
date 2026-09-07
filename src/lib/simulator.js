@@ -13,9 +13,7 @@
 //
 // Returns a { summary, timeline, error } object. Never throws.
 
-// Polygon calls now go through /api/polygon/* on our own domain — the
-// server-side proxy adds the key from process.env.POLYGON_KEY and caches
-// responses at Vercel's edge. See api/polygon/[...path].js.
+const POLYGON_KEY = import.meta.env.VITE_POLYGON_KEY;
 
 // Format a JS Date as YYYY-MM-DD in UTC — Polygon API expects this shape.
 function ymd(date) {
@@ -118,12 +116,13 @@ async function fetchWithRetry(url, { retries = 3, startDelayMs = 2000 } = {}) {
 }
 
 async function fetchMonthlyPrices(ticker, fromDate, toDate) {
+  if (!POLYGON_KEY) throw new Error("Polygon API key missing");
   const rangeTag = `${ymd(fromDate)}_${ymd(toDate).slice(0, 7)}`; // day precision on start, month on end
   const ck = cacheKey("prices", ticker, rangeTag);
   const cached = cacheGet(ck);
   if (cached) return cached;
 
-  const url = `/api/polygon/v2/aggs/ticker/${encodeURIComponent(ticker)}/range/1/month/${ymd(fromDate)}/${ymd(toDate)}?adjusted=true&sort=asc&limit=5000`;
+  const url = `https://api.polygon.io/v2/aggs/ticker/${encodeURIComponent(ticker)}/range/1/month/${ymd(fromDate)}/${ymd(toDate)}?adjusted=true&sort=asc&limit=5000&apiKey=${POLYGON_KEY}`;
   const res = await fetchWithRetry(url);
   if (!res.ok) {
     if (res.status === 404) throw new Error(`No price history found for ${ticker}`);
@@ -149,11 +148,12 @@ async function fetchMonthlyPrices(ticker, fromDate, toDate) {
 // Full dividend history — cached per ticker since dividend data doesn't
 // change based on requested date range.
 async function fetchDividends(ticker) {
+  if (!POLYGON_KEY) throw new Error("Polygon API key missing");
   const ck = cacheKey("divs", ticker);
   const cached = cacheGet(ck);
   if (cached) return cached;
 
-  const url = `/api/polygon/v3/reference/dividends?ticker=${encodeURIComponent(ticker)}&limit=500&order=asc`;
+  const url = `https://api.polygon.io/v3/reference/dividends?ticker=${encodeURIComponent(ticker)}&limit=500&order=asc&apiKey=${POLYGON_KEY}`;
   const res = await fetchWithRetry(url);
   if (!res.ok) {
     if (res.status === 429) throw new Error(`Data provider is rate-limiting us. Wait ~30 seconds and try again — or try a ticker you've already run (those are cached and free).`);
