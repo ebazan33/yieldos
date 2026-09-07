@@ -684,7 +684,7 @@ function Landing({ onEnter, onPickPlan, onDemo, onFeedback }) {
             </div>
             <div style={{display:"flex",gap:22,fontSize:11,color:C.textMuted,fontWeight:500,flexWrap:"wrap"}}>
               <span>✓ Free forever plan</span>
-              <span>✓ Import from Fidelity, Schwab, Vanguard</span>
+              <span>✓ CSV import from Fidelity, Schwab, Vanguard</span>
               <span>✓ US + Canadian (TSX) tickers</span>
               <span>✓ 2-min setup</span>
             </div>
@@ -721,16 +721,26 @@ function Landing({ onEnter, onPickPlan, onDemo, onFeedback }) {
         </div>
       </div>
 
-      {/* Brokerage ticker bar */}
+      {/* Brokerage ticker bar. Note: label reads "CSV IMPORT SUPPORTED FOR"
+          + a clarifying subline. The old copy ("IMPORT YOUR PORTFOLIO FROM"
+          next to broker wordmarks) read as OAuth-style account linking to
+          modern SaaS users — first paying customer converted expecting
+          Plaid-style sync. We do CSV import only, on purpose (privacy).
+          The subline names the mechanism so nobody buys expecting sync. */}
       <div style={{overflow:"hidden",borderTop:`1px solid ${C.border}`,borderBottom:`1px solid ${C.border}`,padding:"14px 0",background:C.surface,margin:"40px 0 72px"}}>
-        <div style={{display:"flex",alignItems:"center",gap:40,maxWidth:1100,margin:"0 auto",padding:"0 24px",flexWrap:"wrap",justifyContent:"center"}}>
-          <span style={{fontSize:10,color:"var(--text-sub)",fontWeight:600,letterSpacing:"0.12em"}}>IMPORT YOUR PORTFOLIO FROM</span>
-          {/* Unified muted wordmarks: label + all broker names share --text-sub
-              (warm gray). A "works with" strip reads as quiet monochrome — the
-              old green made the names compete with the navy CTAs. */}
-          {["Fidelity","Charles Schwab","Vanguard","E*TRADE","TD Ameritrade","Robinhood"].map((n,i)=>(
-            <span key={i} style={{fontSize:13,color:"var(--text-sub)",fontWeight:600,letterSpacing:"-0.01em"}}>{n}</span>
-          ))}
+        <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:8,maxWidth:1100,margin:"0 auto",padding:"0 24px"}}>
+          <div style={{display:"flex",alignItems:"center",gap:40,flexWrap:"wrap",justifyContent:"center"}}>
+            <span style={{fontSize:10,color:"var(--text-sub)",fontWeight:600,letterSpacing:"0.12em"}}>CSV IMPORT SUPPORTED FOR</span>
+            {/* Unified muted wordmarks: label + all broker names share --text-sub
+                (warm gray). A "works with" strip reads as quiet monochrome — the
+                old green made the names compete with the navy CTAs. */}
+            {["Fidelity","Charles Schwab","Vanguard","E*TRADE","TD Ameritrade","Robinhood"].map((n,i)=>(
+              <span key={i} style={{fontSize:13,color:"var(--text-sub)",fontWeight:600,letterSpacing:"-0.01em"}}>{n}</span>
+            ))}
+          </div>
+          <div style={{fontSize:11,color:"var(--text-muted)",fontWeight:500,textAlign:"center",maxWidth:640,lineHeight:1.5}}>
+            Export a CSV from your broker, drag it in. No account linking, no passwords, no third-party access to your brokerage.
+          </div>
         </div>
       </div>
 
