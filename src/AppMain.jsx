@@ -728,12 +728,15 @@ function Landing({ onEnter, onPickPlan, onDemo, onFeedback }) {
           Plaid-style sync. We do CSV import only, on purpose (privacy).
           The subline names the mechanism so nobody buys expecting sync. */}
       <div style={{overflow:"hidden",borderTop:`1px solid ${C.border}`,borderBottom:`1px solid ${C.border}`,padding:"14px 0",background:C.surface,margin:"40px 0 72px"}}>
-        <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:8,maxWidth:1100,margin:"0 auto",padding:"0 24px"}}>
-          <div style={{display:"flex",alignItems:"center",gap:40,flexWrap:"wrap",justifyContent:"center"}}>
-            <span style={{fontSize:10,color:"var(--text-sub)",fontWeight:600,letterSpacing:"0.12em"}}>CSV IMPORT SUPPORTED FOR</span>
-            {/* Unified muted wordmarks: label + all broker names share --text-sub
-                (warm gray). A "works with" strip reads as quiet monochrome — the
-                old green made the names compete with the navy CTAs. */}
+        {/* Three-row vertical stack: label / wordmarks / subline. Keeps
+            the label out of the wordmark row so it never orphans a broker
+            next to it on narrow viewports (was the case at 375px). */}
+        <div style={{display:"flex",flexDirection:"column",alignItems:"center",gap:10,maxWidth:1100,margin:"0 auto",padding:"0 24px"}}>
+          <span style={{fontSize:10,color:"var(--text-sub)",fontWeight:600,letterSpacing:"0.12em"}}>CSV IMPORT SUPPORTED FOR</span>
+          {/* Unified muted wordmarks: label + all broker names share --text-sub
+              (warm gray). A "works with" strip reads as quiet monochrome — the
+              old green made the names compete with the navy CTAs. */}
+          <div style={{display:"flex",alignItems:"center",gap:32,flexWrap:"wrap",justifyContent:"center"}}>
             {["Fidelity","Charles Schwab","Vanguard","E*TRADE","TD Ameritrade","Robinhood"].map((n,i)=>(
               <span key={i} style={{fontSize:13,color:"var(--text-sub)",fontWeight:600,letterSpacing:"-0.01em"}}>{n}</span>
             ))}

@@ -164,9 +164,21 @@ async function handleCheckoutCompleted(session) {
     planCycle = planCycle || inferred.cycle;
   }
 
+  // Throw instead of returning silently. Previously this returned 200 to
+  // Stripe when we couldn't map a price ID to a plan (e.g. an env var like
+  // STRIPE_PRICE_HARVEST_ANNUAL was missing or pointed to a stale price).
+  // Stripe treated that as success, no retry, no red badge in the dashboard,
+  // and the customer stayed on Seed while their card was charged. Throwing
+  // returns a 500 to Stripe so it retries + the failure is visible in the
+  // Stripe webhook logs.
   if (!plan || (plan !== 'Grow' && plan !== 'Harvest')) {
-    console.error('[stripe-webhook] could not determine plan for session', session.id, { plan, planCycle });
-    return;
+    const priceId = session.metadata?.price_id || 'unknown';
+    console.error('[stripe-webhook] unknown plan for session', session.id, { plan, planCycle, priceId });
+    throw new Error(`stripe-webhook: could not map to a known plan (session=${session.id}, plan=${plan}, planCycle=${planCycle}). Check STRIPE_PRICE_* env vars.`);
+  }
+  if (!planCycle || (planCycle !== 'monthly' && planCycle !== 'annual')) {
+    console.error('[stripe-webhook] invalid plan_cycle for session', session.id, { plan, planCycle });
+    throw new Error(`stripe-webhook: invalid plan_cycle (session=${session.id}, plan=${plan}, planCycle=${planCycle}).`);
   }
 
   const row = {

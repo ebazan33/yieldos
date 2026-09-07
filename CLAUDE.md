@@ -95,7 +95,7 @@ supabase/
 | `dividend_payments` | Manual dividend payment log | Same |
 | `portfolio_shares` | Public share link config (slug, enabled, show_values) | Owner-only via `auth.uid() = user_id`. Public read removed — see security note below. |
 | `feedback` | Anonymous feedback submissions | Insert: open. Read: denied (admin only via service role). |
-| `subscriptions` | Paid-plan state (plan, cycle, status, trial_ends_at, stripe customer/sub ids) | Read: `auth.uid() = user_id`. **Writes denied to all users.** Only the Stripe webhook (using `SUPABASE_SERVICE_ROLE_KEY`) can write. See note below. |
+| `subscriptions` | Paid-plan state. Columns: `user_id` (uuid), `plan` (text — CHECK: `'Seed'`, `'Grow'`, `'Harvest'` — **capitalized**), `plan_cycle` (text — CHECK: `'monthly'`, `'annual'` — **NOT** `'yearly'`), `status` (text — CHECK: `'active'`, `'trialing'`, `'past_due'`, `'canceled'`, `'incomplete'`, `'inactive'`), `trial_ends_at`, `current_period_end`, `stripe_customer_id`, `stripe_subscription_id`, `updated_at` | Read: `auth.uid() = user_id`. **Writes denied to all users.** Only the Stripe webhook (using `SUPABASE_SERVICE_ROLE_KEY`) can write. See note below. |
 | `import_log` | Audit trail of CSV import attempts (counts, USD total, filename, error message). Append-only. No per-row holdings data is stored. | Read + Insert: `auth.uid() = user_id`. No update/delete. |
 
 **Security note on `subscriptions` + Stripe webhook:**
@@ -196,7 +196,13 @@ Don't reintroduce direct public SELECT policies on these tables.
 
 ---
 
-## Current state (as of late April 2026)
+## Current state (as of early Sep 2026)
+
+- **1,292 investors** on the platform (per hero counter on landing page)
+- First paying Harvest customer landed today (Rick Schatz, Sep 7 2026)
+- Ongoing webhook-related fix: `STRIPE_PRICE_HARVEST_ANNUAL` env var was pointing to a stale price ID → checkout succeeded but Supabase row never landed → customer stuck on Seed until manual insert. Env var fixed, webhook now throws 500 (instead of silent 200) when it can't map a Stripe price to a known plan, so the failure is visible next time.
+
+## Historical (late April 2026)
 
 - **49 users**, plateau for ~3 days
 - Just shipped (today): security fixes (password policy, in-app change password,
